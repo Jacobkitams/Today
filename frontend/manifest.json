@@ -1,0 +1,25 @@
+{
+  "name": "IUEA Today",
+  "short_name": "IUEA Today",
+  "description": "Your daily source for university news, innovations, and student success stories",
+  "start_url": "/MyProject/today/frontend/",
+  "scope": "/MyProject/today/frontend/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#800000",
+  "icons": [
+    {
+      "src": "assets/images/iuea-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/images/iuea-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
