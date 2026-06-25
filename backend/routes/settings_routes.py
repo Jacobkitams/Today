@@ -20,6 +20,32 @@ MAX_VIDEO_SIZE = 200 * 1024 * 1024
 
 os.makedirs(VIDEOS_DIR, exist_ok=True)
 
+HERO_PAGE_KEY_ALIASES = {"commission": "community"}
+
+def _normalize_hero_page_key(page_key: str) -> str:
+    return HERO_PAGE_KEY_ALIASES.get(page_key, page_key)
+
+def _get_hero_video_record(db: Session, page_key: str):
+    normalized = _normalize_hero_page_key(page_key)
+    video = db.query(models.HeroVideo).filter(models.HeroVideo.page_key == normalized).first()
+    if not video and normalized == "community":
+        video = db.query(models.HeroVideo).filter(models.HeroVideo.page_key == "commission").first()
+        if video:
+            video.page_key = "community"
+            db.commit()
+            db.refresh(video)
+    return video
+
+def _hero_video_response(video: models.HeroVideo) -> schemas.HeroVideoResponse:
+    return schemas.HeroVideoResponse(
+        id=video.id,
+        page_key=_normalize_hero_page_key(video.page_key),
+        video_url=video.video_url,
+        original_filename=video.original_filename,
+        created_at=video.created_at,
+        updated_at=video.updated_at,
+    )
+
 def _hero_video_path(video_url: str) -> str:
     filename = os.path.basename(video_url or "")
     return os.path.join(VIDEOS_DIR, filename)
@@ -33,14 +59,21 @@ def _delete_hero_video_file(video_url: str) -> None:
 
 @router.get("/hero-videos", response_model=List[schemas.HeroVideoResponse])
 def get_all_hero_videos(db: Session = Depends(get_db)):
-    return db.query(models.HeroVideo).all()
+    videos = db.query(models.HeroVideo).all()
+    by_key = {}
+    for video in videos:
+        key = _normalize_hero_page_key(video.page_key)
+        existing = by_key.get(key)
+        if not existing or video.page_key == key:
+            by_key[key] = video
+    return [_hero_video_response(video) for video in by_key.values()]
 
 @router.get("/hero-videos/{page_key}", response_model=schemas.HeroVideoResponse)
 def get_hero_video(page_key: str, db: Session = Depends(get_db)):
-    video = db.query(models.HeroVideo).filter(models.HeroVideo.page_key == page_key).first()
+    video = _get_hero_video_record(db, page_key)
     if not video:
         raise HTTPException(status_code=404, detail="Hero video not found")
-    return video
+    return _hero_video_response(video)
 
 @router.post("/hero-videos/{page_key}", response_model=schemas.HeroVideoResponse)
 async def upload_hero_video(
@@ -63,7 +96,8 @@ async def upload_hero_video(
     filename = f"{uuid.uuid4().hex}{ext}"
     dest_path = os.path.join(VIDEOS_DIR, filename)
 
-    db_video = db.query(models.HeroVideo).filter(models.HeroVideo.page_key == page_key).first()
+    page_key = _normalize_hero_page_key(page_key)
+    db_video = _get_hero_video_record(db, page_key)
     old_video_url = db_video.video_url if db_video else None
 
     with open(dest_path, "wb") as f:
@@ -74,6 +108,7 @@ async def upload_hero_video(
     if db_video:
         if old_video_url and old_video_url != video_url:
             _delete_hero_video_file(old_video_url)
+        db_video.page_key = page_key
         db_video.video_url = video_url
         db_video.original_filename = video.filename
     else:
@@ -86,7 +121,7 @@ async def upload_hero_video(
         
     db.commit()
     db.refresh(db_video)
-    return db_video
+    return _hero_video_response(db_video)
 
 @router.delete("/hero-videos/{page_key}")
 def delete_hero_video(
@@ -97,7 +132,7 @@ def delete_hero_video(
     if current_user.role not in ["super_admin", "admin", "content_editor"]:
         raise HTTPException(status_code=403, detail="Only super_admin can manage hero videos")
         
-    db_video = db.query(models.HeroVideo).filter(models.HeroVideo.page_key == page_key).first()
+    db_video = _get_hero_video_record(db, page_key)
     if not db_video:
         raise HTTPException(status_code=404, detail="Hero video not found")
 

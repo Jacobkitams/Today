@@ -21,13 +21,13 @@ const HOME_NEWS_LIMIT = 6;
 const INNOVATION_NEWS_LIMIT = 3;
 const STARTUP_NEWS_LIMIT = 3;
 const ALL_NEWS_LIMIT = 100;
-const GENERAL_NEWS_LIST_QUERY = 'all=true&include_commission=true';
+const GENERAL_NEWS_LIST_QUERY = 'all=true&include_community=true';
 const HOME_EVENTS_LIMIT = 6;
 const ALL_EVENTS_LIMIT = 100;
 const SECTION_PREVIEW_LIMIT = 3;
 const SECTION_ALUMNI_NEWS_LIMIT = 3;
 const ENDOWMENT_NEWS_LIMIT = 3;
-const COMMISSION_NEWS_LIMIT = 3;
+const COMMUNITY_NEWS_LIMIT = 3;
 const ALL_ENDOWMENT_CAMPAIGNS_LIMIT = 100;
 const PUBLIC_CONTENT_CACHE_TTL = 30000;
 const OFFLINE_CACHE_STORAGE_KEY = 'iuea_offline_api_cache';
@@ -47,8 +47,8 @@ const publicContentCache = {
     endowmentCampaigns: null,
     endowmentInfo: null,
     alumni: null,
-    commission: null,
-    commissionNews: null,
+    community: null,
+    communityNews: null,
     researchAreas: null,
     publications: null,
     researchLabs: null,
@@ -118,7 +118,7 @@ function isOfflineCacheableEndpoint(endpoint) {
         || path === '/content/endowment-campaigns'
         || path === '/content/endowment-info'
         || path === '/content/alumni'
-        || path === '/content/commission'
+        || path === '/content/community'
         || path === '/content/research-areas'
         || path === '/content/publications'
         || path === '/content/research-labs'
@@ -597,8 +597,8 @@ function invalidatePublicContentCache(keys = null) {
         publicContentCache.endowmentCampaigns = null;
         publicContentCache.endowmentInfo = null;
         publicContentCache.alumni = null;
-        publicContentCache.commission = null;
-        publicContentCache.commissionNews = null;
+        publicContentCache.community = null;
+        publicContentCache.communityNews = null;
         publicContentCache.researchAreas = null;
         publicContentCache.publications = null;
         publicContentCache.researchLabs = null;
@@ -736,6 +736,12 @@ function navigateTo(pageId) {
     if (pageId === 'news-all') loadAllNewsPage();
     if (pageId === 'events-all') loadAllEventsPage();
     if (pageId === 'endowment-campaigns-all') loadAllEndowmentCampaignsPage();
+    if (pageId === 'community') {
+        loadHeroVideosForPublicPages().then(() => {
+            const vid = document.getElementById('communityVideo');
+            if (vid?.src) vid.play().catch(() => {});
+        });
+    }
 }
 
 function toggleMobileNav() {
@@ -936,7 +942,7 @@ const COMMENT_API_PATHS = {
     innovations: 'innovations',
     startups: 'startups',
     alumni: 'alumni',
-    commission: 'commission',
+    community: 'community',
     'research-areas': 'research-areas',
     publications: 'publications',
     'research-labs': 'research-labs',
@@ -1183,13 +1189,13 @@ const HOME_NEWS_SECTION_META = {
     innovation: { label: 'Innovation', badgeClass: 'badge-innovation', pageId: 'innovation', contentType: 'news' },
     startup: { label: 'Startup', badgeClass: 'badge-startup', pageId: 'innovation', startupTab: true, contentType: 'news' },
     alumni: { label: 'Alumni', badgeClass: 'badge-alumni', pageId: 'alumni', contentType: 'news' },
-    commission: { label: 'Commission', badgeClass: 'badge-commission', pageId: 'commission', contentType: 'commission' },
+    community: { label: 'Community', badgeClass: 'badge-community', pageId: 'community', contentType: 'community' },
 };
 
 function resolveHomeNewsSection(item) {
-    if (item?.source === 'commission') return 'commission';
+    if (item?.source === 'community' || item?.source === 'commission') return 'community';
     const raw = String(item?.section || item?.news_type || item?.type || item?.badge || 'news').toLowerCase();
-    if (raw === 'commission' || raw === 'commission-news') return 'commission';
+    if (raw === 'community' || raw === 'commission' || raw === 'community-news' || raw === 'commission-news') return 'community';
     if (raw === 'innovation' || raw === 'innovations') return 'innovation';
     if (raw === 'startup' || raw === 'startups') return 'startup';
     if (raw === 'alumni') return 'alumni';
@@ -1216,7 +1222,7 @@ function handleHomeNewsCardClick(event, sectionKey) {
 function createHomeNewsCard(item) {
     const sectionKey = resolveHomeNewsSection(item);
     const meta = HOME_NEWS_SECTION_META[sectionKey];
-    const contentType = item.source === 'commission' ? 'commission' : 'news';
+    const contentType = (item.source === 'community' || item.source === 'commission') ? 'community' : 'news';
     const title = item.title || 'Untitled';
     const desc = item.description || item.category || '';
     const imageUrl = resolveMediaUrl(item.image) || `https://picsum.photos/600/400?random=${item.id}`;
@@ -1362,7 +1368,7 @@ function renderAlumniSection(alumni, alumniNews) {
 }
 
 async function fetchHomeNewsFeed(limit = HOME_NEWS_LIMIT + 1) {
-    const feed = await apiGet(`/content/feed?limit=${limit}&include_commission=true`).catch(() => []);
+    const feed = await apiGet(`/content/feed?limit=${limit}&include_community=true`).catch(() => []);
     return Array.isArray(feed) ? feed : [];
 }
 
@@ -1388,7 +1394,7 @@ function navigateToFilteredNews(type) {
 }
 
 function resolveNewsCardType(item) {
-    if (item?.source === 'commission' || item?.type === 'commission-news') return 'commission';
+    if (item?.source === 'community' || item?.source === 'commission' || item?.type === 'community-news' || item?.type === 'commission-news') return 'community';
     return 'news';
 }
 
@@ -1646,32 +1652,32 @@ function renderEventGridCards(containerId, items, emptyMessage) {
     refreshIconsIn(el);
 }
 
-function isCommissionNewsItem(item) {
+function isCommunityNewsItem(item) {
     const t = String(item?.type || 'news').toLowerCase();
-    return t === 'news' || t === 'commission-news';
+    return t === 'news' || t === 'community-news' || t === 'commission-news';
 }
 
-function renderCommissionSection(items, commissionNews) {
+function renderCommunitySection(items, communityNews) {
     const list = Array.isArray(items) ? items : [];
     const byType = (type) => list.filter(i => (i.type || 'news') === type);
-    const newsItems = Array.isArray(commissionNews) ? commissionNews : list.filter(isCommissionNewsItem);
-    const seeMorePage = document.getElementById('commission-news-all') ? 'commission-news-all' : null;
+    const newsItems = Array.isArray(communityNews) ? communityNews : list.filter(isCommunityNewsItem);
+    const seeMorePage = document.getElementById('community-news-all') ? 'community-news-all' : null;
     renderSectionPreviewGrid(
-        'commissionNewsFeature',
+        'communityNewsFeature',
         newsItems,
-        COMMISSION_NEWS_LIMIT,
-        'commissionNewsSeeMoreWrap',
+        COMMUNITY_NEWS_LIMIT,
+        'communityNewsSeeMoreWrap',
         seeMorePage,
-        'commission',
-        'No commission news yet.'
+        'community',
+        'No community news yet.'
     );
     if (!seeMorePage) {
-        const wrap = document.getElementById('commissionNewsSeeMoreWrap');
+        const wrap = document.getElementById('communityNewsSeeMoreWrap');
         if (wrap) wrap.style.display = 'none';
     }
-    renderGridCards('commissionCommitteesGrid', byType('committee'), 'commission', 'No committees listed yet.');
-    renderGridCards('commissionInitiativesGrid', byType('initiative'), 'commission', 'No initiatives yet.');
-    renderGridCards('commissionReportsGrid', byType('report'), 'commission', 'No reports yet.');
+    renderGridCards('communityCommitteesGrid', byType('committee'), 'community', 'No committees listed yet.');
+    renderGridCards('communityInitiativesGrid', byType('initiative'), 'community', 'No initiatives yet.');
+    renderGridCards('communityReportsGrid', byType('report'), 'community', 'No reports yet.');
 }
 
 function renderResearchSection(areas, publications, labs) {
@@ -1699,7 +1705,7 @@ function renderDeferredPublicSections(data) {
     );
     renderAlumniSection(data.alumni || [], data.alumniNews || []);
     renderEndowmentSection(data);
-    renderCommissionSection(data.commission || [], data.commissionNews || []);
+    renderCommunitySection(data.community || [], data.communityNews || []);
     renderResearchSection(data.researchAreas || [], data.publications || [], data.researchLabs || []);
     renderTechParkSection(data.techPark || []);
     setupPublicForms();
@@ -1755,13 +1761,13 @@ async function fetchPublicContent(forceRefresh = false) {
             apiGet(`/content/endowment-campaigns?limit=${ENDOWMENT_NEWS_LIMIT + 1}`),
             apiGet('/content/endowment-info'),
             apiGet('/content/alumni'),
-            apiGet('/content/commission'),
-            apiGet(`/content/commission?type=news&limit=${COMMISSION_NEWS_LIMIT + 1}`),
+            apiGet('/content/community'),
+            apiGet(`/content/community?type=news&limit=${COMMUNITY_NEWS_LIMIT + 1}`),
             apiGet('/content/research-areas'),
             apiGet('/content/publications'),
             apiGet('/content/research-labs'),
             apiGet('/content/tech-park'),
-        ]).then(([innovations, startups, innovationNews, startupNews, alumniNews, donations, donationTiers, endowmentStats, endowmentCampaigns, endowmentInfo, alumni, commission, commissionNews, researchAreas, publications, researchLabs, techPark]) => {
+        ]).then(([innovations, startups, innovationNews, startupNews, alumniNews, donations, donationTiers, endowmentStats, endowmentCampaigns, endowmentInfo, alumni, community, communityNews, researchAreas, publications, researchLabs, techPark]) => {
             publicContentCache.innovations = Array.isArray(innovations) ? innovations : [];
             publicContentCache.startups = Array.isArray(startups) ? startups : [];
             publicContentCache.innovationNews = Array.isArray(innovationNews) ? innovationNews : [];
@@ -1773,8 +1779,8 @@ async function fetchPublicContent(forceRefresh = false) {
             publicContentCache.endowmentCampaigns = Array.isArray(endowmentCampaigns) ? endowmentCampaigns : [];
             publicContentCache.endowmentInfo = Array.isArray(endowmentInfo) ? endowmentInfo : [];
             publicContentCache.alumni = Array.isArray(alumni) ? alumni : [];
-            publicContentCache.commission = Array.isArray(commission) ? commission : [];
-            publicContentCache.commissionNews = Array.isArray(commissionNews) ? commissionNews : [];
+            publicContentCache.community = Array.isArray(community) ? community : [];
+            publicContentCache.communityNews = Array.isArray(communityNews) ? communityNews : [];
             publicContentCache.researchAreas = Array.isArray(researchAreas) ? researchAreas : [];
             publicContentCache.publications = Array.isArray(publications) ? publications : [];
             publicContentCache.researchLabs = Array.isArray(researchLabs) ? researchLabs : [];
@@ -2111,6 +2117,7 @@ const ANALYTICS_TYPE_ICONS = {
     Innovations: 'lightbulb',
     Startups: 'rocket',
     Alumni: 'graduation-cap',
+    Community: 'shield',
     Commission: 'shield',
     Publications: 'book-open',
 };
@@ -2330,11 +2337,11 @@ const KANBAN_TYPE_LABELS = {
     innovations: 'Innovations',
     startups: 'Startups',
     alumni: 'Alumni',
-    commission: 'Commission',
-    'commission-news': 'Commission News',
-    'commission-committees': 'Committee',
-    'commission-initiatives': 'Initiative',
-    'commission-reports': 'Report',
+    community: 'Community',
+    'community-news': 'Community News',
+    'community-committees': 'Committee',
+    'community-initiatives': 'Initiative',
+    'community-reports': 'Report',
     publications: 'Publications',
 };
 
@@ -2502,7 +2509,7 @@ async function deleteKanbanItem(contentType, id, variant) {
     if (res.ok) {
         showToast('Content deleted.');
         if (variant === 'pending') decrementPendingCount();
-        if (affectsHomeOrCommissionFeed(contentType)) {
+        if (affectsHomeOrCommunityFeed(contentType)) {
             invalidateHomeFeedCaches();
         }
         if (affectsDonationsPublicContent(contentType)) {
@@ -2569,7 +2576,7 @@ async function approveContent(contentType, id) {
     if (res.ok) {
         showToast('Content approved!');
         decrementPendingCount();
-        if (affectsHomeOrCommissionFeed(contentType)) {
+        if (affectsHomeOrCommunityFeed(contentType)) {
             invalidateHomeFeedCaches();
         }
         if (affectsDonationsPublicContent(contentType)) {
@@ -2623,18 +2630,18 @@ const INNOVATIONS_SUBMODULES = [
     { key: 'startups', label: 'Startups', createLabel: 'Add Startup', endpoint: '/content/startups', createType: 'startup', icon: 'rocket' }
 ];
 
-const COMMISSION_SUBMODULES = [
-    { key: 'commission-news', label: 'Commission News', createLabel: 'Add Commission News', endpoint: '/content/commission?type=news', createType: 'commission-news', icon: 'newspaper' },
-    { key: 'commission-committees', label: 'Standing Committees', createLabel: 'Add Committee', endpoint: '/content/commission?type=committee', createType: 'commission-committees', icon: 'landmark' },
-    { key: 'commission-initiatives', label: 'Initiatives', createLabel: 'Add Initiative', endpoint: '/content/commission?type=initiative', createType: 'commission-initiatives', icon: 'target' },
-    { key: 'commission-reports', label: 'Reports', createLabel: 'Add Report', endpoint: '/content/commission?type=report', createType: 'commission-reports', icon: 'file-bar-chart' }
+const COMMUNITY_SUBMODULES = [
+    { key: 'community-news', label: 'Community News', createLabel: 'Add Community News', endpoint: '/content/community?type=news', createType: 'community-news', icon: 'newspaper' },
+    { key: 'community-committees', label: 'Standing Committees', createLabel: 'Add Committee', endpoint: '/content/community?type=committee', createType: 'community-committees', icon: 'landmark' },
+    { key: 'community-initiatives', label: 'Initiatives', createLabel: 'Add Initiative', endpoint: '/content/community?type=initiative', createType: 'community-initiatives', icon: 'target' },
+    { key: 'community-reports', label: 'Reports', createLabel: 'Add Report', endpoint: '/content/community?type=report', createType: 'community-reports', icon: 'file-bar-chart' }
 ];
 
-const COMMISSION_VIRTUAL_TYPE_MAP = {
-    'commission-news': 'news',
-    'commission-committees': 'committee',
-    'commission-initiatives': 'initiative',
-    'commission-reports': 'report'
+const COMMUNITY_VIRTUAL_TYPE_MAP = {
+    'community-news': 'news',
+    'community-committees': 'committee',
+    'community-initiatives': 'initiative',
+    'community-reports': 'report'
 };
 
 const TECH_PARK_SUBMODULES = [
@@ -2694,7 +2701,7 @@ const ADMIN_MODULE_ENDPOINTS = {
     innovations: '/content/innovations',
     alumni:      '/content/alumni',
     research:    '/content/research-areas',
-    commission:  '/content/commission',
+    community:  '/content/community',
     techpark:    '/content/tech-park'
 };
 
@@ -2703,8 +2710,8 @@ const ADMIN_MODULE_API_TYPES = {
     startups: 'startups', alumni: 'alumni',
     'innovation-news': 'innovation-news', 'startup-news': 'startup-news', 'alumni-news': 'alumni-news',
     'research-areas': 'research-areas', publications: 'publications', 'research-labs': 'research-labs',
-    'commission-news': 'commission-news', 'commission-committees': 'commission-committees',
-    'commission-initiatives': 'commission-initiatives', 'commission-reports': 'commission-reports',
+    'community-news': 'community-news', 'community-committees': 'community-committees',
+    'community-initiatives': 'community-initiatives', 'community-reports': 'community-reports',
     techpark: 'tech-park', 'tech-park': 'tech-park',
     donations: 'donations', 'donation-tiers': 'donation-tiers',
     'endowment-stats': 'endowment-stats', 'endowment-campaigns': 'endowment-campaigns',
@@ -2716,9 +2723,9 @@ const ADMIN_MODULE_LABELS = {
     'innovation-news': 'Innovation News', 'startup-news': 'Startup News',
     'alumni-news': 'Alumni News', alumni: 'Alumni Profile', research: 'Research',
     'research-areas': 'Research Area', publications: 'Publication', 'research-labs': 'Research Lab',
-    commission: 'Commission',
-    'commission-news': 'Commission News', 'commission-committees': 'Committee',
-    'commission-initiatives': 'Initiative', 'commission-reports': 'Report',
+    community: 'Community',
+    'community-news': 'Community News', 'community-committees': 'Committee',
+    'community-initiatives': 'Initiative', 'community-reports': 'Report',
     techpark: 'Tech Park', 'tech-park': 'Facilities & Programs',
     donations: 'Donation', 'donation-tiers': 'Giving Tier',
     'endowment-stats': 'Impact Stat', 'endowment-campaigns': 'Campaign',
@@ -2732,8 +2739,8 @@ const CREATE_TYPE_TO_MODULE = {
     'research-labs': 'research', 'tech-park': 'techpark',
     donations: 'donations', 'donation-tiers': 'donations', 'endowment-stats': 'donations',
     'endowment-campaigns': 'donations', 'endowment-info': 'donations',
-    'commission-news': 'commission', 'commission-committees': 'commission',
-    'commission-initiatives': 'commission', 'commission-reports': 'commission'
+    'community-news': 'community', 'community-committees': 'community',
+    'community-initiatives': 'community', 'community-reports': 'community'
 };
 
 const TYPED_NEWS_CREATE_TYPES = {
@@ -2742,11 +2749,11 @@ const TYPED_NEWS_CREATE_TYPES = {
     'alumni-news': { sectionCache: 'alumniNews', adminModule: 'alumni' },
 };
 
-const COMMISSION_CREATE_INVALIDATION = {
-    'commission-news': { cacheKeys: ['news', 'commission', 'commissionNews'], adminModules: ['commission'] },
-    'commission-committees': { cacheKeys: ['commission'], adminModules: ['commission'] },
-    'commission-initiatives': { cacheKeys: ['commission'], adminModules: ['commission'] },
-    'commission-reports': { cacheKeys: ['commission'], adminModules: ['commission'] },
+const COMMUNITY_CREATE_INVALIDATION = {
+    'community-news': { cacheKeys: ['news', 'community', 'communityNews'], adminModules: ['community'] },
+    'community-committees': { cacheKeys: ['community'], adminModules: ['community'] },
+    'community-initiatives': { cacheKeys: ['community'], adminModules: ['community'] },
+    'community-reports': { cacheKeys: ['community'], adminModules: ['community'] },
 };
 
 const DONATIONS_PUBLIC_CACHE_MAP = {
@@ -2781,8 +2788,8 @@ function getTypedNewsInvalidation(createType) {
 function getContentCreateInvalidation(createType) {
     const typedNews = getTypedNewsInvalidation(createType);
     if (typedNews) return typedNews;
-    const commission = COMMISSION_CREATE_INVALIDATION[createType];
-    if (commission) return commission;
+    const communityInvalidation = COMMUNITY_CREATE_INVALIDATION[createType];
+    if (communityInvalidation) return communityInvalidation;
     const donations = DONATIONS_CREATE_INVALIDATION[createType];
     if (donations) return donations;
     return null;
@@ -2797,17 +2804,19 @@ function invalidateDonationsPublicCache(contentTypeOrModule) {
     if (keys) invalidatePublicContentCache(keys);
 }
 
-function affectsHomeOrCommissionFeed(contentType) {
+function affectsHomeOrCommunityFeed(contentType) {
     return contentType === 'news'
         || contentType === 'events'
+        || contentType === 'community'
         || contentType === 'commission'
+        || contentType === 'community-news'
         || contentType === 'commission-news'
-        || Boolean(COMMISSION_CREATE_INVALIDATION[contentType]);
+        || Boolean(COMMUNITY_CREATE_INVALIDATION[contentType]);
 }
 
 function invalidateHomeFeedCaches() {
     invalidatePublicContentCache([
-        'news', 'events', 'innovationNews', 'startupNews', 'alumniNews', 'commission'
+        'news', 'events', 'innovationNews', 'startupNews', 'alumniNews', 'community'
     ]);
     loadHomeSection(true);
 }
@@ -2829,8 +2838,8 @@ function isAlumniSubModule(moduleName) {
     return ALUMNI_SUBMODULES.some(sub => sub.key === moduleName);
 }
 
-function isCommissionSubModule(moduleName) {
-    return COMMISSION_SUBMODULES.some(sub => sub.key === moduleName);
+function isCommunitySubModule(moduleName) {
+    return COMMUNITY_SUBMODULES.some(sub => sub.key === moduleName);
 }
 
 function isDisplaySectionedAdminModule(moduleName) {
@@ -2859,31 +2868,31 @@ function getAdminModuleEndpoint(moduleName) {
     if (innovSub) return innovSub.endpoint;
     const alumniSub = ALUMNI_SUBMODULES.find(s => s.key === moduleName);
     if (alumniSub) return alumniSub.endpoint;
-    const commissionSub = COMMISSION_SUBMODULES.find(s => s.key === moduleName);
-    if (commissionSub) return commissionSub.endpoint;
+    const communitySub = COMMUNITY_SUBMODULES.find(s => s.key === moduleName);
+    if (communitySub) return communitySub.endpoint;
     const techParkSub = TECH_PARK_SUBMODULES.find(s => s.key === moduleName);
     return techParkSub?.endpoint || null;
 }
 
-function filterCommissionItems(items, moduleName) {
-    const virtualType = COMMISSION_VIRTUAL_TYPE_MAP[moduleName];
+function filterCommunityItems(items, moduleName) {
+    const virtualType = COMMUNITY_VIRTUAL_TYPE_MAP[moduleName];
     if (!virtualType || !Array.isArray(items)) return items;
-    if (moduleName === 'commission-news') {
-        return items.filter(isCommissionNewsItem);
+    if (moduleName === 'community-news') {
+        return items.filter(isCommunityNewsItem);
     }
     return items.filter(item => (item.type || 'news') === virtualType);
 }
 
 function getAdminPrefetchModuleKeys() {
     const keys = Object.keys(ADMIN_MODULE_ENDPOINTS).filter(
-        name => name !== 'research' && name !== 'innovations' && name !== 'alumni' && name !== 'techpark' && name !== 'commission' && name !== 'donations'
+        name => name !== 'research' && name !== 'innovations' && name !== 'alumni' && name !== 'techpark' && name !== 'community' && name !== 'donations'
     );
     return [
         ...keys,
         ...RESEARCH_SUBMODULES.map(sub => sub.key),
         ...INNOVATIONS_SUBMODULES.map(sub => sub.key),
         ...ALUMNI_SUBMODULES.map(sub => sub.key),
-        ...COMMISSION_SUBMODULES.map(sub => sub.key),
+        ...COMMUNITY_SUBMODULES.map(sub => sub.key),
         ...TECH_PARK_SUBMODULES.map(sub => sub.key),
         ...DONATIONS_SUBMODULES.map(sub => sub.key)
     ];
@@ -3036,21 +3045,21 @@ const CREATE_MODAL_CONFIG = {
         showMedia: true,
         showVideo: true
     },
-    'commission-news': {
-        title: 'Add Commission News',
-        subtitle: 'Publish a news article for the Commission page.',
+    'community-news': {
+        title: 'Add Community News',
+        subtitle: 'Publish a news article for the Community page.',
         icon: 'newspaper',
         titleLabel: 'Headline',
         titlePlaceholder: 'Enter a compelling headline…',
         descLabel: 'Article Content',
-        descPlaceholder: 'Write the commission news story…',
-        submitLabel: 'Publish Commission News',
+        descPlaceholder: 'Write the community news story…',
+        submitLabel: 'Publish Community News',
         showMedia: true,
         showVideo: false
     },
-    'commission-committees': {
+    'community-committees': {
         title: 'Add Committee',
-        subtitle: 'Add a standing committee to the Commission page.',
+        subtitle: 'Add a standing committee to the Community page.',
         icon: 'landmark',
         titleLabel: 'Committee Name',
         titlePlaceholder: 'Enter the committee name…',
@@ -3060,9 +3069,9 @@ const CREATE_MODAL_CONFIG = {
         showMedia: true,
         showVideo: false
     },
-    'commission-initiatives': {
+    'community-initiatives': {
         title: 'Add Initiative',
-        subtitle: 'Add a governance initiative for the Commission page.',
+        subtitle: 'Add a governance initiative for the Community page.',
         icon: 'target',
         titleLabel: 'Initiative Title',
         titlePlaceholder: 'Enter the initiative name…',
@@ -3072,9 +3081,9 @@ const CREATE_MODAL_CONFIG = {
         showMedia: true,
         showVideo: false
     },
-    'commission-reports': {
+    'community-reports': {
         title: 'Add Report',
-        subtitle: 'Add an accountability report for the Commission page.',
+        subtitle: 'Add an accountability report for the Community page.',
         icon: 'file-bar-chart',
         titleLabel: 'Report Title',
         titlePlaceholder: 'Enter the report title…',
@@ -3181,8 +3190,8 @@ const ADMIN_MODULE_HEADER_CONFIG = {
         subtitle: 'Manage research areas, publications, and research labs for the public Research page.',
         icon: 'microscope'
     },
-    commission: {
-        subtitle: 'Manage commission news, committees, initiatives, and reports for the public Commission page.',
+    community: {
+        subtitle: 'Manage community news, committees, initiatives, and reports for the public Community page.',
         icon: 'landmark'
     },
     techpark: {
@@ -3223,8 +3232,8 @@ function updateAdminContentHeader(moduleName) {
             ? 'Innovations Management'
             : moduleName === 'alumni'
             ? 'Alumni Management'
-            : moduleName === 'commission'
-            ? 'Commission Management'
+            : moduleName === 'community'
+            ? 'Community Management'
             : moduleName === 'techpark'
             ? 'Tech Park Management'
             : moduleName === 'donations'
@@ -3251,10 +3260,10 @@ function updateAdminContentHeader(moduleName) {
         html = `
             <div class="admin-panel-header-action-row">${newsSubs.map(buildAdminHeaderActionButton).join('')}</div>
             <div class="admin-panel-header-action-row">${itemSubs.map(buildAdminHeaderActionButton).join('')}</div>`;
-    } else if (moduleName === 'commission') {
+    } else if (moduleName === 'community') {
         actionsClass += ' admin-panel-header-actions--stacked';
-        const newsSubs = COMMISSION_SUBMODULES.filter(sub => sub.key === 'commission-news');
-        const otherSubs = COMMISSION_SUBMODULES.filter(sub => sub.key !== 'commission-news');
+        const newsSubs = COMMUNITY_SUBMODULES.filter(sub => sub.key === 'community-news');
+        const otherSubs = COMMUNITY_SUBMODULES.filter(sub => sub.key !== 'community-news');
         html = `
             <div class="admin-panel-header-action-row">${newsSubs.map(buildAdminHeaderActionButton).join('')}</div>
             <div class="admin-panel-header-action-row">${otherSubs.map(buildAdminHeaderActionButton).join('')}</div>`;
@@ -3395,12 +3404,12 @@ function invalidateAdminModuleCache(moduleName) {
         invalidateLinkedAdminNewsCaches('alumni-news');
         return;
     }
-    if (moduleName === 'commission') {
-        COMMISSION_SUBMODULES.forEach(sub => {
+    if (moduleName === 'community') {
+        COMMUNITY_SUBMODULES.forEach(sub => {
             adminModuleCacheReady.delete(sub.key);
             delete adminContentItemsCache[sub.key];
         });
-        adminModuleCacheReady.delete('commission');
+        adminModuleCacheReady.delete('community');
         return;
     }
     if (moduleName === 'techpark') {
@@ -3439,10 +3448,10 @@ function invalidateAdminModuleCache(moduleName) {
         if (moduleName === 'alumni-news') invalidateLinkedAdminNewsCaches('alumni-news');
         return;
     }
-    if (isCommissionSubModule(moduleName)) {
+    if (isCommunitySubModule(moduleName)) {
         adminModuleCacheReady.delete(moduleName);
         delete adminContentItemsCache[moduleName];
-        adminModuleCacheReady.delete('commission');
+        adminModuleCacheReady.delete('community');
         return;
     }
     if (isTechParkSubModule(moduleName)) {
@@ -3501,7 +3510,7 @@ async function refreshAdminModuleInBackground(moduleName) {
     if (moduleName === 'research') return refreshResearchAdminModuleInBackground();
     if (moduleName === 'innovations') return refreshInnovationsAdminModuleInBackground();
     if (moduleName === 'alumni') return refreshAlumniAdminModuleInBackground();
-    if (moduleName === 'commission') return refreshCommissionAdminModuleInBackground();
+    if (moduleName === 'community') return refreshCommunityAdminModuleInBackground();
     if (moduleName === 'techpark') return refreshTechParkAdminModuleInBackground();
     if (moduleName === 'donations') return refreshDonationsAdminModuleInBackground();
 
@@ -3542,13 +3551,13 @@ async function fetchAdminContentList(moduleName) {
         if (res.ok) return await res.json();
         if (res.status === 403) {
             const items = await apiGet(fallback);
-            return isCommissionSubModule(moduleName) ? filterCommissionItems(items, moduleName) : items;
+            return isCommunitySubModule(moduleName) ? filterCommunityItems(items, moduleName) : items;
         }
         return [];
     } catch (e) {
         console.error('Admin content list error:', moduleName, e);
         const items = await apiGet(fallback);
-        return isCommissionSubModule(moduleName) ? filterCommissionItems(items, moduleName) : items;
+        return isCommunitySubModule(moduleName) ? filterCommunityItems(items, moduleName) : items;
     }
 }
 
@@ -3593,8 +3602,8 @@ async function loadAdminModule(moduleName, btn, options = {}) {
         await loadAlumniAdminModule(btn, options);
         return;
     }
-    if (moduleName === 'commission') {
-        await loadCommissionAdminModule(btn, options);
+    if (moduleName === 'community') {
+        await loadCommunityAdminModule(btn, options);
         return;
     }
     if (moduleName === 'techpark') {
@@ -3751,47 +3760,47 @@ async function loadAlumniAdminModule(btn, options = {}) {
     renderAlumniAdminModule();
 }
 
-async function loadCommissionAdminModule(btn, options = {}) {
+async function loadCommunityAdminModule(btn, options = {}) {
     const { forceRefresh = false } = options;
-    currentAdminModule = 'commission';
-    showAdminTab('content', btn || document.querySelector('.admin-nav-btn[data-module="commission"]'));
-    updateAdminContentHeader('commission');
+    currentAdminModule = 'community';
+    showAdminTab('content', btn || document.querySelector('.admin-nav-btn[data-module="community"]'));
+    updateAdminContentHeader('community');
 
-    delete adminContentItemsCache['commission'];
+    delete adminContentItemsCache['community'];
 
     const area = document.getElementById('adminContentArea');
-    const allCached = COMMISSION_SUBMODULES.every(sub => adminModuleCacheReady.has(sub.key));
+    const allCached = COMMUNITY_SUBMODULES.every(sub => adminModuleCacheReady.has(sub.key));
 
     if (allCached && !forceRefresh) {
-        renderCommissionAdminModule();
-        refreshCommissionAdminModuleInBackground();
+        renderCommunityAdminModule();
+        refreshCommunityAdminModuleInBackground();
         return;
     }
 
     if (allCached && forceRefresh) {
-        renderCommissionAdminModule({ refreshing: true });
+        renderCommunityAdminModule({ refreshing: true });
     } else if (area) {
         area.innerHTML = '<div class="admin-empty-state" style="padding:2rem;"><p>Loading…</p></div>';
     }
 
     const results = await Promise.all(
-        COMMISSION_SUBMODULES.map(async (sub) => {
+        COMMUNITY_SUBMODULES.map(async (sub) => {
             const items = await fetchAdminContentList(sub.key);
             return { key: sub.key, items: Array.isArray(items) ? items : [] };
         })
     );
 
-    if (currentAdminModule !== 'commission') return;
+    if (currentAdminModule !== 'community') return;
 
     results.forEach(({ key, items }) => {
         adminContentItemsCache[key] = items;
         adminModuleCacheReady.add(key);
     });
-    adminModuleCacheReady.add('commission');
-    renderCommissionAdminModule();
+    adminModuleCacheReady.add('community');
+    renderCommunityAdminModule();
 }
 
-function renderCommissionAdminModule(options = {}) {
+function renderCommunityAdminModule(options = {}) {
     const { refreshing = false } = options;
     const area = document.getElementById('adminContentArea');
     if (!area) return;
@@ -3799,7 +3808,7 @@ function renderCommissionAdminModule(options = {}) {
     area.classList.toggle('admin-content-refreshing', refreshing);
     area.innerHTML = `
         <div class="admin-research-sections">
-            ${COMMISSION_SUBMODULES.map(sub => {
+            ${COMMUNITY_SUBMODULES.map(sub => {
                 const items = adminContentItemsCache[sub.key] || [];
                 return `
                 <section class="admin-research-block">
@@ -3817,20 +3826,20 @@ function renderCommissionAdminModule(options = {}) {
     lucide.createIcons();
 }
 
-async function refreshCommissionAdminModuleInBackground() {
-    if (currentAdminModule !== 'commission') return;
+async function refreshCommunityAdminModuleInBackground() {
+    if (currentAdminModule !== 'community') return;
 
     const area = document.getElementById('adminContentArea');
     if (area) area.classList.add('admin-content-refreshing');
 
     try {
         const results = await Promise.all(
-            COMMISSION_SUBMODULES.map(async (sub) => {
+            COMMUNITY_SUBMODULES.map(async (sub) => {
                 const items = await fetchAdminContentList(sub.key);
                 return { key: sub.key, items: Array.isArray(items) ? items : [] };
             })
         );
-        if (currentAdminModule !== 'commission') return;
+        if (currentAdminModule !== 'community') return;
 
         let changed = false;
         results.forEach(({ key, items }) => {
@@ -3839,9 +3848,9 @@ async function refreshCommissionAdminModuleInBackground() {
             adminModuleCacheReady.add(key);
         });
 
-        if (changed) renderCommissionAdminModule();
+        if (changed) renderCommunityAdminModule();
     } finally {
-        if (area && currentAdminModule === 'commission') {
+        if (area && currentAdminModule === 'community') {
             area.classList.remove('admin-content-refreshing');
         }
     }
@@ -4405,7 +4414,7 @@ function reloadAdminModuleAfterCrud(moduleName, options = {}) {
     const parentModule = isResearchSubModule(moduleName) ? 'research'
         : isInnovationsSubModule(moduleName) ? 'innovations'
         : isAlumniSubModule(moduleName) ? 'alumni'
-        : isCommissionSubModule(moduleName) ? 'commission'
+        : isCommunitySubModule(moduleName) ? 'community'
         : isTechParkSubModule(moduleName) ? 'techpark'
         : isDonationsSubModule(moduleName) ? 'donations'
         : moduleName;
@@ -4417,7 +4426,7 @@ function renderAdminContentTable(moduleName, items, options = {}) {
     if (moduleName === 'research') return renderResearchAdminModule(options);
     if (moduleName === 'innovations') return renderInnovationsAdminModule(options);
     if (moduleName === 'alumni') return renderAlumniAdminModule(options);
-    if (moduleName === 'commission') return renderCommissionAdminModule(options);
+    if (moduleName === 'community') return renderCommunityAdminModule(options);
     if (moduleName === 'techpark') return renderTechParkAdminModule(options);
     if (moduleName === 'donations') return renderDonationsAdminModule(options);
 
@@ -4617,16 +4626,16 @@ function configureAdminEditFields(moduleName) {
     } else if (moduleName === 'endowment-info') {
         titleLabel.textContent = 'Heading';
         descLabel.textContent = 'Body Text';
-    } else if (moduleName === 'commission-news') {
+    } else if (moduleName === 'community-news') {
         titleLabel.textContent = 'Headline';
         descLabel.textContent = 'Article Content';
-    } else if (moduleName === 'commission-committees') {
+    } else if (moduleName === 'community-committees') {
         titleLabel.textContent = 'Committee Name';
         descLabel.textContent = 'Description';
-    } else if (moduleName === 'commission-initiatives') {
+    } else if (moduleName === 'community-initiatives') {
         titleLabel.textContent = 'Initiative Title';
         descLabel.textContent = 'Description';
-    } else if (moduleName === 'commission-reports') {
+    } else if (moduleName === 'community-reports') {
         titleLabel.textContent = 'Report Title';
         descLabel.textContent = 'Summary';
     }
@@ -4814,7 +4823,7 @@ async function saveAdminEdit() {
             const editInvalidation = getContentCreateInvalidation(moduleName);
             if (editInvalidation) {
                 invalidatePublicContentCache(editInvalidation.cacheKeys);
-                if (affectsHomeOrCommissionFeed(moduleName)) loadHomeSection(true);
+                if (affectsHomeOrCommunityFeed(moduleName)) loadHomeSection(true);
             }
             reloadAdminModuleAfterCrud(moduleName, { forceRefresh: true });
             loadInitialData({ forceRefresh: true });
@@ -4845,7 +4854,7 @@ async function deleteAdminContent(moduleName, id) {
         const deleteInvalidation = getContentCreateInvalidation(moduleName);
         if (deleteInvalidation) {
             invalidatePublicContentCache(deleteInvalidation.cacheKeys);
-            if (affectsHomeOrCommissionFeed(moduleName)) loadHomeSection(true);
+            if (affectsHomeOrCommunityFeed(moduleName)) loadHomeSection(true);
         }
         if (isDonationsSubModule(moduleName)) invalidateDonationsPublicCache(moduleName);
         reloadAdminModuleAfterCrud(moduleName, { forceRefresh: true });
@@ -4905,7 +4914,7 @@ const SHARE_PAGE_MAP = {
     alumni: 'alumni',
     innovations: 'innovation',
     startups: 'innovation',
-    commission: 'commission',
+    community: 'community',
     'research-areas': 'research',
     publications: 'research',
     'research-labs': 'research',
@@ -6084,10 +6093,10 @@ async function submitCreateForm() {
             'innovation-news': '/content/news',
             'startup-news': '/content/news',
             'alumni-news': '/content/news',
-            'commission-news': '/content/commission',
-            'commission-committees': '/content/commission',
-            'commission-initiatives': '/content/commission',
-            'commission-reports': '/content/commission',
+            'community-news': '/content/community',
+            'community-committees': '/content/community',
+            'community-initiatives': '/content/community',
+            'community-reports': '/content/community',
             event:      '/content/events',
             innovation: '/content/innovations',
             startup:    '/content/startups',
@@ -6159,13 +6168,13 @@ async function submitCreateForm() {
             body = { title, description: desc, image: imageUrl, video: videoUrl, type: 'startup' };
         } else if (type === 'alumni-news') {
             body = { title, description: desc, image: imageUrl, video: videoUrl, type: 'alumni' };
-        } else if (type === 'commission-news') {
+        } else if (type === 'community-news') {
             body = { title, description: desc, image: imageUrl, type: 'news' };
-        } else if (type === 'commission-committees') {
+        } else if (type === 'community-committees') {
             body = { title, description: desc, image: imageUrl, type: 'committee' };
-        } else if (type === 'commission-initiatives') {
+        } else if (type === 'community-initiatives') {
             body = { title, description: desc, image: imageUrl, type: 'initiative' };
-        } else if (type === 'commission-reports') {
+        } else if (type === 'community-reports') {
             body = { title, description: desc, image: imageUrl, type: 'report' };
         }
 
@@ -6188,7 +6197,7 @@ async function submitCreateForm() {
             setTimeout(() => {
                 closeCreateModal();
                 loadInitialData({ forceRefresh: true });
-                if (affectsHomeOrCommissionFeed(type)) loadHomeSection(true);
+                if (affectsHomeOrCommunityFeed(type)) loadHomeSection(true);
                 if (document.getElementById('news-all')?.classList.contains('active')) {
                     loadAllNewsPage(true);
                 }
@@ -6398,13 +6407,23 @@ const HERO_PAGES = [
     { key: 'innovation', label: 'Innovation', vidId: 'innovationVideo' },
     { key: 'alumni', label: 'Alumni', vidId: 'alumniVideo' },
     { key: 'endowment', label: 'Endowment', vidId: 'endowmentVideo' },
-    { key: 'commission', label: 'Commission', vidId: 'commissionVideo' },
+    { key: 'community', label: 'Community', vidId: 'communityVideo' },
     { key: 'research', label: 'Research', vidId: 'researchVideo' },
     { key: 'techpark', label: 'Tech Park', vidId: 'techparkVideo' }
 ];
 
 const HERO_VIDEO_MAX_BYTES = 200 * 1024 * 1024;
 const HERO_VIDEO_TYPES = ['video/mp4', 'video/webm'];
+const HERO_PAGE_KEY_ALIASES = { commission: 'community' };
+
+function resolveHeroPageEntry(videoMap, pageKey) {
+    const normalizedKey = HERO_PAGE_KEY_ALIASES[pageKey] || pageKey;
+    if (videoMap[normalizedKey]) return videoMap[normalizedKey];
+    for (const [alias, canonical] of Object.entries(HERO_PAGE_KEY_ALIASES)) {
+        if (canonical === normalizedKey && videoMap[alias]) return videoMap[alias];
+    }
+    return videoMap[pageKey] || null;
+}
 
 function validateHeroVideoFile(file) {
     if (!HERO_VIDEO_TYPES.includes(file.type)) {
@@ -6436,7 +6455,7 @@ function applyHeroVideosToPages(videos) {
         const vidEl = document.getElementById(page.vidId);
         if (!vidEl) return;
 
-        const url = videoMap[page.key];
+        const url = resolveHeroPageEntry(videoMap, page.key);
         if (url) {
             if (vidEl.getAttribute('src') !== url) {
                 vidEl.src = url;
@@ -6509,7 +6528,7 @@ function renderHeroVideoSettings(videos) {
     videos.forEach(v => { videoMap[v.page_key] = v; });
 
     container.innerHTML = HERO_PAGES.map(page => {
-        const record = videoMap[page.key];
+        const record = resolveHeroPageEntry(videoMap, page.key);
         const currentVideo = record ? resolveMediaUrl(record.video_url) : null;
         const statusId = `heroStatus-${page.key}`;
         const previewHTML = currentVideo

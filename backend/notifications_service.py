@@ -18,7 +18,7 @@ CONTENT_TYPE_LABELS = {
     "innovations": "Innovation",
     "startups": "Startup",
     "alumni": "Alumni Profile",
-    "commission": "Commission Item",
+    "community": "Community Item",
     "publications": "Publication",
     "research-areas": "Research Area",
     "research-labs": "Research Lab",
@@ -49,7 +49,7 @@ def panel_prefix_for_role(role: str) -> str:
 def author_tab_for_content(content_type: str, role: str) -> str:
     if content_type == "news":
         return "stories" if role == "registered_user" else "submissions"
-    if content_type in ("innovations", "startups", "commission", "publications"):
+    if content_type in ("innovations", "startups", "community", "publications"):
         return "submissions"
     if content_type == "alumni":
         return "profile"

@@ -182,7 +182,7 @@ class EndowmentInfo(Base):
     status = Column(String(20), default="approved")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-class CommissionItem(Base):
+class CommunityItem(Base):
     __tablename__ = "commission_items"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), index=True)
@@ -195,10 +195,10 @@ class CommissionItem(Base):
     status = Column(String(20), default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-class CommissionComment(Base):
+class CommunityComment(Base):
     __tablename__ = "commission_comments"
     id = Column(Integer, primary_key=True, index=True)
-    commission_id = Column(Integer, ForeignKey("commission_items.id"), nullable=False)
+    community_id = Column("commission_id", Integer, ForeignKey("commission_items.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     message = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

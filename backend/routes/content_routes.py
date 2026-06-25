@@ -90,18 +90,18 @@ def _approved_news_query(db: Session, news_types: List[str]):
         models.News.type.in_(news_types),
     ).order_by(models.News.created_at.desc())
 
-COMMISSION_ITEM_TYPES = ("news", "committee", "initiative", "report")
+COMMUNITY_ITEM_TYPES = ("news", "committee", "initiative", "report")
 
-def _approved_commission_query(db: Session, commission_type: Optional[str] = None):
-    query = db.query(models.CommissionItem).filter(models.CommissionItem.status == "approved")
-    if commission_type:
-        query = query.filter(models.CommissionItem.type == commission_type)
-    return query.order_by(models.CommissionItem.created_at.desc())
+def _approved_community_query(db: Session, community_type: Optional[str] = None):
+    query = db.query(models.CommunityItem).filter(models.CommunityItem.status == "approved")
+    if community_type:
+        query = query.filter(models.CommunityItem.type == community_type)
+    return query.order_by(models.CommunityItem.created_at.desc())
 
-def _approved_commission_news_query(db: Session):
-    return _approved_commission_query(db, "news")
+def _approved_community_news_query(db: Session):
+    return _approved_community_query(db, "news")
 
-def _commission_to_news_response(item: models.CommissionItem) -> schemas.NewsResponse:
+def _community_to_news_response(item: models.CommunityItem) -> schemas.NewsResponse:
     return schemas.NewsResponse(
         id=item.id,
         title=item.title,
@@ -111,11 +111,11 @@ def _commission_to_news_response(item: models.CommissionItem) -> schemas.NewsRes
         comments_count=item.comments_count or 0,
         author_id=item.author_id,
         author_name=None,
-        type="commission-news",
+        type="community-news",
         status=item.status,
         video=None,
         created_at=item.created_at,
-        source="commission",
+        source="community",
     )
 
 # --- GET endpoints (public, only approved) ---
@@ -125,22 +125,22 @@ def get_news(
     type: Optional[str] = None,
     types: Optional[str] = None,
     all_types: bool = Query(False, alias="all"),
-    include_commission: bool = Query(False),
+    include_community: bool = Query(False, alias="include_commission"),
     db: Session = Depends(get_db),
 ):
     news_types = _resolve_news_type_filter(type, types, all_types)
 
-    if type and not all_types and not types and not include_commission:
+    if type and not all_types and not types and not include_community:
         q = _approved_news_query(db, news_types)
         if limit is not None and limit > 0:
             q = q.limit(limit)
         return q.all()
 
-    if include_commission:
+    if include_community:
         news_rows = _approved_news_query(db, news_types).all()
         merged = [schemas.NewsResponse.model_validate(row, from_attributes=True) for row in news_rows]
-        commission_rows = _approved_commission_news_query(db).all()
-        merged.extend(_commission_to_news_response(row) for row in commission_rows)
+        community_rows = _approved_community_news_query(db).all()
+        merged.extend(_community_to_news_response(row) for row in community_rows)
         merged.sort(key=lambda item: _feed_timestamp(item.created_at), reverse=True)
         if limit is not None and limit > 0:
             merged = merged[:limit]
@@ -174,7 +174,7 @@ def _feed_item_from_news(row: models.News, author_names: dict) -> dict:
         "created_at": row.created_at,
     }
 
-def _feed_item_from_commission(row: models.CommissionItem, author_names: dict) -> dict:
+def _feed_item_from_community(row: models.CommunityItem, author_names: dict) -> dict:
     return {
         "id": row.id,
         "title": row.title,
@@ -185,8 +185,8 @@ def _feed_item_from_commission(row: models.CommissionItem, author_names: dict) -
         "comments_count": row.comments_count or 0,
         "author_id": row.author_id,
         "author_name": author_names.get(row.author_id),
-        "source": "commission",
-        "badge": "Commission",
+        "source": "community",
+        "badge": "Community",
         "created_at": row.created_at,
     }
 
@@ -194,21 +194,21 @@ def _feed_item_from_commission(row: models.CommissionItem, author_names: dict) -
 def get_home_feed(
     limit: Optional[int] = None,
     types: Optional[str] = None,
-    include_commission: bool = Query(True),
+    include_community: bool = Query(True, alias="include_commission"),
     db: Session = Depends(get_db),
 ):
     news_types = _parse_types_param(types) or list(HOME_FEED_NEWS_TYPES)
     news_rows = _approved_news_query(db, news_types).all()
 
-    commission_rows = []
-    if include_commission:
-        commission_rows = _approved_commission_news_query(db).all()
+    community_rows = []
+    if include_community:
+        community_rows = _approved_community_news_query(db).all()
 
-    author_ids = [row.author_id for row in news_rows] + [row.author_id for row in commission_rows]
+    author_ids = [row.author_id for row in news_rows] + [row.author_id for row in community_rows]
     author_names = _resolve_author_names(db, author_ids)
 
     items = [_feed_item_from_news(row, author_names) for row in news_rows]
-    items.extend(_feed_item_from_commission(row, author_names) for row in commission_rows)
+    items.extend(_feed_item_from_community(row, author_names) for row in community_rows)
     items.sort(key=lambda item: _feed_timestamp(item["created_at"]), reverse=True)
 
     if limit is not None and limit > 0:
@@ -340,14 +340,15 @@ def get_endowment_info(db: Session = Depends(get_db)):
 def like_endowment_campaign(item_id: int, db: Session = Depends(get_db)):
     return _increment_likes(db, models.EndowmentCampaign, item_id)
 
-@router.get("/commission", response_model=List[schemas.CommissionResponse])
-def get_commission(
+@router.get("/community", response_model=List[schemas.CommunityResponse])
+@router.get("/commission", response_model=List[schemas.CommunityResponse], include_in_schema=False)
+def get_community(
     type: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    if type and type not in COMMISSION_ITEM_TYPES:
-        raise HTTPException(status_code=400, detail="Invalid commission type")
-    return _approved_commission_query(db, type).all()
+    if type and type not in COMMUNITY_ITEM_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid community type")
+    return _approved_community_query(db, type).all()
 
 @router.get("/research-areas", response_model=List[schemas.ResearchAreaResponse])
 def get_research_areas(db: Session = Depends(get_db)):
@@ -440,12 +441,13 @@ def create_endowment_info(item: schemas.EndowmentInfoCreate, db: Session = Depen
     db.add(db_item); db.commit(); db.refresh(db_item)
     return db_item
 
-@router.post("/commission", response_model=schemas.CommissionResponse)
-def create_commission(item: schemas.CommissionCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.post("/community", response_model=schemas.CommunityResponse)
+@router.post("/commission", response_model=schemas.CommunityResponse, include_in_schema=False)
+def create_community(item: schemas.CommunityCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     status = "approved" if current_user.role in ["super_admin", "content_editor", "admin"] else "pending"
-    db_item = models.CommissionItem(**item.dict(), author_id=current_user.id, status=status)
+    db_item = models.CommunityItem(**item.dict(), author_id=current_user.id, status=status)
     db.add(db_item); db.commit(); db.refresh(db_item)
-    _after_pending_content_create(db, "commission", db_item, current_user)
+    _after_pending_content_create(db, "community", db_item, current_user)
     return db_item
 
 @router.post("/research-areas", response_model=schemas.ResearchAreaResponse)
@@ -808,27 +810,30 @@ def get_startup_comments(item_id: int, db: Session = Depends(get_db)):
     item = _get_approved_item(db, models.Startup, item_id, "Startup not found")
     return _list_content_comments(db, item, models.StartupComment, "startup_id", item_id)
 
-@router.post("/commission/{item_id}/like", response_model=schemas.LikeResponse)
-def like_commission(item_id: int, db: Session = Depends(get_db)):
-    return _increment_likes(db, models.CommissionItem, item_id)
+@router.post("/community/{item_id}/like", response_model=schemas.LikeResponse)
+@router.post("/commission/{item_id}/like", response_model=schemas.LikeResponse, include_in_schema=False)
+def like_community(item_id: int, db: Session = Depends(get_db)):
+    return _increment_likes(db, models.CommunityItem, item_id)
 
-@router.post("/commission/{item_id}/comment", response_model=schemas.CommissionCommentResponse)
-def comment_commission(
+@router.post("/community/{item_id}/comment", response_model=schemas.CommunityCommentResponse)
+@router.post("/commission/{item_id}/comment", response_model=schemas.CommunityCommentResponse, include_in_schema=False)
+def comment_community(
     item_id: int,
-    data: schemas.CommissionCommentCreate,
+    data: schemas.CommunityCommentCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     message = (data.message or "").strip()
     if not message:
         raise HTTPException(status_code=400, detail="Comment message is required")
-    item = _get_approved_item(db, models.CommissionItem, item_id, "Commission item not found")
-    return _post_content_comment(db, current_user, item, models.CommissionComment, "commission_id", item_id, message, "commission")
+    item = _get_approved_item(db, models.CommunityItem, item_id, "Community item not found")
+    return _post_content_comment(db, current_user, item, models.CommunityComment, "community_id", item_id, message, "community")
 
-@router.get("/commission/{item_id}/comments", response_model=List[schemas.CommissionCommentResponse])
-def get_commission_comments(item_id: int, db: Session = Depends(get_db)):
-    item = _get_approved_item(db, models.CommissionItem, item_id, "Commission item not found")
-    return _list_content_comments(db, item, models.CommissionComment, "commission_id", item_id)
+@router.get("/community/{item_id}/comments", response_model=List[schemas.CommunityCommentResponse])
+@router.get("/commission/{item_id}/comments", response_model=List[schemas.CommunityCommentResponse], include_in_schema=False)
+def get_community_comments(item_id: int, db: Session = Depends(get_db)):
+    item = _get_approved_item(db, models.CommunityItem, item_id, "Community item not found")
+    return _list_content_comments(db, item, models.CommunityComment, "community_id", item_id)
 
 @router.post("/research-areas/{item_id}/comment", response_model=schemas.ResearchAreaCommentResponse)
 def comment_research_area(
@@ -913,7 +918,7 @@ VALID_SAVE_TYPES = {
     "innovations",
     "startups",
     "alumni",
-    "commission",
+    "community",
     "research-areas",
     "publications",
     "research-labs",
@@ -926,7 +931,7 @@ _SAVE_MODELS = {
     "innovations": models.Innovation,
     "startups": models.Startup,
     "alumni": models.AlumniProfile,
-    "commission": models.CommissionItem,
+    "community": models.CommunityItem,
     "research-areas": models.ResearchArea,
     "publications": models.Publication,
     "research-labs": models.ResearchLab,
@@ -939,7 +944,7 @@ _SAVE_SCHEMAS = {
     "innovations": schemas.InnovationResponse,
     "startups": schemas.StartupResponse,
     "alumni": schemas.AlumniResponse,
-    "commission": schemas.CommissionResponse,
+    "community": schemas.CommunityResponse,
     "research-areas": schemas.ResearchAreaResponse,
     "publications": schemas.PublicationResponse,
     "research-labs": schemas.ResearchLabResponse,
@@ -950,7 +955,14 @@ def _normalize_save_type(content_type: str) -> str:
     normalized = (content_type or "").strip().lower()
     if normalized == "techpark":
         normalized = "tech-park"
+    if normalized == "commission":
+        normalized = "community"
     return normalized
+
+def _legacy_save_type_aliases(content_type: str) -> tuple[str, ...]:
+    if content_type == "community":
+        return ("community", "commission")
+    return (content_type,)
 
 def _get_saveable_item(db: Session, content_type: str, content_id: int):
     model = _SAVE_MODELS.get(content_type)
@@ -987,7 +999,7 @@ def toggle_save(
 
     existing = db.query(models.SavedItem).filter(
         models.SavedItem.user_id == current_user.id,
-        models.SavedItem.content_type == content_type,
+        models.SavedItem.content_type.in_(_legacy_save_type_aliases(content_type)),
         models.SavedItem.content_id == data.content_id,
     ).first()
 
@@ -1019,7 +1031,13 @@ def get_saved_ids(db: Session = Depends(get_db), current_user: User = Depends(ge
     rows = db.query(models.SavedItem).filter(
         models.SavedItem.user_id == current_user.id,
     ).order_by(models.SavedItem.created_at.desc()).all()
-    return [{"content_type": row.content_type, "content_id": row.content_id} for row in rows]
+    return [
+        {
+            "content_type": _normalize_save_type(row.content_type),
+            "content_id": row.content_id,
+        }
+        for row in rows
+    ]
 
 @router.get("/saved", response_model=List[schemas.SavedItemResponse])
 def get_saved_items(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -1029,20 +1047,21 @@ def get_saved_items(db: Session = Depends(get_db), current_user: User = Depends(
 
     result = []
     for row in rows:
-        if row.content_type not in _SAVE_MODELS:
+        content_type = _normalize_save_type(row.content_type)
+        if content_type not in _SAVE_MODELS:
             continue
-        item = db.query(_SAVE_MODELS[row.content_type]).filter(
-            _SAVE_MODELS[row.content_type].id == row.content_id,
+        item = db.query(_SAVE_MODELS[content_type]).filter(
+            _SAVE_MODELS[content_type].id == row.content_id,
         ).first()
         if not item:
             continue
         if hasattr(item, "status") and item.status != "approved":
             continue
         result.append({
-            "content_type": row.content_type,
+            "content_type": content_type,
             "content_id": row.content_id,
             "saved_at": row.created_at,
-            "item": _serialize_saved_item(row.content_type, item),
+            "item": _serialize_saved_item(content_type, item),
         })
     return result
 
@@ -1060,7 +1079,7 @@ def toggle_follow_item(
 
     existing = db.query(models.FollowedItem).filter(
         models.FollowedItem.user_id == current_user.id,
-        models.FollowedItem.content_type == content_type,
+        models.FollowedItem.content_type.in_(_legacy_save_type_aliases(content_type)),
         models.FollowedItem.content_id == data.content_id,
     ).first()
 
@@ -1092,7 +1111,13 @@ def get_followed_ids(db: Session = Depends(get_db), current_user: User = Depends
     rows = db.query(models.FollowedItem).filter(
         models.FollowedItem.user_id == current_user.id,
     ).order_by(models.FollowedItem.created_at.desc()).all()
-    return [{"content_type": row.content_type, "content_id": row.content_id} for row in rows]
+    return [
+        {
+            "content_type": _normalize_save_type(row.content_type),
+            "content_id": row.content_id,
+        }
+        for row in rows
+    ]
 
 @router.get("/followed", response_model=List[schemas.FollowedItemResponse])
 def get_followed_items(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -1102,20 +1127,21 @@ def get_followed_items(db: Session = Depends(get_db), current_user: User = Depen
 
     result = []
     for row in rows:
-        if row.content_type not in _SAVE_MODELS:
+        content_type = _normalize_save_type(row.content_type)
+        if content_type not in _SAVE_MODELS:
             continue
-        item = db.query(_SAVE_MODELS[row.content_type]).filter(
-            _SAVE_MODELS[row.content_type].id == row.content_id,
+        item = db.query(_SAVE_MODELS[content_type]).filter(
+            _SAVE_MODELS[content_type].id == row.content_id,
         ).first()
         if not item:
             continue
         if hasattr(item, "status") and item.status != "approved":
             continue
         result.append({
-            "content_type": row.content_type,
+            "content_type": content_type,
             "content_id": row.content_id,
             "followed_at": row.created_at,
-            "item": _serialize_saved_item(row.content_type, item),
+            "item": _serialize_saved_item(content_type, item),
         })
     return result
 
@@ -1176,7 +1202,7 @@ _FOLLOW_CONTENT_TYPES = {
     "innovations": models.Innovation,
     "startups": models.Startup,
     "alumni": models.AlumniProfile,
-    "commission": models.CommissionItem,
+    "community": models.CommunityItem,
 }
 
 @router.get("/following/feed", response_model=List[schemas.FollowedItemResponse])

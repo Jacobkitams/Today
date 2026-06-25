@@ -48,7 +48,7 @@
                 <a onclick="navigateTo('innovation')"><i data-lucide="lightbulb"></i> Innovation</a>
                 <a onclick="navigateTo('alumni')"><i data-lucide="graduation-cap"></i> Alumni</a>
                 <a onclick="navigateTo('endowment')"><i data-lucide="wallet"></i> Endowment</a>
-                <a onclick="navigateTo('commission')"><i data-lucide="landmark"></i> Commission</a>
+                <a onclick="navigateTo('community')"><i data-lucide="landmark"></i> Community</a>
                 <a onclick="navigateTo('research')"><i data-lucide="microscope"></i> Research</a>
                 <a onclick="navigateTo('techpark')"><i data-lucide="building-2"></i> Tech Park</a>
                 <a onclick="navigateToDashboard()" id="userDashboardNavLink"
@@ -427,29 +427,29 @@
             </section>
         </div>
 
-        <!-- COMMISSION PAGE -->
-        <div id="commission" class="page-section">
+        <!-- COMMUNITY PAGE -->
+        <div id="community" class="page-section">
             <div style="padding: 2rem 0 1rem 0;">
                 <h1 style="display: flex; align-items: center; gap: 0.5rem; color: var(--iuea-maroon); font-size: 2rem; margin-bottom: 0.5rem; font-weight: 800;">
-                    ⚖️ IUEA Commission
+                    ⚖️ IUEA Community
                 </h1>
                 <p style="color: var(--iuea-gray-light); font-size: 1.05rem; margin-bottom: 0; font-weight: 400;">
                     Governance, oversight, and institutional accountability
                 </p>
             </div>
             <div class="page-hero">
-                <video id="commissionVideo" class="hero-bg-video" autoplay loop muted playsinline></video>
+                <video id="communityVideo" class="hero-bg-video" autoplay loop muted playsinline></video>
                 <div class="page-hero-overlay"></div>
             </div>
 
             <section class="tab-section" style="padding-top: 1rem;">
                 <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
-                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📰 COMMISSION NEWS</h2>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📰 COMMUNITY NEWS</h2>
                 </div>
-                <div id="commissionNewsFeature" class="content-grid cols-3 section-news-grid"></div>
-                <div class="section-footer" id="commissionNewsSeeMoreWrap" style="display:none">
-                    <a href="#" class="see-more-link" onclick="navigateTo('commission-news-all'); return false;">
+                <div id="communityNewsFeature" class="content-grid cols-3 section-news-grid"></div>
+                <div class="section-footer" id="communityNewsSeeMoreWrap" style="display:none">
+                    <a href="#" class="see-more-link" onclick="navigateTo('community-news-all'); return false;">
                         See more <i data-lucide="arrow-right"></i>
                     </a>
                 </div>
@@ -460,7 +460,7 @@
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🏛️ STANDING COMMITTEES</h2>
                 </div>
-                <div id="commissionCommitteesGrid" class="content-grid cols-4"></div>
+                <div id="communityCommitteesGrid" class="content-grid cols-4"></div>
             </section>
 
             <section class="tab-section" style="padding-top: 1rem;">
@@ -469,9 +469,9 @@
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📊 INITIATIVES & REPORTS</h2>
                 </div>
                 <div class="content-grid cols-2">
-                    <div id="commissionInitiativesGrid" class="content-grid"
+                    <div id="communityInitiativesGrid" class="content-grid"
                         style="grid-template-columns:1fr; gap:1.5rem"></div>
-                    <div id="commissionReportsGrid" class="content-grid" style="grid-template-columns:1fr; gap:1.5rem">
+                    <div id="communityReportsGrid" class="content-grid" style="grid-template-columns:1fr; gap:1.5rem">
                     </div>
                 </div>
             </section>
@@ -479,7 +479,7 @@
             <section class="tab-section" style="padding-top: 2rem; padding-bottom: 4rem;">
                 <div style="background: linear-gradient(135deg, #a62121 0%, #700000 100%); color: white; padding: 3rem 2rem; border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(128,0,0,0.15);">
                     <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: white;">Get Involved in University Governance</h3>
-                    <button class="btn-primary" onclick="window.scrollTo({top:0, behavior:'smooth'})" style="background-color: #ffd700; border-radius: 999px; padding: 0.6rem 1.5rem; font-weight: 700; color: #800000; font-size: 0.85rem; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">Contact Commission &rarr;</button>
+                    <button class="btn-primary" onclick="window.scrollTo({top:0, behavior:'smooth'})" style="background-color: #ffd700; border-radius: 999px; padding: 0.6rem 1.5rem; font-weight: 700; color: #800000; font-size: 0.85rem; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">Contact Community &rarr;</button>
                 </div>
             </section>
         </div>
@@ -2014,8 +2014,8 @@
                                 data-lucide="graduation-cap"></i> Alumni</button>
                         <button class="admin-nav-btn" data-module="research" onclick="loadAdminModule('research', this)"><i
                                 data-lucide="microscope"></i> Research</button>
-                        <button class="admin-nav-btn" data-module="commission" onclick="loadAdminModule('commission', this)"><i
-                                data-lucide="landmark"></i> Commission</button>
+                        <button class="admin-nav-btn" data-module="community" onclick="loadAdminModule('community', this)"><i
+                                data-lucide="landmark"></i> Community</button>
                         <button class="admin-nav-btn" data-module="techpark" onclick="loadAdminModule('techpark', this)"><i
                                 data-lucide="building-2"></i> Tech Park</button>
                         <button class="admin-nav-btn" data-module="donations" onclick="loadAdminModule('donations', this)"><i
@@ -3201,10 +3201,10 @@
                             <option value="startup">🚀 Startup</option>
                             <option value="alumni-news">📰 Alumni News</option>
                             <option value="alumni">🎓 Alumni</option>
-                            <option value="commission-news">📰 Commission News</option>
-                            <option value="commission-committees">🏛️ Committee</option>
-                            <option value="commission-initiatives">🎯 Initiative</option>
-                            <option value="commission-reports">📊 Report</option>
+                            <option value="community-news">📰 Community News</option>
+                            <option value="community-committees">🏛️ Committee</option>
+                            <option value="community-initiatives">🎯 Initiative</option>
+                            <option value="community-reports">📊 Report</option>
                             <option value="research-areas">🔬 Research Area</option>
                             <option value="publications">📚 Publication</option>
                             <option value="research-labs">🧪 Research Lab</option>

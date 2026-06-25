@@ -308,11 +308,11 @@ class EndowmentInfoResponse(EndowmentInfoCreate):
     class Config:
         from_attributes = True
 
-# ---------- COMMISSION ----------
-class CommissionCreate(ContentBase):
+# ---------- COMMUNITY ----------
+class CommunityCreate(ContentBase):
     type: Optional[str] = "news"
 
-class CommissionResponse(ContentBase):
+class CommunityResponse(ContentBase):
     id: int
     likes: int
     comments_count: int = 0
@@ -322,12 +322,12 @@ class CommissionResponse(ContentBase):
     class Config:
         from_attributes = True
 
-class CommissionCommentCreate(BaseModel):
+class CommunityCommentCreate(BaseModel):
     message: str
 
-class CommissionCommentResponse(BaseModel):
+class CommunityCommentResponse(BaseModel):
     id: int
-    commission_id: int
+    community_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
     message: str

@@ -745,7 +745,7 @@ nav {
     color: #5c3d00;
 }
 
-.card-badge.badge-commission {
+.card-badge.badge-community {
     background: #3b5998;
 }
 
@@ -1130,8 +1130,8 @@ nav {
 .supporter-name { font-weight: 700; font-size: 1.1rem; color: var(--iuea-gray); }
 .supporter-message { font-style: italic; color: var(--iuea-gray-light); background: var(--iuea-surface); padding: 1rem; border-radius: var(--radius-sm); font-size: 0.95rem; border-left: 4px solid var(--iuea-gold); }
 
-/* Commission styling additions */
-.badge-commission { background: #3b5998; }
+/* Community styling additions */
+.badge-community { background: #3b5998; }
 .badge-committee { background: #008080; }
 .badge-initiative { background: #d35400; }
 .badge-report { background: #8e44ad; }

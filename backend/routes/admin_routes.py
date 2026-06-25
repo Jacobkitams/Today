@@ -37,7 +37,7 @@ APPROVAL_CONTENT_TYPES = [
     ("innovations", models.Innovation),
     ("startups", models.Startup),
     ("alumni", models.AlumniProfile),
-    ("commission", models.CommissionItem),
+    ("community", models.CommunityItem),
     ("publications", models.Publication),
 ]
 
@@ -48,7 +48,8 @@ CONTENT_TYPE_LABELS = {
     "innovations": "Innovations",
     "startups": "Startups",
     "alumni": "Alumni",
-    "commission": "Commission",
+    "community": "Community",
+    "commission": "Community",
     "publications": "Publications",
 }
 
@@ -69,7 +70,7 @@ ENGAGEMENT_MODELS = [
     models.Innovation,
     models.Startup,
     models.AlumniProfile,
-    models.CommissionItem,
+    models.CommunityItem,
     models.TechParkItem,
     models.ResearchLab,
 ]
@@ -80,7 +81,7 @@ COMMENT_MODELS = [
     models.InnovationComment,
     models.StartupComment,
     models.AlumniComment,
-    models.CommissionComment,
+    models.CommunityComment,
     models.ResearchAreaComment,
     models.PublicationComment,
     models.ResearchLabComment,
@@ -366,7 +367,8 @@ CONTENT_TYPE_MAP = {
     "endowment-info": models.EndowmentInfo,
     "research-areas": models.ResearchArea,
     "tech-park": models.TechParkItem,
-    "commission": models.CommissionItem,
+    "community": models.CommunityItem,
+    "commission": models.CommunityItem,
     "publications": models.Publication,
     "research-labs": models.ResearchLab,
 }
@@ -382,7 +384,12 @@ NEWS_VIRTUAL_TYPES = {
 # Campus/general news admin + public listings include typed news rows (innovation, startup, alumni).
 GENERAL_NEWS_LIST_TYPES = ("news", "innovation", "startup", "alumni")
 
-COMMISSION_VIRTUAL_TYPES = {
+COMMUNITY_VIRTUAL_TYPES = {
+    "community-news": "news",
+    "community-committees": "committee",
+    "community-initiatives": "initiative",
+    "community-reports": "report",
+    # Legacy admin paths (backward compat)
     "commission-news": "news",
     "commission-committees": "committee",
     "commission-initiatives": "initiative",
@@ -392,17 +399,17 @@ COMMISSION_VIRTUAL_TYPES = {
 def _content_to_dict(item):
     data = {}
     for col in item.__table__.columns:
-        val = getattr(item, col.name)
+        val = getattr(item, col.key)
         if val is not None and hasattr(val, "isoformat"):
             val = val.isoformat()
-        data[col.name] = val
+        data[col.key] = val
     return data
 
 def _get_content_model(content_type: str):
     if content_type in NEWS_VIRTUAL_TYPES:
         return models.News
-    if content_type in COMMISSION_VIRTUAL_TYPES:
-        return models.CommissionItem
+    if content_type in COMMUNITY_VIRTUAL_TYPES:
+        return models.CommunityItem
     model = CONTENT_TYPE_MAP.get(content_type)
     if not model:
         raise HTTPException(status_code=400, detail="Invalid content type")
@@ -420,8 +427,8 @@ def _get_content_item(content_type: str, content_id: int, db: Session):
         item_type = getattr(item, "type", None) or "news"
         if item_type not in GENERAL_NEWS_LIST_TYPES:
             raise HTTPException(status_code=404, detail="Content not found")
-    commission_type = COMMISSION_VIRTUAL_TYPES.get(content_type)
-    if commission_type and getattr(item, "type", None) != commission_type:
+    community_type = COMMUNITY_VIRTUAL_TYPES.get(content_type)
+    if community_type and getattr(item, "type", None) != community_type:
         raise HTTPException(status_code=404, detail="Content not found")
     return model, item
 
@@ -434,9 +441,9 @@ def list_admin_content(content_type: str, db: Session = Depends(get_db), current
         query = query.filter(models.News.type == news_type)
     elif content_type == "news":
         query = query.filter(models.News.type.in_(GENERAL_NEWS_LIST_TYPES))
-    commission_type = COMMISSION_VIRTUAL_TYPES.get(content_type)
-    if commission_type:
-        query = query.filter(models.CommissionItem.type == commission_type)
+    community_type = COMMUNITY_VIRTUAL_TYPES.get(content_type)
+    if community_type:
+        query = query.filter(models.CommunityItem.type == community_type)
     items = query.order_by(model.created_at.desc()).all()
     return [_content_to_dict(item) for item in items]
 
