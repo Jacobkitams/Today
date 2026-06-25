@@ -26,6 +26,7 @@ const HOME_EVENTS_LIMIT = 6;
 const ALL_EVENTS_LIMIT = 100;
 const SECTION_PREVIEW_LIMIT = 3;
 const SECTION_ALUMNI_NEWS_LIMIT = 3;
+const SECTION_RESEARCH_PREVIEW_LIMIT = 3;
 const ENDOWMENT_NEWS_LIMIT = 3;
 const COMMUNITY_NEWS_LIMIT = 3;
 const ALL_ENDOWMENT_CAMPAIGNS_LIMIT = 100;
@@ -736,6 +737,9 @@ function navigateTo(pageId) {
     if (pageId === 'news-all') loadAllNewsPage();
     if (pageId === 'events-all') loadAllEventsPage();
     if (pageId === 'endowment-campaigns-all') loadAllEndowmentCampaignsPage();
+    if (pageId === 'research-areas-all') loadAllResearchAreasPage();
+    if (pageId === 'publications-all') loadAllPublicationsPage();
+    if (pageId === 'research-labs-all') loadAllResearchLabsPage();
     if (pageId === 'community') {
         loadHeroVideosForPublicPages().then(() => {
             const vid = document.getElementById('communityVideo');
@@ -1681,9 +1685,36 @@ function renderCommunitySection(items, communityNews) {
 }
 
 function renderResearchSection(areas, publications, labs) {
-    renderGridCards('researchAreas', areas, 'research-areas', 'No research areas yet.');
-    renderGridCards('publicationsList', publications, 'publications', 'No publications yet.');
-    renderGridCards('researchLabs', labs, 'research-labs', 'No research labs yet.');
+    renderSectionPreviewGrid(
+        'researchAreasFeature',
+        areas,
+        SECTION_RESEARCH_PREVIEW_LIMIT,
+        'researchAreasSeeMoreWrap',
+        'research-areas-all',
+        'research-areas',
+        'No research areas yet.'
+    );
+    const pubList = Array.isArray(publications) ? publications : [];
+    const labsList = Array.isArray(labs) ? labs : [];
+    const researchSpotlight = document.getElementById('researchSpotlight');
+    if (researchSpotlight) {
+        researchSpotlight.innerHTML = labsList.length ? createCard(labsList[0], 'research-labs') : '';
+        refreshIconsIn(researchSpotlight);
+    }
+    const researchPublicationsFeed = document.getElementById('researchPublicationsFeed');
+    if (researchPublicationsFeed) {
+        researchPublicationsFeed.innerHTML = pubList.length
+            ? pubList.map(p => createCard(p, 'publications')).join('')
+            : '<p style="color:var(--iuea-gray-light)">No publications yet.</p>';
+        refreshIconsIn(researchPublicationsFeed);
+    }
+    const researchLabsFeed = document.getElementById('researchLabsFeed');
+    if (researchLabsFeed) {
+        researchLabsFeed.innerHTML = labsList.length
+            ? labsList.map(l => createCard(l, 'research-labs')).join('')
+            : '<p style="color:var(--iuea-gray-light)">No research labs yet.</p>';
+        refreshIconsIn(researchLabsFeed);
+    }
 }
 
 function renderTechParkSection(items) {
@@ -1904,6 +1935,24 @@ async function loadAllEndowmentCampaignsPage(forceRefresh = false) {
         grid.innerHTML = '<p style="color:var(--iuea-gray-light)">Could not load campaigns. Please try again.</p>';
     }
     const page = document.getElementById('endowment-campaigns-all');
+    if (page) refreshIconsIn(page);
+}
+
+function loadAllResearchAreasPage() {
+    renderGridCards('researchAreasAllGrid', publicContentCache.researchAreas || [], 'research-areas', 'No research areas yet.');
+    const page = document.getElementById('research-areas-all');
+    if (page) refreshIconsIn(page);
+}
+
+function loadAllPublicationsPage() {
+    renderGridCards('publicationsAllGrid', publicContentCache.publications || [], 'publications', 'No publications yet.');
+    const page = document.getElementById('publications-all');
+    if (page) refreshIconsIn(page);
+}
+
+function loadAllResearchLabsPage() {
+    renderGridCards('researchLabsAllGrid', publicContentCache.researchLabs || [], 'research-labs', 'No research labs yet.');
+    const page = document.getElementById('research-labs-all');
     if (page) refreshIconsIn(page);
 }
 
@@ -6388,17 +6437,242 @@ function updateUIForUser() {
 }
 
 /* =================== SEARCH =================== */
-function liveSearch() {
-    const query = document.getElementById('globalSearch').value.toLowerCase();
-    const resultsDiv = document.getElementById('searchResults');
-    if (query.length < 2) { resultsDiv.classList.remove('show'); return; }
-    showToast('Search coming soon — connect to API!');
-    resultsDiv.classList.remove('show');
+const SEARCH_MIN_CHARS = 2;
+const SEARCH_MAX_RESULTS = 12;
+let searchDebounceTimer = null;
+let searchActiveIndex = -1;
+
+const SEARCH_INDEX_SOURCES = [
+    { cacheKey: 'news', contentType: 'news', label: 'News' },
+    { cacheKey: 'events', contentType: 'events', label: 'Event' },
+    { cacheKey: 'innovations', contentType: 'innovations', label: 'Innovation' },
+    { cacheKey: 'startups', contentType: 'startups', label: 'Startup' },
+    { cacheKey: 'alumni', contentType: 'alumni', label: 'Alumni' },
+    { cacheKey: 'community', contentType: 'community', label: 'Community' },
+    { cacheKey: 'researchAreas', contentType: 'research-areas', label: 'Research Area' },
+    { cacheKey: 'publications', contentType: 'publications', label: 'Publication' },
+    { cacheKey: 'researchLabs', contentType: 'research-labs', label: 'Research Lab' },
+    { cacheKey: 'techPark', contentType: 'tech-park', label: 'Tech Park' },
+];
+
+function getSearchItemTitle(item) {
+    return item.title || item.name || `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Untitled';
 }
-document.addEventListener('click', e => {
-    if (!e.target.closest('.search-container')) {
-        document.getElementById('searchResults').classList.remove('show');
+
+function getSearchItemSubtitle(item, contentType) {
+    if (contentType === 'publications') {
+        return [item.authors, item.journal, item.year].filter(Boolean).join(' · ');
     }
+    if (contentType === 'alumni') {
+        return [item.role, item.achievement, item.year ? `Class of ${item.year}` : ''].filter(Boolean).join(' · ');
+    }
+    if (contentType === 'research-labs') {
+        return [item.director ? `Dir: ${item.director}` : '', item.focus].filter(Boolean).join(' · ');
+    }
+    return item.description || item.achievement || item.role || item.category || item.focus || item.journal || '';
+}
+
+function getSearchItemHaystack(item) {
+    return [
+        item.title,
+        item.name,
+        item.description,
+        item.first_name,
+        item.last_name,
+        item.achievement,
+        item.role,
+        item.category,
+        item.journal,
+        item.authors,
+        item.director,
+        item.focus,
+        item.type,
+        item.badge,
+    ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function scoreSearchMatch(haystack, query) {
+    if (!haystack.includes(query)) return 0;
+    if (haystack.startsWith(query)) return 4;
+    const words = haystack.split(/\s+/);
+    if (words.some(word => word.startsWith(query))) return 3;
+    if (haystack.includes(` ${query}`)) return 2;
+    return 1;
+}
+
+function buildSearchResults(query) {
+    const seen = new Set();
+    const results = [];
+
+    SEARCH_INDEX_SOURCES.forEach(({ cacheKey, contentType, label }) => {
+        const items = publicContentCache[cacheKey];
+        if (!Array.isArray(items)) return;
+
+        items.forEach(item => {
+            if (!item?.id) return;
+            const key = `${contentType}:${item.id}`;
+            if (seen.has(key)) return;
+
+            const haystack = getSearchItemHaystack(item);
+            const score = scoreSearchMatch(haystack, query);
+            if (!score) return;
+
+            seen.add(key);
+            results.push({
+                id: item.id,
+                contentType,
+                label,
+                title: getSearchItemTitle(item),
+                subtitle: truncateText(getSearchItemSubtitle(item, contentType), 90),
+                image: resolveMediaUrl(item.image),
+                score,
+            });
+        });
+    });
+
+    return results.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
+}
+
+function renderSearchResults(matches, query) {
+    const resultsDiv = document.getElementById('searchResults');
+    const input = document.getElementById('globalSearch');
+    if (!resultsDiv || !input) return;
+
+    if (!matches.length) {
+        resultsDiv.innerHTML = `<div class="search-status">No results for “${escapeHtml(query)}”</div>`;
+        resultsDiv.classList.add('show');
+        input.setAttribute('aria-expanded', 'true');
+        searchActiveIndex = -1;
+        return;
+    }
+
+    resultsDiv.innerHTML = matches.map((match, index) => {
+        const thumb = match.image
+            ? `<img class="search-result-thumb" src="${match.image}" alt="" loading="lazy">`
+            : `<div class="search-result-thumb" aria-hidden="true"></div>`;
+        return `
+        <button type="button" class="search-result-item${index === 0 ? ' active' : ''}" role="option"
+            data-index="${index}" onclick="openSearchResult('${match.contentType}', ${match.id})">
+            ${thumb}
+            <span class="search-result-body">
+                <div class="search-result-title">${escapeHtml(match.title)}</div>
+                ${match.subtitle ? `<div class="search-result-subtitle">${escapeHtml(match.subtitle)}</div>` : ''}
+            </span>
+            <span class="search-result-type">${escapeHtml(match.label)}</span>
+        </button>`;
+    }).join('');
+
+    resultsDiv.classList.add('show');
+    input.setAttribute('aria-expanded', 'true');
+    searchActiveIndex = 0;
+    refreshIconsIn(resultsDiv);
+}
+
+function hideSearchResults() {
+    const resultsDiv = document.getElementById('searchResults');
+    const input = document.getElementById('globalSearch');
+    if (resultsDiv) {
+        resultsDiv.classList.remove('show');
+        resultsDiv.innerHTML = '';
+    }
+    if (input) input.setAttribute('aria-expanded', 'false');
+    searchActiveIndex = -1;
+}
+
+function updateSearchActiveItem(index) {
+    const resultsDiv = document.getElementById('searchResults');
+    if (!resultsDiv) return;
+    const items = resultsDiv.querySelectorAll('.search-result-item');
+    items.forEach((item, i) => item.classList.toggle('active', i === index));
+    if (items[index]) items[index].scrollIntoView({ block: 'nearest' });
+    searchActiveIndex = index;
+}
+
+async function runLiveSearch() {
+    const input = document.getElementById('globalSearch');
+    const clearBtn = document.getElementById('searchClearBtn');
+    const resultsDiv = document.getElementById('searchResults');
+    if (!input || !resultsDiv) return;
+
+    const query = input.value.trim().toLowerCase();
+    if (clearBtn) clearBtn.classList.toggle('hidden', query.length === 0);
+
+    if (query.length < SEARCH_MIN_CHARS) {
+        hideSearchResults();
+        return;
+    }
+
+    resultsDiv.innerHTML = '<div class="search-status">Searching…</div>';
+    resultsDiv.classList.add('show');
+    input.setAttribute('aria-expanded', 'true');
+
+    try {
+        await fetchPublicContent();
+    } catch {
+        /* search still works from whatever is already cached */
+    }
+
+    renderSearchResults(buildSearchResults(query).slice(0, SEARCH_MAX_RESULTS), query);
+}
+
+function liveSearch() {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(runLiveSearch, 220);
+}
+
+function clearGlobalSearch() {
+    const input = document.getElementById('globalSearch');
+    if (!input) return;
+    input.value = '';
+    hideSearchResults();
+    const clearBtn = document.getElementById('searchClearBtn');
+    if (clearBtn) clearBtn.classList.add('hidden');
+    input.focus();
+}
+
+function openSearchResult(contentType, id) {
+    const input = document.getElementById('globalSearch');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('searchClearBtn');
+    if (clearBtn) clearBtn.classList.add('hidden');
+    hideSearchResults();
+    const page = SHARE_PAGE_MAP[contentType] || 'home';
+    navigateTo(page);
+    setTimeout(() => scrollToSharedCard(contentType, id), 650);
+}
+
+function handleSearchKeydown(event) {
+    const resultsDiv = document.getElementById('searchResults');
+    if (!resultsDiv || !resultsDiv.classList.contains('show')) {
+        if (event.key === 'Escape') clearGlobalSearch();
+        return;
+    }
+
+    const items = resultsDiv.querySelectorAll('.search-result-item');
+    if (!items.length) {
+        if (event.key === 'Escape') clearGlobalSearch();
+        return;
+    }
+
+    if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        const next = searchActiveIndex < items.length - 1 ? searchActiveIndex + 1 : 0;
+        updateSearchActiveItem(next);
+    } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        const prev = searchActiveIndex > 0 ? searchActiveIndex - 1 : items.length - 1;
+        updateSearchActiveItem(prev);
+    } else if (event.key === 'Enter') {
+        event.preventDefault();
+        const target = items[searchActiveIndex >= 0 ? searchActiveIndex : 0];
+        if (target) target.click();
+    } else if (event.key === 'Escape') {
+        hideSearchResults();
+    }
+}
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('#publicSearch')) hideSearchResults();
 });
 
 /* =================== HERO VIDEOS =================== */

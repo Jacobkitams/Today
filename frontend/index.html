@@ -65,12 +65,20 @@
         </nav>
     </header>
 
-    <div id="publicSearch" class="search-bar">
-        <div class="container search-container">
-            <i data-lucide="search" style="color:var(--iuea-maroon)"></i>
-            <input type="text" id="globalSearch" placeholder="Search innovations, alumni, startups, research..."
-                onkeyup="liveSearch()">
-            <div id="searchResults" class="search-results"></div>
+    <div id="publicSearch" class="public-search-wrap">
+        <div class="search-container" role="search">
+            <span class="search-icon-wrap" aria-hidden="true">
+                <i data-lucide="search"></i>
+            </span>
+            <input type="search" id="globalSearch" placeholder="Search news, alumni, innovations, research…"
+                autocomplete="off" aria-label="Search site content" aria-controls="searchResults"
+                aria-expanded="false" aria-autocomplete="list" oninput="liveSearch()"
+                onkeydown="handleSearchKeydown(event)">
+            <button type="button" id="searchClearBtn" class="search-clear-btn hidden" onclick="clearGlobalSearch()"
+                aria-label="Clear search">
+                <i data-lucide="x"></i>
+            </button>
+            <div id="searchResults" class="search-results" role="listbox" aria-label="Search results"></div>
         </div>
     </div>
 
@@ -504,7 +512,7 @@
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🔬 RESEARCH AREAS</h2>
                 </div>
-                <div id="researchAreas" class="content-grid cols-3"></div>
+                <div id="researchAreasFeature" class="content-grid cols-3 section-news-grid"></div>
                 <div class="section-footer" id="researchAreasSeeMoreWrap" style="display:none">
                     <a href="#" class="see-more-link" onclick="navigateTo('research-areas-all'); return false;">
                         See more <i data-lucide="arrow-right"></i>
@@ -515,14 +523,20 @@
             <section class="tab-section" style="padding-top: 1rem;">
                 <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">⭐ RESEARCH SPOTLIGHT</h2>
+                </div>
+                <div id="researchSpotlight" class="content-grid cols-2"></div>
+                <button class="btn-primary" onclick="toggleForm('research')" style="margin-top: 2rem; background-color: #800000; border-radius: 999px; font-weight: 700; font-size: 0.85rem; padding: 0.7rem 1.5rem; border: none; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ⚗️ JOIN A RESEARCH LAB
+                </button>
+            </section>
+
+            <section class="tab-section" style="padding-top: 1rem;">
+                <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📄 RECENT PUBLICATIONS</h2>
                 </div>
-                <div id="publicationsList" class="content-grid cols-3"></div>
-                <div class="section-footer" id="publicationsSeeMoreWrap" style="display:none">
-                    <a href="#" class="see-more-link" onclick="navigateTo('publications-all'); return false;">
-                        See more <i data-lucide="arrow-right"></i>
-                    </a>
-                </div>
+                <div id="researchPublicationsFeed" class="content-grid"></div>
             </section>
 
             <section class="tab-section" style="padding-top: 1rem;">
@@ -530,22 +544,13 @@
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🔬 RESEARCH LABS</h2>
                 </div>
-                <div id="researchLabs" class="content-grid cols-3"></div>
-                <button class="btn-primary" onclick="toggleForm('research')" style="margin-top: 2rem; background-color: #800000; border-radius: 999px; font-weight: 700; font-size: 0.85rem; padding: 0.7rem 1.5rem; border: none; text-transform: uppercase; letter-spacing: 0.5px;">
-                    ⚗️ JOIN A RESEARCH LAB
-                </button>
-                <div class="section-footer" id="researchLabsSeeMoreWrap" style="display:none">
-                    <a href="#" class="see-more-link" onclick="navigateTo('research-labs-all'); return false;">
-                        See more <i data-lucide="arrow-right"></i>
-                    </a>
-                </div>
+                <div id="researchLabsFeed" class="content-grid"></div>
             </section>
 
             <section class="tab-section" style="padding-top: 2rem; padding-bottom: 4rem;">
                 <div style="background: linear-gradient(135deg, #a62121 0%, #700000 100%); color: white; padding: 3rem 2rem; border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(128,0,0,0.15);">
-                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: white;">Push the Boundaries of Knowledge</h3>
-                    <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: rgba(255,255,255,0.9);">Join our world-class research community</p>
-                    <button class="btn-primary" onclick="toggleForm('research')" style="background-color: #ffd700; border-radius: 999px; padding: 0.6rem 1.5rem; font-weight: 700; color: #800000; font-size: 0.85rem; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">Apply for Research &rarr;</button>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: white;">Ready to Advance Research?</h3>
+                    <button class="btn-primary" onclick="toggleForm('research')" style="background-color: #ffd700; border-radius: 999px; padding: 0.6rem 1.5rem; font-weight: 700; color: #800000; font-size: 0.85rem; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 1rem;">Apply for Research &rarr;</button>
                 </div>
                 <div id="researchFormContainer" class="hidden-form"></div>
             </section>
