@@ -159,7 +159,7 @@
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🔥 LATEST NEWS & POSTS</h2>
                 </div>
-                <div id="newsGrid" class="content-grid"></div>
+                <div id="newsGrid" class="content-grid cols-3 section-news-grid"></div>
                 <div class="section-footer" id="newsSeeMoreWrap" style="display:none">
                     <a href="#" class="see-more-link" onclick="navigateTo('news-all'); return false;">
                         See more <i data-lucide="arrow-right"></i>
@@ -172,7 +172,7 @@
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📅 UPCOMING EVENTS</h2>
                 </div>
-                <div id="eventsGrid" class="content-grid cols-2"></div>
+                <div id="eventsGrid" class="content-grid cols-3 section-news-grid"></div>
                 <div class="section-footer" id="eventsSeeMoreWrap" style="display:none">
                     <a href="#" class="see-more-link" onclick="navigateTo('events-all'); return false;">
                         See more <i data-lucide="arrow-right"></i>
@@ -236,7 +236,7 @@
                         <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                         <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">⭐ FEATURED INNOVATIONS</h2>
                     </div>
-                    <div id="innovationHighlights" class="content-grid cols-2"></div>
+                    <div id="innovationHighlights" class="content-grid spotlight-grid"></div>
                     <button class="btn-primary" onclick="toggleForm('innovation')" style="margin-top: 2rem; background-color: #800000; border-radius: 999px; font-weight: 700; font-size: 0.85rem; padding: 0.7rem 1.5rem; border: none; text-transform: uppercase; letter-spacing: 0.5px;">
                         🚀 JOIN THE INNOVATION TEAM
                     </button>
@@ -278,7 +278,7 @@
                         <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                         <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">⭐ FEATURED STARTUPS</h2>
                     </div>
-                    <div id="startupHighlights" class="content-grid cols-2"></div>
+                    <div id="startupHighlights" class="content-grid spotlight-grid"></div>
                     <button class="btn-primary" onclick="toggleForm('startup')" style="margin-top: 2rem; background-color: #800000; border-radius: 999px; font-weight: 700; font-size: 0.85rem; padding: 0.7rem 1.5rem; border: none; text-transform: uppercase; letter-spacing: 0.5px;">
                         🚀 LAUNCH YOUR STARTUP
                     </button>
@@ -341,7 +341,7 @@
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">⭐ ALUMNI SPOTLIGHT</h2>
                 </div>
-                <div id="alumniHighlights" class="content-grid cols-2"></div>
+                <div id="alumniHighlights" class="content-grid spotlight-grid"></div>
                 <button class="btn-primary" onclick="toggleForm('alumni')" style="margin-top: 2rem; background-color: #800000; border-radius: 999px; font-weight: 700; font-size: 0.85rem; padding: 0.7rem 1.5rem; border: none; text-transform: uppercase; letter-spacing: 0.5px;">
                     👤 JOIN ALUMNI NETWORK
                 </button>
@@ -466,29 +466,45 @@
             <section class="tab-section" style="padding-top: 1rem;">
                 <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
-                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🏛️ STANDING COMMITTEES</h2>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">⭐ COMMUNITY SPOTLIGHT</h2>
                 </div>
-                <div id="communityCommitteesGrid" class="content-grid cols-4"></div>
+                <div id="communitySpotlight" class="content-grid spotlight-grid"></div>
+                <button class="btn-primary" onclick="toggleForm('community')" style="margin-top: 2rem; background-color: #800000; border-radius: 999px; font-weight: 700; font-size: 0.85rem; padding: 0.7rem 1.5rem; border: none; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ⚖️ JOIN COMMUNITY
+                </button>
             </section>
 
             <section class="tab-section" style="padding-top: 1rem;">
                 <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
-                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📊 INITIATIVES & REPORTS</h2>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🎯 INITIATIVES</h2>
                 </div>
-                <div class="content-grid cols-2">
-                    <div id="communityInitiativesGrid" class="content-grid"
-                        style="grid-template-columns:1fr; gap:1.5rem"></div>
-                    <div id="communityReportsGrid" class="content-grid" style="grid-template-columns:1fr; gap:1.5rem">
-                    </div>
+                <div id="communityInitiativesFeed" class="content-grid cols-3"></div>
+            </section>
+
+            <section class="tab-section" style="padding-top: 1rem;">
+                <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📊 REPORTS</h2>
                 </div>
+                <div id="communityReportsFeed" class="content-grid cols-3"></div>
+            </section>
+
+            <section class="tab-section" style="padding-top: 1rem;">
+                <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🏛️ STANDING COMMITTEES</h2>
+                </div>
+                <div id="communityCommitteesFeed" class="content-grid cols-3"></div>
             </section>
 
             <section class="tab-section" style="padding-top: 2rem; padding-bottom: 4rem;">
                 <div style="background: linear-gradient(135deg, #a62121 0%, #700000 100%); color: white; padding: 3rem 2rem; border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(128,0,0,0.15);">
-                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: white;">Get Involved in University Governance</h3>
-                    <button class="btn-primary" onclick="window.scrollTo({top:0, behavior:'smooth'})" style="background-color: #ffd700; border-radius: 999px; padding: 0.6rem 1.5rem; font-weight: 700; color: #800000; font-size: 0.85rem; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">Contact Community &rarr;</button>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: white;">Get Involved in University Governance</h3>
+                    <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: rgba(255,255,255,0.9);">Join committees, initiatives, and oversight bodies shaping IUEA</p>
+                    <button class="btn-primary" onclick="toggleForm('community')" style="background-color: #ffd700; border-radius: 999px; padding: 0.6rem 1.5rem; font-weight: 700; color: #800000; font-size: 0.85rem; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">Join Community &rarr;</button>
                 </div>
+                <div id="communityFormContainer" class="hidden-form"></div>
             </section>
         </div>
 
@@ -525,7 +541,7 @@
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">⭐ RESEARCH SPOTLIGHT</h2>
                 </div>
-                <div id="researchSpotlight" class="content-grid cols-2"></div>
+                <div id="researchSpotlight" class="content-grid spotlight-grid"></div>
                 <button class="btn-primary" onclick="toggleForm('research')" style="margin-top: 2rem; background-color: #800000; border-radius: 999px; font-weight: 700; font-size: 0.85rem; padding: 0.7rem 1.5rem; border: none; text-transform: uppercase; letter-spacing: 0.5px;">
                     ⚗️ JOIN A RESEARCH LAB
                 </button>
@@ -536,7 +552,7 @@
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📄 RECENT PUBLICATIONS</h2>
                 </div>
-                <div id="researchPublicationsFeed" class="content-grid"></div>
+                <div id="researchPublicationsFeed" class="content-grid cols-3"></div>
             </section>
 
             <section class="tab-section" style="padding-top: 1rem;">
@@ -544,7 +560,7 @@
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🔬 RESEARCH LABS</h2>
                 </div>
-                <div id="researchLabsFeed" class="content-grid"></div>
+                <div id="researchLabsFeed" class="content-grid cols-3"></div>
             </section>
 
             <section class="tab-section" style="padding-top: 2rem; padding-bottom: 4rem;">
@@ -576,7 +592,7 @@
                     <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
                     <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🏢 FACILITIES & PROGRAMS</h2>
                 </div>
-                <div id="techparkGrid" class="content-grid"></div>
+                <div id="techparkGrid" class="content-grid cols-3"></div>
             </section>
 
             <section class="tab-section" style="padding-top: 2rem; padding-bottom: 4rem;">
@@ -598,7 +614,7 @@
                     <h2>News & Announcements</h2>
                     <p>All campus highlights, achievements, and announcements from across IUEA.</p>
                 </div>
-                <div id="newsAllGrid" class="content-grid"></div>
+                <div id="newsAllGrid" class="content-grid cols-3"></div>
             </section>
         </div>
 
@@ -613,7 +629,7 @@
                     <h2>Upcoming Events</h2>
                     <p>All summits, homecomings, and campus gatherings across IUEA.</p>
                 </div>
-                <div id="eventsAllGrid" class="content-grid cols-2"></div>
+                <div id="eventsAllGrid" class="content-grid cols-3"></div>
             </section>
         </div>
 
@@ -659,6 +675,66 @@
                     <p>All state-of-the-art facilities led by distinguished faculty.</p>
                 </div>
                 <div id="researchLabsAllGrid" class="content-grid cols-3"></div>
+            </section>
+        </div>
+
+        <!-- ALL COMMUNITY NEWS PAGE -->
+        <div id="community-news-all" class="page-section">
+            <section class="tab-section news-all-page">
+                <a class="news-back-link" href="#" onclick="navigateTo('community'); return false;">
+                    <i data-lucide="arrow-left"></i> Back to Community
+                </a>
+                <div class="section-intro">
+                    <span class="eyebrow">Governance</span>
+                    <h2>Community News</h2>
+                    <p>All announcements and updates from IUEA's community governance bodies.</p>
+                </div>
+                <div id="communityNewsAllGrid" class="content-grid cols-3"></div>
+            </section>
+        </div>
+
+        <!-- ALL COMMUNITY COMMITTEES PAGE -->
+        <div id="community-committees-all" class="page-section">
+            <section class="tab-section news-all-page">
+                <a class="news-back-link" href="#" onclick="navigateTo('community'); return false;">
+                    <i data-lucide="arrow-left"></i> Back to Community
+                </a>
+                <div class="section-intro">
+                    <span class="eyebrow">Oversight</span>
+                    <h2>Standing Committees</h2>
+                    <p>All standing committees guiding institutional accountability at IUEA.</p>
+                </div>
+                <div id="communityCommitteesAllGrid" class="content-grid cols-3"></div>
+            </section>
+        </div>
+
+        <!-- ALL COMMUNITY INITIATIVES PAGE -->
+        <div id="community-initiatives-all" class="page-section">
+            <section class="tab-section news-all-page">
+                <a class="news-back-link" href="#" onclick="navigateTo('community'); return false;">
+                    <i data-lucide="arrow-left"></i> Back to Community
+                </a>
+                <div class="section-intro">
+                    <span class="eyebrow">Action</span>
+                    <h2>Initiatives</h2>
+                    <p>All community-driven initiatives advancing governance and engagement.</p>
+                </div>
+                <div id="communityInitiativesAllGrid" class="content-grid cols-3"></div>
+            </section>
+        </div>
+
+        <!-- ALL COMMUNITY REPORTS PAGE -->
+        <div id="community-reports-all" class="page-section">
+            <section class="tab-section news-all-page">
+                <a class="news-back-link" href="#" onclick="navigateTo('community'); return false;">
+                    <i data-lucide="arrow-left"></i> Back to Community
+                </a>
+                <div class="section-intro">
+                    <span class="eyebrow">Transparency</span>
+                    <h2>Reports</h2>
+                    <p>All published reports from IUEA community oversight bodies.</p>
+                </div>
+                <div id="communityReportsAllGrid" class="content-grid cols-3"></div>
             </section>
         </div>
 
@@ -3176,6 +3252,24 @@
         </div>
     </div>
 
+    <!-- Endowment Read More Modal -->
+    <div id="endowmentReadMoreModal" class="detail-modal" onclick="handleEndowmentReadMoreBackdrop(event)">
+        <div class="modal-container">
+            <img class="modal-image" id="endowmentReadMoreImage" src="" alt="Endowment">
+            <div class="modal-content">
+                <button type="button" class="close-modal" onclick="closeEndowmentReadMoreModal()" aria-label="Close"><i data-lucide="x"></i></button>
+                <h2 id="endowmentReadMoreTitle" style="color:var(--iuea-maroon); font-size: 2rem;"></h2>
+                <div id="endowmentReadMoreBody"
+                    style="line-height:1.8; color:var(--iuea-gray); margin-top:1.5rem; overflow-y:auto; max-height:40vh;">
+                </div>
+                <button type="button" class="btn-primary btn-gold" style="margin-top:1.5rem"
+                    onclick="closeEndowmentReadMoreModal(); toggleForm('donation');">
+                    <i data-lucide="gift"></i> Make a Donation
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast">
         <i data-lucide="check-circle"></i> <span id="toastMessage">Success</span>
@@ -3318,6 +3412,25 @@
         </div>
     </div>
 
+    <!-- Card Detail Modal -->
+    <div id="cardDetailModal" class="detail-modal card-detail-modal" onclick="handleCardDetailBackdrop(event)" aria-hidden="true">
+        <div class="card-detail-box" role="dialog" aria-labelledby="cardDetailTitle" aria-modal="true">
+            <div class="card-detail-media" id="cardDetailMedia"></div>
+            <div class="card-detail-content">
+                <button type="button" class="close-modal card-detail-close" onclick="closeCardDetailModal()" aria-label="Close detail"><i data-lucide="x"></i></button>
+                <span class="card-detail-badge" id="cardDetailBadge">Update</span>
+                <h2 id="cardDetailTitle">Content title</h2>
+                <div class="card-detail-meta" id="cardDetailMeta" hidden></div>
+                <p id="cardDetailDescription" class="card-detail-description"></p>
+                <div class="card-detail-actions" id="cardDetailActions"></div>
+                <div class="card-detail-share">
+                    <span>Share this</span>
+                    <div class="card-detail-share-actions" id="cardDetailShareActions"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Content Comments Modal -->
     <div id="contentCommentModal" class="detail-modal" onclick="handleCommentModalBackdrop(event)">
         <div class="comment-modal-box" role="dialog" aria-labelledby="contentCommentTitle" aria-modal="true">
@@ -3448,7 +3561,7 @@
     </div>
 
     <!-- Fixed Apply Button -->
-    <a href="https://apply.iuea.ac.ug" target="_blank" rel="noopener noreferrer" id="fixedApplyBtn" class="fixed-apply-btn">🎓 Apply to IUEA Now</a>
+    <a href="https://iuea.ac.ug/" target="_blank" rel="noopener noreferrer" id="fixedApplyBtn" class="fixed-apply-btn">🎓 Apply to IUEA Now</a>
 
     <footer class="premium-footer">
         <div class="container">

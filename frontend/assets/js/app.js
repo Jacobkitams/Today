@@ -27,9 +27,15 @@ const ALL_EVENTS_LIMIT = 100;
 const SECTION_PREVIEW_LIMIT = 3;
 const SECTION_ALUMNI_NEWS_LIMIT = 3;
 const SECTION_RESEARCH_PREVIEW_LIMIT = 3;
+const SECTION_COMMUNITY_PREVIEW_LIMIT = 3;
 const ENDOWMENT_NEWS_LIMIT = 3;
 const COMMUNITY_NEWS_LIMIT = 3;
 const ALL_ENDOWMENT_CAMPAIGNS_LIMIT = 100;
+const ALL_RESEARCH_AREAS_LIMIT = 100;
+const ALL_COMMUNITY_NEWS_LIMIT = 100;
+const ALL_COMMUNITY_COMMITTEES_LIMIT = 100;
+const ALL_COMMUNITY_INITIATIVES_LIMIT = 100;
+const ALL_COMMUNITY_REPORTS_LIMIT = 100;
 const PUBLIC_CONTENT_CACHE_TTL = 30000;
 const OFFLINE_CACHE_STORAGE_KEY = 'iuea_offline_api_cache';
 const OFFLINE_PUBLIC_SNAPSHOT_KEY = '__public_content_snapshot__';
@@ -61,6 +67,11 @@ let allNewsCache = null;
 let allEventsCache = null;
 let newsAllTypeFilter = null;
 let allEndowmentCampaignsCache = null;
+let allResearchAreasCache = null;
+let allCommunityNewsCache = null;
+let allCommunityCommitteesCache = null;
+let allCommunityInitiativesCache = null;
+let allCommunityReportsCache = null;
 let publicFormsInitialized = false;
 let savedContentKeys = new Set();
 let followedContentKeys = new Set();
@@ -608,11 +619,23 @@ function invalidatePublicContentCache(keys = null) {
         allNewsCache = null;
         allEventsCache = null;
         allEndowmentCampaignsCache = null;
+        allResearchAreasCache = null;
+        allCommunityNewsCache = null;
+        allCommunityCommitteesCache = null;
+        allCommunityInitiativesCache = null;
+        allCommunityReportsCache = null;
     } else {
         keys.forEach(k => { publicContentCache[k] = null; });
         if (keys.includes('news')) allNewsCache = null;
         if (keys.includes('events')) allEventsCache = null;
         if (keys.includes('endowmentCampaigns')) allEndowmentCampaignsCache = null;
+        if (keys.includes('researchAreas')) allResearchAreasCache = null;
+        if (keys.includes('community') || keys.includes('communityNews')) {
+            allCommunityNewsCache = null;
+            allCommunityCommitteesCache = null;
+            allCommunityInitiativesCache = null;
+            allCommunityReportsCache = null;
+        }
         publicContentCache.fetchedAt = 0;
     }
     publicContentFetchPromise = null;
@@ -740,6 +763,10 @@ function navigateTo(pageId) {
     if (pageId === 'research-areas-all') loadAllResearchAreasPage();
     if (pageId === 'publications-all') loadAllPublicationsPage();
     if (pageId === 'research-labs-all') loadAllResearchLabsPage();
+    if (pageId === 'community-news-all') loadAllCommunityNewsPage();
+    if (pageId === 'community-committees-all') loadAllCommunityCommitteesPage();
+    if (pageId === 'community-initiatives-all') loadAllCommunityInitiativesPage();
+    if (pageId === 'community-reports-all') loadAllCommunityReportsPage();
     if (pageId === 'community') {
         loadHeroVideosForPublicPages().then(() => {
             const vid = document.getElementById('communityVideo');
@@ -749,7 +776,15 @@ function navigateTo(pageId) {
 }
 
 function toggleMobileNav() {
-    document.getElementById('navLinks').classList.toggle('open');
+    const navLinks = document.getElementById('navLinks');
+    if (!navLinks) return;
+    const isOpen = navLinks.classList.toggle('open');
+    document.body.classList.toggle('nav-open', isOpen);
+    const btn = document.querySelector('.mobile-menu-btn');
+    if (btn) {
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        btn.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+    }
 }
 
 function switchTab(tabId, btn) {
@@ -976,6 +1011,25 @@ function cardShareButton(contentType, id, title, description) {
     const d = escapeJsString(truncateText(description || '', 200));
     return `<button onclick="shareContent('${contentType}', ${id}, '${t}', '${d}')"><i data-lucide="share-2"></i> Share</button>`;
 }
+
+const CARD_DETAIL_INTERACTIVE_SELECTOR = [
+    'a',
+    'button',
+    'input',
+    'textarea',
+    'select',
+    'label',
+    'video',
+    'audio',
+    '[controls]',
+    '[contenteditable="true"]',
+    '.card-actions',
+    '.card-save-btn',
+    '.card-badge',
+    '.author-chip',
+    '.social-links',
+    '.share-platform-btn',
+].join(',');
 
 function savedKey(type, id) {
     return `${commentApiPath(type)}:${id}`;
@@ -1220,7 +1274,8 @@ function navigateToHomeNewsSection(sectionKey) {
 
 function handleHomeNewsCardClick(event, sectionKey) {
     if (event.target.closest('.card-actions, .card-save-btn, button, a, video, input, textarea, select')) return;
-    navigateToHomeNewsSection(sectionKey);
+    event.stopPropagation();
+    openCardDetailFromCard(event.currentTarget);
 }
 
 function createHomeNewsCard(item) {
@@ -1519,6 +1574,24 @@ const DEFAULT_ENDOWMENT_STATS = [
     { value: '50+', label: 'Research Labs' }
 ];
 
+const DEFAULT_ENDOWMENT_INFO_TITLE = 'Investing in the Future of Africa — Through IUEA';
+const DEFAULT_ENDOWMENT_INFO_DESC = `At the International University of East Africa (IUEA), we believe that the future of Africa will not be inherited, it will be built. Built by innovators, researchers, entrepreneurs, and leaders who understand the continent, its challenges, and its immense opportunities.\n\nYet, the scale of Africa's challenges demands more than tuition-funded education. It requires long-term, visionary investment.\nThis is the purpose of the IUEA Endowment.`;
+const ENDOWMENT_INFO_EXCERPT_COUNT = 3;
+
+const DEFAULT_ENDOWMENT_READ_MORE_EXTRA = `
+<p>An endowment is not simply a donation. It is a strategic investment in sustained impact. It allows IUEA to plan beyond the present, to fund breakthrough research, to incubate transformative startups, and to ensure that no talented student is denied opportunity due to financial constraints.</p>
+<h3 style="color:var(--iuea-maroon);margin:1.25rem 0 0.75rem;">Why Your Endowment Matters</h3>
+<p>Africa stands at a critical turning point. With the world's youngest population, rapidly expanding markets, and accelerating technological adoption, the continent has the potential to redefine global innovation and economic growth.</p>
+<p><strong>1. Research that Solves African Problems</strong><br>Many of Africa's most pressing challenges require solutions that are locally developed and contextually relevant.</p>
+<p><strong>2. Startups that Create Jobs and Industries</strong><br>Africa's future will be driven by entrepreneurs who can transform ideas into scalable businesses.</p>
+<p><strong>3. Scholarships that Unlock Human Potential</strong><br>By supporting scholarships, endowment partners ensure that talent, not circumstance, determines opportunity.</p>
+<h3 style="color:var(--iuea-maroon);margin:1.25rem 0 0.75rem;">A Multiplier of Impact</h3>
+<p>What makes an endowment powerful is its permanence. Unlike one-time donations, endowment funds are invested, with returns used year after year to support research, startups, and scholarships.</p>
+<h3 style="color:var(--iuea-maroon);margin:1.25rem 0 0.75rem;">Join Us</h3>
+<p>We invite you to be part of this journey. Because the future is not something we wait for. It is something we build together.</p>`;
+
+let endowmentReadMoreCache = { title: '', image: '', body: '' };
+
 const DEFAULT_DONATION_TIERS = [
     { name: 'Scholar', amount: '$1K', description: 'Annual scholarship', icon: 'book-open', featured: false },
     { name: 'Innovator', amount: '$5K', description: 'Fund a lab', icon: 'flask-conical', featured: false },
@@ -1537,23 +1610,63 @@ function renderEndowmentStatsSection(stats) {
         </div>`).join('');
 }
 
+function formatEndowmentInfoParagraphs(desc) {
+    return desc.split('\n').filter(Boolean).map(p => `<p style="margin-bottom:1rem;">${p}</p>`).join('');
+}
+
 function renderEndowmentInfoSection(items) {
     const el = document.getElementById('endowmentInfo');
     if (!el) return;
     const info = (Array.isArray(items) && items.length) ? items[0] : null;
-    const title = info?.title || 'Investing in the Future of Africa — Through IUEA';
-    const desc = info?.description || `At the International University of East Africa (IUEA), we believe that the future of Africa will not be inherited, it will be built. Built by innovators, researchers, entrepreneurs, and leaders who understand the continent, its challenges, and its immense opportunities.\n\nYet, the scale of Africa's challenges demands more than tuition-funded education. It requires long-term, visionary investment.\nThis is the purpose of the IUEA Endowment.`;
+    const usingDefault = !info;
+    const title = info?.title || DEFAULT_ENDOWMENT_INFO_TITLE;
+    const desc = info?.description || DEFAULT_ENDOWMENT_INFO_DESC;
     const image = resolveMediaUrl(info?.image) || 'https://picsum.photos/800/600?random=200';
     const paragraphs = desc.split('\n').filter(Boolean);
+    const excerptParagraphs = paragraphs.slice(0, ENDOWMENT_INFO_EXCERPT_COUNT);
+    const showReadMore = usingDefault || paragraphs.length > ENDOWMENT_INFO_EXCERPT_COUNT;
+    endowmentReadMoreCache = {
+        title,
+        image,
+        body: formatEndowmentInfoParagraphs(desc) + (usingDefault ? DEFAULT_ENDOWMENT_READ_MORE_EXTRA : '')
+    };
     el.innerHTML = `
-        <div style="background: white; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: row; margin-bottom: 2rem;">
-            <div style="flex: 1; min-height: 300px; background-image: url('${image}'); background-size: cover; background-position: center;"></div>
-            <div style="flex: 1; padding: 3rem 2rem;">
-                <h2 style="font-size: 1.4rem; color: var(--iuea-maroon); font-weight: 700; margin-bottom: 1rem;">${title}</h2>
-                ${paragraphs.map(p => `<p style="color: var(--iuea-gray); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">${p}</p>`).join('')}
-                <a href="#" onclick="document.getElementById('endowmentReadMoreModal').classList.add('active'); return false;" style="color: var(--iuea-maroon); font-weight: 700; font-size: 0.9rem; text-decoration: none;">Read more &rarr;</a>
+        <div class="endowment-info-block">
+            <div class="endowment-info-media" style="background-image: url('${image}');"></div>
+            <div class="endowment-info-body">
+                <h2 class="endowment-info-title">${title}</h2>
+                ${excerptParagraphs.map(p => `<p>${p}</p>`).join('')}
+                ${showReadMore ? '<a href="#" class="endowment-info-link" onclick="showEndowmentReadMore(); return false;">Read more &rarr;</a>' : ''}
             </div>
         </div>`;
+}
+
+function showEndowmentReadMore() {
+    const modal = document.getElementById('endowmentReadMoreModal');
+    if (!modal) return;
+    const titleEl = document.getElementById('endowmentReadMoreTitle');
+    const bodyEl = document.getElementById('endowmentReadMoreBody');
+    const imageEl = document.getElementById('endowmentReadMoreImage');
+    if (titleEl) titleEl.textContent = endowmentReadMoreCache.title;
+    if (bodyEl) bodyEl.innerHTML = endowmentReadMoreCache.body;
+    if (imageEl) {
+        if (endowmentReadMoreCache.image) {
+            imageEl.src = endowmentReadMoreCache.image;
+            imageEl.style.display = 'block';
+        } else {
+            imageEl.style.display = 'none';
+        }
+    }
+    modal.classList.add('show');
+    lucide.createIcons();
+}
+
+function closeEndowmentReadMoreModal() {
+    document.getElementById('endowmentReadMoreModal')?.classList.remove('show');
+}
+
+function handleEndowmentReadMoreBackdrop(event) {
+    if (event.target.id === 'endowmentReadMoreModal') closeEndowmentReadMoreModal();
 }
 
 function renderEndowmentCampaignSection(campaigns) {
@@ -1665,23 +1778,51 @@ function renderCommunitySection(items, communityNews) {
     const list = Array.isArray(items) ? items : [];
     const byType = (type) => list.filter(i => (i.type || 'news') === type);
     const newsItems = Array.isArray(communityNews) ? communityNews : list.filter(isCommunityNewsItem);
-    const seeMorePage = document.getElementById('community-news-all') ? 'community-news-all' : null;
+    const committees = byType('committee');
+    const initiatives = byType('initiative');
+    const reports = byType('report');
+
     renderSectionPreviewGrid(
         'communityNewsFeature',
         newsItems,
-        COMMUNITY_NEWS_LIMIT,
+        SECTION_COMMUNITY_PREVIEW_LIMIT,
         'communityNewsSeeMoreWrap',
-        seeMorePage,
+        'community-news-all',
         'community',
         'No community news yet.'
     );
-    if (!seeMorePage) {
-        const wrap = document.getElementById('communityNewsSeeMoreWrap');
-        if (wrap) wrap.style.display = 'none';
+
+    const communitySpotlight = document.getElementById('communitySpotlight');
+    if (communitySpotlight) {
+        communitySpotlight.innerHTML = committees.length
+            ? createCard(committees[0], 'community')
+            : '';
+        refreshIconsIn(communitySpotlight);
     }
-    renderGridCards('communityCommitteesGrid', byType('committee'), 'community', 'No committees listed yet.');
-    renderGridCards('communityInitiativesGrid', byType('initiative'), 'community', 'No initiatives yet.');
-    renderGridCards('communityReportsGrid', byType('report'), 'community', 'No reports yet.');
+
+    const communityInitiativesFeed = document.getElementById('communityInitiativesFeed');
+    if (communityInitiativesFeed) {
+        communityInitiativesFeed.innerHTML = initiatives.length
+            ? initiatives.map(i => createCard(i, 'community')).join('')
+            : '<p style="color:var(--iuea-gray-light)">No initiatives yet.</p>';
+        refreshIconsIn(communityInitiativesFeed);
+    }
+
+    const communityReportsFeed = document.getElementById('communityReportsFeed');
+    if (communityReportsFeed) {
+        communityReportsFeed.innerHTML = reports.length
+            ? reports.map(r => createCard(r, 'community')).join('')
+            : '<p style="color:var(--iuea-gray-light)">No reports yet.</p>';
+        refreshIconsIn(communityReportsFeed);
+    }
+
+    const communityCommitteesFeed = document.getElementById('communityCommitteesFeed');
+    if (communityCommitteesFeed) {
+        communityCommitteesFeed.innerHTML = committees.length
+            ? committees.map(c => createCard(c, 'community')).join('')
+            : '<p style="color:var(--iuea-gray-light)">No committees listed yet.</p>';
+        refreshIconsIn(communityCommitteesFeed);
+    }
 }
 
 function renderResearchSection(areas, publications, labs) {
@@ -1724,7 +1865,7 @@ function renderTechParkSection(items) {
 function setupPublicForms() {
     if (publicFormsInitialized) return;
     publicFormsInitialized = true;
-    ['innovation', 'startup', 'alumni', 'donation', 'research'].forEach(t => ensurePublicForm(t));
+    ['innovation', 'startup', 'alumni', 'donation', 'research', 'community'].forEach(t => ensurePublicForm(t));
 }
 
 function renderDeferredPublicSections(data) {
@@ -1793,7 +1934,7 @@ async function fetchPublicContent(forceRefresh = false) {
             apiGet('/content/endowment-info'),
             apiGet('/content/alumni'),
             apiGet('/content/community'),
-            apiGet(`/content/community?type=news&limit=${COMMUNITY_NEWS_LIMIT + 1}`),
+            apiGet(`/content/community?type=news&limit=${SECTION_COMMUNITY_PREVIEW_LIMIT + 1}`),
             apiGet('/content/research-areas'),
             apiGet('/content/publications'),
             apiGet('/content/research-labs'),
@@ -1938,8 +2079,46 @@ async function loadAllEndowmentCampaignsPage(forceRefresh = false) {
     if (page) refreshIconsIn(page);
 }
 
-function loadAllResearchAreasPage() {
-    renderGridCards('researchAreasAllGrid', publicContentCache.researchAreas || [], 'research-areas', 'No research areas yet.');
+function renderResearchAreasAll(areas) {
+    const el = document.getElementById('researchAreasAllGrid');
+    if (!el) return;
+    const list = Array.isArray(areas) ? areas : [];
+    el.innerHTML = list.length
+        ? list.map(item => createCard(item, 'research-areas')).join('')
+        : '<p style="color:var(--iuea-gray-light)">No research areas yet.</p>';
+    refreshIconsIn(el);
+}
+
+async function loadAllResearchAreasPage(forceRefresh = false) {
+    const grid = document.getElementById('researchAreasAllGrid');
+    if (!grid) return;
+
+    if (!forceRefresh && allResearchAreasCache) {
+        renderResearchAreasAll(allResearchAreasCache);
+        return;
+    }
+
+    if (!forceRefresh && Array.isArray(publicContentCache.researchAreas) && publicContentCache.researchAreas.length) {
+        allResearchAreasCache = publicContentCache.researchAreas;
+        renderResearchAreasAll(allResearchAreasCache);
+        return;
+    }
+
+    grid.innerHTML = homeGridLoadingHTML('Loading research areas…');
+    try {
+        const areas = await apiGet(`/content/research-areas?limit=${ALL_RESEARCH_AREAS_LIMIT}`);
+        allResearchAreasCache = Array.isArray(areas) ? areas : [];
+        if (allResearchAreasCache.length >= ALL_RESEARCH_AREAS_LIMIT) {
+            const allAreas = await apiGet('/content/research-areas');
+            if (Array.isArray(allAreas) && allAreas.length > allResearchAreasCache.length) {
+                allResearchAreasCache = allAreas;
+            }
+        }
+        publicContentCache.researchAreas = allResearchAreasCache;
+        renderResearchAreasAll(allResearchAreasCache);
+    } catch {
+        grid.innerHTML = '<p style="color:var(--iuea-gray-light)">Could not load research areas. Please try again.</p>';
+    }
     const page = document.getElementById('research-areas-all');
     if (page) refreshIconsIn(page);
 }
@@ -1954,6 +2133,172 @@ function loadAllResearchLabsPage() {
     renderGridCards('researchLabsAllGrid', publicContentCache.researchLabs || [], 'research-labs', 'No research labs yet.');
     const page = document.getElementById('research-labs-all');
     if (page) refreshIconsIn(page);
+}
+
+function filterCommunityByType(items, type) {
+    const list = Array.isArray(items) ? items : [];
+    return list.filter(i => (i.type || 'news') === type);
+}
+
+function renderCommunityNewsAll(items) {
+    const el = document.getElementById('communityNewsAllGrid');
+    if (!el) return;
+    const list = Array.isArray(items) ? items : [];
+    el.innerHTML = list.length
+        ? list.map(item => createCard(item, 'community')).join('')
+        : '<p style="color:var(--iuea-gray-light)">No community news yet.</p>';
+    refreshIconsIn(el);
+}
+
+async function loadAllCommunityNewsPage(forceRefresh = false) {
+    const grid = document.getElementById('communityNewsAllGrid');
+    if (!grid) return;
+
+    if (!forceRefresh && allCommunityNewsCache) {
+        renderCommunityNewsAll(allCommunityNewsCache);
+        return;
+    }
+
+    if (!forceRefresh && Array.isArray(publicContentCache.communityNews) && publicContentCache.communityNews.length) {
+        allCommunityNewsCache = publicContentCache.communityNews;
+        renderCommunityNewsAll(allCommunityNewsCache);
+        return;
+    }
+
+    grid.innerHTML = homeGridLoadingHTML('Loading community news…');
+    try {
+        const news = await apiGet(`/content/community?type=news&limit=${ALL_COMMUNITY_NEWS_LIMIT}`);
+        allCommunityNewsCache = Array.isArray(news) ? news : [];
+        if (allCommunityNewsCache.length >= ALL_COMMUNITY_NEWS_LIMIT) {
+            const allNews = await apiGet('/content/community?type=news');
+            if (Array.isArray(allNews) && allNews.length > allCommunityNewsCache.length) {
+                allCommunityNewsCache = allNews;
+            }
+        }
+        publicContentCache.communityNews = allCommunityNewsCache;
+        renderCommunityNewsAll(allCommunityNewsCache);
+    } catch {
+        grid.innerHTML = '<p style="color:var(--iuea-gray-light)">Could not load community news. Please try again.</p>';
+    }
+    const page = document.getElementById('community-news-all');
+    if (page) refreshIconsIn(page);
+}
+
+function renderCommunityTypedAll(gridId, items, emptyMessage) {
+    const el = document.getElementById(gridId);
+    if (!el) return;
+    const list = Array.isArray(items) ? items : [];
+    el.innerHTML = list.length
+        ? list.map(item => createCard(item, 'community')).join('')
+        : `<p style="color:var(--iuea-gray-light)">${emptyMessage}</p>`;
+    refreshIconsIn(el);
+}
+
+async function loadAllCommunityTypedPage({
+    gridId,
+    type,
+    getCache,
+    setCache,
+    limit,
+    loadingLabel,
+    emptyMessage,
+    errorMessage,
+    pageId,
+    forceRefresh = false,
+}) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+
+    if (!forceRefresh && getCache()) {
+        renderCommunityTypedAll(gridId, getCache(), emptyMessage);
+        return;
+    }
+
+    if (!forceRefresh && Array.isArray(publicContentCache.community) && publicContentCache.community.length) {
+        const cached = filterCommunityByType(publicContentCache.community, type);
+        if (cached.length) {
+            setCache(cached);
+            renderCommunityTypedAll(gridId, cached, emptyMessage);
+            return;
+        }
+    }
+
+    grid.innerHTML = homeGridLoadingHTML(loadingLabel);
+    try {
+        const items = await apiGet(`/content/community?type=${type}&limit=${limit}`);
+        let list = Array.isArray(items) ? items : [];
+        if (list.length >= limit) {
+            const allItems = await apiGet(`/content/community?type=${type}`);
+            if (Array.isArray(allItems) && allItems.length > list.length) {
+                list = allItems;
+            }
+        }
+        setCache(list);
+        renderCommunityTypedAll(gridId, list, emptyMessage);
+    } catch {
+        grid.innerHTML = `<p style="color:var(--iuea-gray-light)">${errorMessage}</p>`;
+    }
+    const page = document.getElementById(pageId);
+    if (page) refreshIconsIn(page);
+}
+
+function loadAllCommunityCommitteesPage(forceRefresh = false) {
+    return loadAllCommunityTypedPage({
+        gridId: 'communityCommitteesAllGrid',
+        type: 'committee',
+        getCache: () => allCommunityCommitteesCache,
+        setCache: (v) => { allCommunityCommitteesCache = v; },
+        limit: ALL_COMMUNITY_COMMITTEES_LIMIT,
+        loadingLabel: 'Loading committees…',
+        emptyMessage: 'No committees listed yet.',
+        errorMessage: 'Could not load committees. Please try again.',
+        pageId: 'community-committees-all',
+        forceRefresh,
+    });
+}
+
+function loadAllCommunityInitiativesPage(forceRefresh = false) {
+    return loadAllCommunityTypedPage({
+        gridId: 'communityInitiativesAllGrid',
+        type: 'initiative',
+        getCache: () => allCommunityInitiativesCache,
+        setCache: (v) => { allCommunityInitiativesCache = v; },
+        limit: ALL_COMMUNITY_INITIATIVES_LIMIT,
+        loadingLabel: 'Loading initiatives…',
+        emptyMessage: 'No initiatives yet.',
+        errorMessage: 'Could not load initiatives. Please try again.',
+        pageId: 'community-initiatives-all',
+        forceRefresh,
+    });
+}
+
+function loadAllCommunityReportsPage(forceRefresh = false) {
+    return loadAllCommunityTypedPage({
+        gridId: 'communityReportsAllGrid',
+        type: 'report',
+        getCache: () => allCommunityReportsCache,
+        setCache: (v) => { allCommunityReportsCache = v; },
+        limit: ALL_COMMUNITY_REPORTS_LIMIT,
+        loadingLabel: 'Loading reports…',
+        emptyMessage: 'No reports yet.',
+        errorMessage: 'Could not load reports. Please try again.',
+        pageId: 'community-reports-all',
+        forceRefresh,
+    });
+}
+
+function refreshActiveCommunityAllPages(forceRefresh = true) {
+    const loaders = [
+        ['community-news-all', loadAllCommunityNewsPage],
+        ['community-committees-all', loadAllCommunityCommitteesPage],
+        ['community-initiatives-all', loadAllCommunityInitiativesPage],
+        ['community-reports-all', loadAllCommunityReportsPage],
+    ];
+    loaders.forEach(([pageId, loader]) => {
+        if (document.getElementById(pageId)?.classList.contains('active')) {
+            loader(forceRefresh);
+        }
+    });
 }
 
 async function loadHomeSection(forceRefresh = false) {
@@ -2703,11 +3048,11 @@ const ALUMNI_SUBMODULES = [
 ];
 
 const DONATIONS_SUBMODULES = [
-    { key: 'donations', label: 'Supporters', createLabel: 'Record Donation', endpoint: '/content/donations', createType: 'donations', icon: 'heart' },
-    { key: 'donation-tiers', label: 'Giving Tiers', createLabel: 'Add Giving Tier', endpoint: '/content/donation-tiers', createType: 'donation-tiers', icon: 'gift' },
-    { key: 'endowment-stats', label: 'Impact Stats', createLabel: 'Add Impact Stat', endpoint: '/content/endowment-stats', createType: 'endowment-stats', icon: 'bar-chart-2' },
-    { key: 'endowment-campaigns', label: 'Campaigns', createLabel: 'Add Campaign', endpoint: '/content/endowment-campaigns', createType: 'endowment-campaigns', icon: 'target' },
-    { key: 'endowment-info', label: 'Endowment Info', createLabel: 'Add Info Block', endpoint: '/content/endowment-info', createType: 'endowment-info', icon: 'info' }
+    { key: 'donations', label: 'Supporters', createLabel: 'Record Donation', endpoint: '/content/donations', createType: 'donations', icon: 'heart', hint: 'Recent donors on the public Endowment page' },
+    { key: 'donation-tiers', label: 'Giving Tiers', createLabel: 'Add Giving Tier', endpoint: '/content/donation-tiers', createType: 'donation-tiers', icon: 'gift', hint: 'Controls #donationTiers — Ways to Give cards on the Endowment page' },
+    { key: 'endowment-stats', label: 'Impact Stats', createLabel: 'Add Impact Stat', endpoint: '/content/endowment-stats', createType: 'endowment-stats', icon: 'bar-chart-2', hint: 'Controls #endowmentStats — four stat boxes at the top of the Endowment page' },
+    { key: 'endowment-campaigns', label: 'Campaigns', createLabel: 'Add Campaign', endpoint: '/content/endowment-campaigns', createType: 'endowment-campaigns', icon: 'target', hint: 'Controls #endowmentCampaign — Endowment News cards' },
+    { key: 'endowment-info', label: 'Endowment Info', createLabel: 'Add Info Block', endpoint: '/content/endowment-info', createType: 'endowment-info', icon: 'info', hint: 'Controls #endowmentInfo — two-column about block (image, heading, body, Read more) on the public Endowment page. Add one block here or the page shows built-in placeholder text.' }
 ];
 
 const NEWS_DISPLAY_SECTIONS = [
@@ -2920,7 +3265,9 @@ function getAdminModuleEndpoint(moduleName) {
     const communitySub = COMMUNITY_SUBMODULES.find(s => s.key === moduleName);
     if (communitySub) return communitySub.endpoint;
     const techParkSub = TECH_PARK_SUBMODULES.find(s => s.key === moduleName);
-    return techParkSub?.endpoint || null;
+    if (techParkSub) return techParkSub.endpoint;
+    const donationsSub = DONATIONS_SUBMODULES.find(s => s.key === moduleName);
+    return donationsSub?.endpoint || null;
 }
 
 function filterCommunityItems(items, moduleName) {
@@ -3193,13 +3540,13 @@ const CREATE_MODAL_CONFIG = {
         extraFields: 'endowment-campaign'
     },
     'endowment-info': {
-        title: 'Add Info Block',
-        subtitle: 'Add an about section for the Endowment page.',
+        title: 'Add Endowment Info Block',
+        subtitle: 'Controls the two-column about section (#endowmentInfo) on the public Endowment page — image, heading, body text, and Read more link.',
         icon: 'info',
         titleLabel: 'Heading',
-        titlePlaceholder: 'Enter section heading…',
+        titlePlaceholder: 'e.g. Investing in the Future of Africa — Through IUEA',
         descLabel: 'Body Text',
-        descPlaceholder: 'Describe the endowment mission…',
+        descPlaceholder: 'Short intro shown in the about block; full text appears in the Read more modal…',
         submitLabel: 'Add Info Block',
         showMedia: true,
         showVideo: false
@@ -3248,7 +3595,7 @@ const ADMIN_MODULE_HEADER_CONFIG = {
         icon: 'building-2'
     },
     donations: {
-        subtitle: 'Manage supporters, giving tiers, impact stats, campaigns, and info for the public Endowment page.',
+        subtitle: 'Manage content for the public Endowment page. Use the Endowment Info section for the two-column about block (#endowmentInfo). Impact Stats and Giving Tiers show built-in placeholders until you add items here.',
         icon: 'heart',
         secondary: [{ label: 'Export Report', icon: 'download', onclick: 'exportDonationsReport()' }]
     }
@@ -3946,6 +4293,9 @@ async function loadTechParkAdminModule(btn, options = {}) {
 function buildDonationsSubmoduleTableHTML(subKey, items) {
     const label = ADMIN_MODULE_LABELS[subKey] || 'items';
     if (!items.length) {
+        if (subKey === 'endowment-info') {
+            return `<div class="admin-empty-state admin-empty-state--compact"><p>No Endowment Info block yet. The public page shows built-in placeholder text in <strong>#endowmentInfo</strong> until you add one here.</p><button type="button" class="btn-primary" style="margin-top:0.75rem" onclick="showCreateModal('endowment-info')"><i data-lucide="plus"></i> Add Info Block</button></div>`;
+        }
         return `<div class="admin-empty-state admin-empty-state--compact"><p>No ${label} yet.</p></div>`;
     }
 
@@ -4027,6 +4377,24 @@ function buildDonationsSubmoduleTableHTML(subKey, items) {
             <div class="table-pagination"><span>${items.length} item${items.length === 1 ? '' : 's'}</span></div>`;
     }
 
+    if (subKey === 'endowment-info') {
+        return `
+            <table class="admin-table-modern">
+                <thead><tr><th>Heading</th><th>Image</th><th>Body Preview</th><th>Status</th><th style="width:200px">Actions</th></tr></thead>
+                <tbody>
+                    ${items.map(item => `
+                    <tr id="admin-row-${subKey}-${item.id}">
+                        <td><strong>${item.title || '—'}</strong></td>
+                        <td>${item.image ? '<span style="color:#059669;font-size:0.85rem;">✓ Set</span>' : '<span style="color:#94a3b8;font-size:0.85rem;">Placeholder</span>'}</td>
+                        <td style="color:#64748b;font-size:0.85rem;">${(item.description || '—').substring(0, 100)}</td>
+                        <td><span class="status-badge ${adminItemStatusClass(item.status || 'approved')}">${item.status || 'approved'}</span></td>
+                        <td>${actionCell(item.id)}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+            <div class="table-pagination"><span>${items.length} item${items.length === 1 ? '' : 's'} · only the first approved block is shown on #endowmentInfo</span></div>`;
+    }
+
     return buildAdminTableHTML(subKey, items);
 }
 
@@ -4083,7 +4451,10 @@ function renderDonationsAdminModule(options = {}) {
                     <div class="admin-research-block-header">
                         <div class="admin-research-block-title">
                             <i data-lucide="${sub.icon}"></i>
-                            <h4>${sub.label}</h4>
+                            <div>
+                                <h4>${sub.label}</h4>
+                                ${sub.hint ? `<span style="color:#64748b;font-size:0.8rem;font-weight:400;">${sub.hint}</span>` : ''}
+                            </div>
                         </div>
                         <span class="admin-research-block-count">${items.length} item${items.length === 1 ? '' : 's'}</span>
                     </div>
@@ -4878,6 +5249,12 @@ async function saveAdminEdit() {
             loadInitialData({ forceRefresh: true });
             loadAdminStats();
             loadAdminApprovals();
+            if (moduleName === 'research-areas' && document.getElementById('research-areas-all')?.classList.contains('active')) {
+                loadAllResearchAreasPage(true);
+            }
+            if (isCommunitySubModule(moduleName)) {
+                refreshActiveCommunityAllPages(true);
+            }
         } else {
             showToast(res.data?.detail || 'Failed to update content.', 'error');
         }
@@ -4909,6 +5286,12 @@ async function deleteAdminContent(moduleName, id) {
         reloadAdminModuleAfterCrud(moduleName, { forceRefresh: true });
         loadInitialData({ forceRefresh: true });
         loadAdminStats();
+        if (moduleName === 'research-areas' && document.getElementById('research-areas-all')?.classList.contains('active')) {
+            loadAllResearchAreasPage(true);
+        }
+        if (isCommunitySubModule(moduleName)) {
+            refreshActiveCommunityAllPages(true);
+        }
     } else {
         showToast(res.data?.detail || 'Failed to delete content.', 'error');
     }
@@ -5112,6 +5495,255 @@ async function shareContent(type, id, title, description) {
     }
 
     openShareModal({ url: shareUrl, title: shareTitle, text: shareText });
+}
+
+let cardDetailModalState = { type: null, id: null, title: '', description: '' };
+let cardDetailClickInitialized = false;
+
+function normalizeCardDetailType(type) {
+    const raw = String(type || '').trim();
+    const aliases = {
+        event: 'events',
+        innovation: 'innovations',
+        startup: 'startups',
+        techpark: 'tech-park',
+        'community-news': 'community',
+        'community-committees': 'community',
+        'community-initiatives': 'community',
+        'community-reports': 'community',
+    };
+    return aliases[raw] || raw || 'news';
+}
+
+function cardDetailCacheCandidates(type) {
+    const normalized = normalizeCardDetailType(type);
+    const map = {
+        news: ['news', 'innovationNews', 'startupNews', 'alumniNews', 'communityNews'],
+        community: ['communityNews', 'community', 'news'],
+        events: ['events'],
+        alumni: ['alumni'],
+        innovations: ['innovations'],
+        startups: ['startups'],
+        'research-areas': ['researchAreas'],
+        publications: ['publications'],
+        'research-labs': ['researchLabs'],
+        'tech-park': ['techPark'],
+        'endowment-campaigns': ['endowmentCampaigns'],
+    };
+    const keys = map[normalized] || [normalized];
+    const publicItems = keys.flatMap(key => Array.isArray(publicContentCache[key]) ? publicContentCache[key] : []);
+    const allPageItems = {
+        news: allNewsCache,
+        events: allEventsCache,
+        community: [
+            ...(Array.isArray(allCommunityNewsCache) ? allCommunityNewsCache : []),
+            ...(Array.isArray(allCommunityCommitteesCache) ? allCommunityCommitteesCache : []),
+            ...(Array.isArray(allCommunityInitiativesCache) ? allCommunityInitiativesCache : []),
+            ...(Array.isArray(allCommunityReportsCache) ? allCommunityReportsCache : []),
+        ],
+        'research-areas': allResearchAreasCache,
+        'endowment-campaigns': allEndowmentCampaignsCache,
+    };
+    const extraItems = allPageItems[normalized];
+    if (Array.isArray(extraItems)) return [...publicItems, ...extraItems];
+    return publicItems;
+}
+
+function findCachedCardDetailItem(type, id) {
+    if (!id) return null;
+    return cardDetailCacheCandidates(type).find(item => String(item?.id) === String(id)) || null;
+}
+
+function getCardDetailTitle(item, card) {
+    if (item) {
+        return alumniDisplayName(item)
+            || item.title
+            || item.name
+            || `${item.first_name || ''} ${item.last_name || ''}`.trim()
+            || 'Untitled';
+    }
+    return card?.querySelector('.card-content h3')?.textContent.trim() || 'Untitled';
+}
+
+function getCardDetailDescription(item, card) {
+    if (item) {
+        if (item.description) return item.description;
+        if (item.achievement || item.role) return [item.achievement, item.role].filter(Boolean).join('\n');
+        if (item.focus) return item.focus;
+        if (item.category) return item.category;
+        if (item.journal || item.year) return [item.journal, item.year].filter(Boolean).join(' · ');
+    }
+    return card?.querySelector('.card-content p')?.textContent.trim() || '';
+}
+
+function getCardDetailBadge(item, card, type) {
+    return item?.badge
+        || item?.category
+        || item?.type
+        || card?.querySelector('.card-badge')?.textContent.trim()
+        || normalizeCardDetailType(type).replace(/-/g, ' ');
+}
+
+function getCardDetailMeta(item, card) {
+    const fields = [
+        item?.date,
+        item?.location,
+        item?.year ? `Class of ${item.year}` : '',
+        item?.authors,
+        item?.director ? `Director: ${item.director}` : '',
+        item?.goal_amount ? `Goal: ${item.goal_amount}` : '',
+        item?.raised_amount ? `Raised: ${item.raised_amount}` : '',
+    ].filter(Boolean);
+
+    if (fields.length) return [...new Set(fields)];
+
+    return Array.from(card?.querySelectorAll('.card-stats-row .stat-pill') || [])
+        .map(el => el.textContent.trim())
+        .filter(Boolean)
+        .slice(0, 4);
+}
+
+function getCardDetailMedia(item, card) {
+    const cardVideo = card?.querySelector('.card-media video');
+    const cardImage = card?.querySelector('.card-media img');
+    const image = resolveMediaUrl(item?.image || item?.image_url || item?.profile_image) || cardImage?.currentSrc || cardImage?.src || '';
+    const video = resolveMediaUrl(item?.video || item?.video_url) || cardVideo?.currentSrc || cardVideo?.src || '';
+    const poster = image || cardVideo?.poster || '';
+    return { image, video, poster };
+}
+
+function cardDetailFromCard(card) {
+    if (!card) return null;
+    const type = normalizeCardDetailType(card.dataset.contentType);
+    const id = card.dataset.contentId;
+    const item = findCachedCardDetailItem(type, id);
+    return {
+        type,
+        id,
+        title: getCardDetailTitle(item, card),
+        description: getCardDetailDescription(item, card),
+        badge: getCardDetailBadge(item, card, type),
+        meta: getCardDetailMeta(item, card),
+        media: getCardDetailMedia(item, card),
+    };
+}
+
+function renderCardDetailMedia(detail) {
+    const { image, video, poster } = detail.media || {};
+    const safeTitle = escapeHtml(detail.title);
+    if (video) {
+        return `<video class="card-detail-media-el" src="${escapeHtml(video)}" poster="${escapeHtml(poster || image || '')}" controls playsinline></video>`;
+    }
+    if (image) {
+        return `<img class="card-detail-media-el" src="${escapeHtml(image)}" alt="${safeTitle}" loading="lazy" decoding="async">`;
+    }
+    return `<div class="card-detail-media-empty"><i data-lucide="image"></i><span>No media available</span></div>`;
+}
+
+function renderCardDetailShareActions(detail) {
+    return SHARE_PLATFORMS.map(platform => `
+        <button type="button" class="card-detail-share-btn ${platform.className}" onclick="event.stopPropagation(); shareToPlatform('${platform.id}')" aria-label="Share on ${escapeHtml(platform.label)}">
+            <span class="share-platform-icon">${sharePlatformIconHtml(platform)}</span>
+        </button>`).join('');
+}
+
+function renderCardDetailActions(detail) {
+    const typeArg = jsStringLiteral(detail.type);
+    const titleArg = jsStringLiteral(detail.title);
+    const descArg = jsStringLiteral(truncateText(detail.description || '', 200));
+    const idArg = /^\d+$/.test(String(detail.id)) ? String(Number(detail.id)) : jsStringLiteral(detail.id);
+    const likeCall = detail.type === 'alumni' ? `likeAlumni(${idArg})` : `likeContent(${typeArg}, ${idArg})`;
+    const commentCall = `closeCardDetailModal(); commentContent(${typeArg}, ${idArg})`;
+    const saveCall = `saveContent(${typeArg}, ${idArg})`;
+    const shareCall = `openCardDetailSharePanel(${typeArg}, ${idArg}, ${titleArg}, ${descArg})`;
+
+    return `
+        <button type="button" onclick="event.stopPropagation(); ${likeCall}"><i data-lucide="heart"></i> Like</button>
+        <button type="button" onclick="event.stopPropagation(); ${commentCall}"><i data-lucide="message-circle"></i> Comment</button>
+        <button type="button" onclick="event.stopPropagation(); ${shareCall}"><i data-lucide="share-2"></i> Share</button>
+        <button type="button" onclick="event.stopPropagation(); ${saveCall}"><i data-lucide="bookmark"></i> Save</button>`;
+}
+
+function openCardDetailSharePanel(type, id, title, description) {
+    closeCardDetailModal();
+    openShareModal({
+        url: buildShareUrl(type, id),
+        title: title || getCardTitleFromDom(type, id) || 'IUEA Today',
+        text: buildShareText(title, description),
+    });
+}
+
+function openCardDetailFromCard(card) {
+    const detail = cardDetailFromCard(card);
+    if (!detail || !detail.id) return;
+
+    const modal = document.getElementById('cardDetailModal');
+    const media = document.getElementById('cardDetailMedia');
+    const badge = document.getElementById('cardDetailBadge');
+    const title = document.getElementById('cardDetailTitle');
+    const desc = document.getElementById('cardDetailDescription');
+    const meta = document.getElementById('cardDetailMeta');
+    const actions = document.getElementById('cardDetailActions');
+    const share = document.getElementById('cardDetailShareActions');
+    if (!modal || !media || !title || !desc || !actions || !share) return;
+
+    cardDetailModalState = {
+        type: detail.type,
+        id: detail.id,
+        title: detail.title,
+        description: detail.description,
+    };
+    shareModalState = {
+        url: buildShareUrl(detail.type, detail.id),
+        title: detail.title,
+        text: buildShareText(detail.title, detail.description),
+    };
+
+    media.innerHTML = renderCardDetailMedia(detail);
+    if (badge) badge.textContent = detail.badge;
+    title.textContent = detail.title;
+    desc.innerHTML = escapeHtml(detail.description || 'No description available.').replace(/\n/g, '<br>');
+    if (meta) {
+        meta.innerHTML = detail.meta.map(item => `<span>${escapeHtml(item)}</span>`).join('');
+        meta.hidden = !detail.meta.length;
+    }
+    actions.innerHTML = renderCardDetailActions(detail);
+    share.innerHTML = renderCardDetailShareActions(detail);
+
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    if (document.getElementById('navLinks')?.classList.contains('open')) toggleMobileNav();
+    refreshIconsIn(modal);
+}
+
+function closeCardDetailModal() {
+    const modal = document.getElementById('cardDetailModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    modal.querySelectorAll('video').forEach(video => video.pause());
+    cardDetailModalState = { type: null, id: null, title: '', description: '' };
+}
+
+function handleCardDetailBackdrop(event) {
+    if (event.target.id === 'cardDetailModal') closeCardDetailModal();
+}
+
+function handleModernCardDetailClick(event) {
+    const card = event.target.closest('.modern-card[data-content-type][data-content-id]');
+    if (!card || event.target.closest(CARD_DETAIL_INTERACTIVE_SELECTOR)) return;
+    openCardDetailFromCard(card);
+}
+
+function initCardDetailModal() {
+    if (cardDetailClickInitialized) return;
+    document.addEventListener('click', handleModernCardDetailClick);
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && document.getElementById('cardDetailModal')?.classList.contains('show')) {
+            closeCardDetailModal();
+        }
+    });
+    cardDetailClickInitialized = true;
 }
 
 function scrollToSharedCard(type, id) {
@@ -6252,6 +6884,12 @@ async function submitCreateForm() {
                 }
                 if (document.getElementById('endowment-campaigns-all')?.classList.contains('active')) {
                     loadAllEndowmentCampaignsPage(true);
+                }
+                if (document.getElementById('research-areas-all')?.classList.contains('active')) {
+                    loadAllResearchAreasPage(true);
+                }
+                if (COMMUNITY_CREATE_INVALIDATION[type]) {
+                    refreshActiveCommunityAllPages(true);
                 }
                 const mod = CREATE_TYPE_TO_MODULE[type];
                 if (mod) {
@@ -7571,6 +8209,7 @@ async function resetAdminSettings() {
 /* =================== BOOT =================== */
 async function boot() {
     initOfflineSupport();
+    initCardDetailModal();
     showHomeLoadingState();
     await Promise.all([loadInitialData(), loadPublicPlatformSettings()]);
 
