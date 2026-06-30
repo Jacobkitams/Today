@@ -344,6 +344,21 @@ class FollowedItem(Base):
         UniqueConstraint("user_id", "content_type", "content_id", name="uq_followed_user_content"),
     )
 
+class FormSubmission(Base):
+    __tablename__ = "form_submissions"
+    id = Column(Integer, primary_key=True, index=True)
+    form_type = Column(String(50), nullable=False, index=True)
+    first_name = Column(String(100), nullable=False)
+    last_name = Column(String(100), nullable=True)
+    email = Column(String(100), nullable=False)
+    phone = Column(String(50), nullable=True)
+    details = Column(Text, nullable=True)
+    amount = Column(Float, nullable=True)
+    status = Column(String(20), default="pending", index=True)
+    notes = Column(Text, nullable=True)
+    reviewed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 class PlatformSettings(Base):
     __tablename__ = "platform_settings"
     id = Column(Integer, primary_key=True, index=True)

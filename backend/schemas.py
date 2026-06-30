@@ -685,6 +685,70 @@ class PlatformSettingsPublicResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# ---------- FORM SUBMISSIONS ----------
+FORM_SUBMISSION_TYPES = [
+    "innovation_join",
+    "alumni_join",
+    "donation_pledge",
+    "community_join",
+    "research_join",
+]
+
+FORM_SUBMISSION_STATUSES = ["pending", "reviewed", "approved", "rejected"]
+
+class FormSubmissionCreate(BaseModel):
+    first_name: str
+    last_name: Optional[str] = None
+    email: str
+    phone: Optional[str] = None
+    details: Optional[str] = None
+
+class DonationPledgeCreate(BaseModel):
+    name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    amount: float
+    message: Optional[str] = None
+    details: Optional[str] = None
+
+class FormSubmissionResponse(BaseModel):
+    id: int
+    form_type: str
+    first_name: str
+    last_name: Optional[str] = None
+    email: str
+    phone: Optional[str] = None
+    details: Optional[str] = None
+    amount: Optional[float] = None
+    status: str
+    notes: Optional[str] = None
+    reviewed_by: Optional[int] = None
+    reviewer_name: Optional[str] = None
+    created_at: Optional[datetime] = None
+    class Config:
+        from_attributes = True
+
+class FormSubmissionUpdate(BaseModel):
+    status: Optional[str] = None
+    notes: Optional[str] = None
+
+class FormSubmissionTypeStats(BaseModel):
+    pending: int = 0
+    approved: int = 0
+    rejected: int = 0
+    reviewed: int = 0
+
+class FormSubmissionStats(BaseModel):
+    pending: int = 0
+    approved: int = 0
+    rejected: int = 0
+    total_pending: int = 0
+    approved_today: int = 0
+    rejected_today: int = 0
+    by_form_type: dict[str, FormSubmissionTypeStats] = {}
+
 class PlatformSettingsUpdate(BaseModel):
     university_name: Optional[str] = None
     motto: Optional[str] = None

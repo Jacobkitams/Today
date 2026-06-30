@@ -1,0 +1,3 @@
+
+# Local ngrok config (contains authtoken)
+.ngrok/

@@ -27,8 +27,6 @@ CONTENT_TYPE_LABELS = {
 
 ROLE_PANEL_PREFIX = {
     "registered_user": "ru",
-    "student_innovator": "si",
-    "alumni": "al",
     "donor_partner": "dp",
 }
 
@@ -52,7 +50,7 @@ def author_tab_for_content(content_type: str, role: str) -> str:
     if content_type in ("innovations", "startups", "community", "publications"):
         return "submissions"
     if content_type == "alumni":
-        return "profile"
+        return "profile" if role == "registered_user" else "overview"
     if content_type == "events":
         return "events" if role == "registered_user" else "submissions"
     return "submissions"
@@ -60,8 +58,6 @@ def author_tab_for_content(content_type: str, role: str) -> str:
 
 def link_for_user(user: User, tab: str, extra: Optional[str | int] = None) -> str:
     prefix = panel_prefix_for_role(user.role)
-    if user.role == "student_innovator" and tab == "messages":
-        tab = "mentor"
     link = f"{prefix}:{tab}"
     if extra is not None:
         link = f"{link}:{extra}"

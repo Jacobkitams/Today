@@ -34,11 +34,12 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     hashed_password = auth.get_password_hash(user.password)
+    signup_role = user.role if user.role in ("registered_user", "public_visitor") else "registered_user"
     db_user = models.User(
         email=user.email,
         name=user.name,
         hashed_password=hashed_password,
-        role=user.role
+        role=signup_role
     )
     db.add(db_user)
     db.commit()

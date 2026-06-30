@@ -1,5 +1,12 @@
 const API_BASE_URL = (() => {
+    const override = localStorage.getItem('IUEA_API_BASE');
+    if (override && typeof override === 'string') {
+        return override.replace(/\/$/, '');
+    }
     const host = window.location.hostname || 'localhost';
+    if (host.includes('ngrok-free.dev')) {
+        return `https://${host}/MyProject/today/frontend/api`;
+    }
     return `http://${host}:8001`;
 })();
 
@@ -325,7 +332,7 @@ function tryQueueOfflinePost(endpoint, body) {
 }
 
 async function apiPostRaw(endpoint, body, requireAuth = true) {
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' };
     if (requireAuth && authToken) headers['Authorization'] = `Bearer ${authToken}`;
     const res = await fetch(`${API_BASE_URL}${endpoint}`, { method: 'POST', headers, body: JSON.stringify(body) });
     return { ok: res.ok, data: await parseApiResponse(res), status: res.status };
@@ -439,6 +446,7 @@ async function apiGet(endpoint) {
     }
     try {
         const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+        headers['ngrok-skip-browser-warning'] = 'true';
         const res = await fetch(`${API_BASE_URL}${endpoint}`, { headers });
         if (res.status === 401) {
             if (isAppOnline) logout();
@@ -508,7 +516,7 @@ async function apiPut(endpoint, body = {}) {
     try {
         const res = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' },
             body: JSON.stringify(body)
         });
         return { ok: res.ok, data: await res.json() };
@@ -519,7 +527,7 @@ async function apiDelete(endpoint) {
     try {
         const res = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${authToken}` }
+            headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
         return { ok: res.ok, data: await res.json() };
     } catch (e) { console.error('DELETE error:', endpoint, e); return { ok: false }; }
@@ -529,7 +537,7 @@ async function apiPatch(endpoint, body = {}) {
     try {
         const res = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' },
             body: JSON.stringify(body)
         });
         return { ok: res.ok, data: await res.json() };
@@ -661,13 +669,31 @@ function showHomeLoadingState() {
 /* =================== ROLE DASHBOARD MAP =================== */
 const ROLE_DASHBOARD_MAP = {
     'registered_user':   'registered-user-dashboard',
-    'student_innovator': 'student-innovator-dashboard',
-    'alumni':            'alumni-dashboard',
     'donor_partner':     'donor-partner-dashboard',
+    'coordinator':       'coordinator-dashboard',
     'content_editor':    'admin-dashboard',
     'super_admin':       'admin-dashboard',
     'admin':             'admin-dashboard'
 };
+
+const ASSIGNABLE_USER_ROLES = [
+    'public_visitor',
+    'registered_user',
+    'donor_partner',
+    'coordinator',
+    'content_editor',
+    'super_admin',
+];
+
+const REMOVED_ROLE_DASHBOARDS = ['student-innovator-dashboard', 'alumni-dashboard'];
+
+const LEGACY_NOTIFY_CONTEXT_MAP = { si: 'ru', al: 'ru' };
+
+function selectableRolesForUser(currentRole) {
+    const roles = [...ASSIGNABLE_USER_ROLES];
+    if (currentRole && !roles.includes(currentRole)) roles.push(currentRole);
+    return roles;
+}
 
 function getDashboardForRole(role) {
     return ROLE_DASHBOARD_MAP[role] || null;
@@ -710,6 +736,13 @@ function navigateToDashboard() {
 
 /* =================== NAVIGATION =================== */
 function navigateTo(pageId) {
+    if (REMOVED_ROLE_DASHBOARDS.includes(pageId)) {
+        showToast('This dashboard is no longer available.', 'info');
+        if (currentUser) navigateToDashboard();
+        else navigateTo('home');
+        return;
+    }
+
     const isAdminDash = pageId === 'admin-dashboard';
     const isRoleDash  = Object.values(ROLE_DASHBOARD_MAP).includes(pageId) && pageId !== 'admin-dashboard';
 
@@ -727,10 +760,32 @@ function navigateTo(pageId) {
         return;
     }
 
+    // Guard: coordinator dashboard requires coordinator role
+    if (pageId === 'coordinator-dashboard' && currentUser?.role !== 'coordinator') {
+        showToast('Access denied.', 'error');
+        if (currentUser) navigateToDashboard();
+        else navigateTo('home');
+        return;
+    }
+
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active-nav'));
     const page = document.getElementById(pageId);
-    if (page) page.classList.add('active');
+    if (!page) {
+        if (pageId === 'startups') {
+            navigateToInnovationStartups();
+            return;
+        }
+        if (pageId === 'events' || pageId === 'news') {
+            navigateTo(pageId === 'events' ? 'events-all' : 'home');
+            return;
+        }
+        console.warn('Unknown page:', pageId);
+        showToast('That page is not available.', 'info');
+        navigateTo('home');
+        return;
+    }
+    page.classList.add('active');
     const link = document.querySelector(`.nav-links a[onclick="navigateTo('${pageId}')"]`);
     if (link) link.classList.add('active-nav');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -794,22 +849,33 @@ function switchTab(tabId, btn) {
     document.getElementById('startups-panel').style.display = tabId === 'startups' ? 'block' : 'none';
 }
 
+function navigateToInnovationStartups() {
+    navigateTo('innovation');
+    setTimeout(() => {
+        const btn = document.querySelector('#innovation .innovation-tab-btn[onclick*="startups"]');
+        if (btn) switchTab('startups', btn);
+    }, 120);
+}
+
 function showAdminTab(tabId, btn) {
-    document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
-    if(btn) btn.classList.add('active');
+    const dash = document.getElementById('admin-dashboard');
+    if (!dash) return;
+
+    dash.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
     else {
-        const targetBtn = document.querySelector(`.admin-nav-btn[onclick*="'${tabId}'"]`);
+        const targetBtn = dash.querySelector(`.admin-nav-btn[onclick*="'${tabId}'"]`)
+            || dash.querySelector(`.admin-nav-btn[data-module="${tabId}"]`);
         if (targetBtn) targetBtn.classList.add('active');
     }
 
-    document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
+    dash.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
     const tab = document.getElementById(`admin-tab-${tabId}`);
     if (tab) tab.classList.add('active');
     
     if (tabId === 'hero-videos') {
         loadHeroVideoSettings();
     }
-    
     if (tabId === 'overview') {
         setTimeout(initAdminCharts, 50);
     }
@@ -2945,7 +3011,7 @@ async function loadAdminUsers() {
                     <td style="color:var(--iuea-gray-light)">${u.email}</td>
                     <td>
                         <select class="role-select" onchange="updateUserRole(${u.id}, this.value)">
-                            ${['public_visitor','registered_user','student_innovator','alumni','donor_partner','content_editor','super_admin'].map(r =>
+                            ${selectableRolesForUser(u.role).map(r =>
                                 `<option value="${r}" ${u.role === r ? 'selected' : ''}>${r.replace(/_/g, ' ')}</option>`
                             ).join('')}
                         </select>
@@ -3941,7 +4007,7 @@ async function fetchAdminContentList(moduleName) {
     if (!apiType || !fallback) return [];
 
     try {
-        const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+        const headers = authToken ? { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' } : { 'ngrok-skip-browser-warning': 'true' };
         const res = await fetch(`${API_BASE_URL}/admin/content/${apiType}`, { headers });
         if (res.status === 401) { logout(); return []; }
         if (res.ok) return await res.json();
@@ -3962,7 +4028,7 @@ async function fetchAdminContentItem(moduleName, id) {
     if (!apiType) return null;
 
     try {
-        const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+        const headers = authToken ? { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' } : { 'ngrok-skip-browser-warning': 'true' };
         const res = await fetch(`${API_BASE_URL}/admin/content/${apiType}/${id}`, { headers });
         if (res.status === 401) { logout(); return null; }
         if (res.ok) return await res.json();
@@ -5298,6 +5364,43 @@ async function deleteAdminContent(moduleName, id) {
 }
 
 /* =================== FORMS =================== */
+const PUBLIC_JOIN_FORM_ENDPOINTS = {
+    innovation: '/forms/innovation-join',
+    alumni: '/forms/alumni-join',
+    community: '/forms/community-join',
+    research: '/forms/research-join',
+};
+
+function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((value || '').trim());
+}
+
+function resetPublicForm(type) {
+    const container = document.getElementById(type + 'FormContainer');
+    if (!container) return;
+    container.querySelectorAll('input, textarea').forEach(el => { el.value = ''; });
+}
+
+function getPublicJoinFormValues(type) {
+    return {
+        first_name: document.getElementById(`${type}_fn`)?.value?.trim() || '',
+        last_name: document.getElementById(`${type}_ln`)?.value?.trim() || '',
+        email: document.getElementById(`${type}_email`)?.value?.trim() || '',
+        phone: document.getElementById(`${type}_phone`)?.value?.trim() || '',
+        details: document.getElementById(`${type}_details`)?.value?.trim() || '',
+    };
+}
+
+function validatePublicJoinForm(values) {
+    if (!values.first_name || !values.last_name || !values.email) {
+        return 'Please fill in first name, last name, and email.';
+    }
+    if (!isValidEmail(values.email)) {
+        return 'Please enter a valid email address.';
+    }
+    return null;
+}
+
 function getFormHTML(type) {
     if (type === 'donation') {
         return `
@@ -5322,22 +5425,59 @@ function getFormHTML(type) {
 }
 
 async function submitDonation() {
-    const name = document.getElementById('don_name')?.value;
-    const amount = parseFloat(document.getElementById('don_amount')?.value);
-    const message = document.getElementById('don_msg')?.value;
-    if (!name || !amount) { showToast('Please fill required fields', 'error'); return; }
-    const res = await apiPost('/content/donations', { name, amount, message }, false);
+    const name = document.getElementById('don_name')?.value?.trim();
+    const amountRaw = document.getElementById('don_amount')?.value;
+    const amount = parseFloat(amountRaw);
+    const message = document.getElementById('don_msg')?.value?.trim() || '';
+    if (!name) {
+        showToast('Please enter your full name.', 'error');
+        return;
+    }
+    if (!amountRaw || Number.isNaN(amount) || amount <= 0) {
+        showToast('Please enter a valid donation amount in USD.', 'error');
+        return;
+    }
+    const res = await apiPost('/forms/donation-pledge', { name, amount, message: message || null }, false);
     if (res.ok) {
         showToast('Thank you for your generosity!');
+        resetPublicForm('donation');
         closeForm('donation');
-        loadInitialData({ forceRefresh: true });
-    } else showToast('Donation failed', 'error');
+    } else {
+        const detail = res.data?.detail;
+        const msg = typeof detail === 'string' ? detail : 'Donation submission failed. Please try again.';
+        showToast(msg, 'error');
+    }
 }
 
-function submitGenericForm(type) {
-    if (!currentUser) { showAuthModal(); return; }
-    showToast('Registration submitted! Awaiting approval.');
-    closeForm(type);
+async function submitGenericForm(type) {
+    const endpoint = PUBLIC_JOIN_FORM_ENDPOINTS[type];
+    if (!endpoint) {
+        showToast('Unknown form type.', 'error');
+        return;
+    }
+    const values = getPublicJoinFormValues(type);
+    const validationError = validatePublicJoinForm(values);
+    if (validationError) {
+        showToast(validationError, 'error');
+        return;
+    }
+    const body = {
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email,
+        phone: values.phone || null,
+        details: values.details || null,
+    };
+    const res = await apiPost(endpoint, body, false);
+    if (res.ok) {
+        showToast('Registration submitted! We will be in touch soon.');
+        resetPublicForm(type);
+        closeForm(type);
+    } else {
+        const detail = res.data?.detail;
+        const msg = typeof detail === 'string' ? detail : 'Submission failed. Please try again.';
+        showToast(msg, 'error');
+    }
 }
 
 const SHARE_PAGE_MAP = {
@@ -6024,7 +6164,7 @@ async function loadContentComments(type, id) {
 
     const apiType = commentApiPath(type);
     try {
-        const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+        const headers = authToken ? { Authorization: `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' } : { 'ngrok-skip-browser-warning': 'true' };
         const res = await fetch(`${API_BASE_URL}/content/${apiType}/${id}/comments`, { headers });
         if (!res.ok) {
             listEl.innerHTML = `<div class="comment-empty"><p>Could not load comments. Please try again.</p></div>`;
@@ -6250,10 +6390,15 @@ function viewAuthorStories() {
     const authorId = authorProfileState.userId;
     const profile = authorProfileState.profile;
     const authorName = profile?.name || authorProfileState.fallbackName || 'Community member';
-    if (!authorId) return;
     closeAuthorProfileModal();
-    navigateTo('news');
-    showToast(`Showing stories shared by ${authorName}.`, 'success');
+    navigateTo('home');
+    setTimeout(() => {
+        const grid = document.getElementById('newsGrid');
+        if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (authorId) {
+            showToast(`Showing stories from ${authorName}.`, 'info');
+        }
+    }, 150);
 }
 
 async function openAuthorProfileModal(authorId, authorName, contentType, contentId) {
@@ -6310,7 +6455,7 @@ function getMessagingContextForCurrentUser() {
     const role = currentUser.role;
     if (['super_admin', 'content_editor', 'admin'].includes(role)) return 'admin';
     if (role === 'registered_user') return 'ru';
-    if (role === 'alumni') return 'al';
+    if (role === 'donor_partner') return 'dp';
     return null;
 }
 
@@ -6335,15 +6480,6 @@ async function messageContentAuthor() {
 
     closeAuthorProfileModal();
     openMiniChat(authorId, authorName, authorRole);
-}
-
-function viewAuthorStories() {
-    closeAuthorProfileModal();
-    navigateTo('home');
-    setTimeout(() => {
-        const grid = document.getElementById('newsGrid');
-        if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 150);
 }
 
 function applyCreateModalConfig(type, useGenericHeader) {
@@ -6719,7 +6855,10 @@ async function uploadFile(fileInput, type, onProgress) {
     onProgress(30, `Uploading ${type}…`);
     const res = await fetch(`${API_BASE_URL}/upload/${type}`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${authToken}` },
+        headers: { 
+            'Authorization': `Bearer ${authToken}`,
+            'ngrok-skip-browser-warning': 'true'
+        },
         body: formData
     });
     if (!res.ok) {
@@ -6926,7 +7065,10 @@ async function signIn() {
     try {
         const res = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            headers: { 
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'ngrok-skip-browser-warning': 'true'
+            },
             body: formData
         });
         const data = await res.json();
@@ -6951,24 +7093,37 @@ async function signIn() {
 
 function showSignUp() {
     document.getElementById('authFormContent').innerHTML = `
-        <h2 style="color:var(--iuea-maroon); margin-bottom:0.5rem;">Create Account</h2>
-        <p style="color:var(--iuea-gray-light); margin-bottom:1.5rem;">Join the IUEA community today.</p>
-        <div class="form-group"><label>Full Name</label><input type="text" id="signupName" placeholder="Your full name"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="signupEmail" placeholder="you@iuea.ac.ug"></div>
-        <div class="form-group"><label>Password</label><input type="password" id="signupPassword" placeholder="Min. 8 characters"></div>
-        <button class="btn-primary" style="width:100%; justify-content:center;" onclick="signUp()"><i data-lucide="user-plus"></i> Create Account</button>
-        <p style="margin-top:1rem; text-align:center; color:var(--iuea-gray-light)">Already have an account? <a href="#" onclick="restoreSignIn()" style="color:var(--iuea-maroon); font-weight:600;">Sign In</a></p>
+        <div class="auth-modal-header">
+            <h2>Create Account</h2>
+            <p>Join the IUEA community today</p>
+        </div>
+        <div class="auth-modal-body">
+            <div class="form-group"><label for="signupName">Full Name</label><input type="text" id="signupName" placeholder="Your full name" autocomplete="name"></div>
+            <div class="form-group"><label for="signupEmail">Email</label><input type="email" id="signupEmail" placeholder="you@iuea.ac.ug" autocomplete="email"></div>
+            <div class="form-group"><label for="signupPassword">Password</label><input type="password" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password"></div>
+            <button type="button" class="btn-primary auth-submit-btn" onclick="signUp()"><i data-lucide="user-plus"></i> Create Account</button>
+        </div>
+        <div class="auth-modal-footer">
+            <p>Already have an account? <a href="#" onclick="restoreSignIn(); return false;">Sign In</a></p>
+        </div>
     `;
     lucide.createIcons();
 }
 
 function restoreSignIn() {
     document.getElementById('authFormContent').innerHTML = `
-        <h2 style="color:var(--iuea-maroon); margin-bottom:1rem;">Sign In</h2>
-        <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com"></div>
-        <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
-        <button class="btn-primary" style="width:100%; justify-content:center; margin-top:1rem;" onclick="signIn()">Sign In</button>
-        <p style="margin-top:1.5rem; text-align:center; color:var(--iuea-gray-light)">Don't have an account? <a href="#" onclick="showSignUp()" style="color:var(--iuea-maroon); font-weight:600;">Sign Up</a></p>
+        <div class="auth-modal-header">
+            <h2>Sign In</h2>
+            <p>Welcome back to IUEA Today</p>
+        </div>
+        <div class="auth-modal-body">
+            <div class="form-group"><label for="loginEmail">Email</label><input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"></div>
+            <div class="form-group"><label for="loginPassword">Password</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
+            <button type="button" class="btn-primary auth-submit-btn" onclick="signIn()">Sign In</button>
+        </div>
+        <div class="auth-modal-footer">
+            <p>Don't have an account? <a href="#" onclick="showSignUp(); return false;">Sign Up</a></p>
+        </div>
     `;
     lucide.createIcons();
 }
@@ -7030,8 +7185,7 @@ function updateUIForUser() {
         if (mobileLink) mobileLink.setAttribute('onclick', 'logout()');
 
         const role = currentUser.role || 'public_visitor';
-        const isAdmin = ['super_admin', 'content_editor', 'admin'].includes(role);
-        if (userDashLink) userDashLink.style.display = (!isAdmin && role !== 'public_visitor') ? 'flex' : 'none';
+        if (userDashLink) userDashLink.style.display = getDashboardForRole(role) ? 'flex' : 'none';
         const roleLabel = formatRoleLabel(role);
         if (badge) badge.textContent = roleLabel;
         if (welcomeTitle) welcomeTitle.textContent = `Welcome back, ${displayName}`;
@@ -7040,12 +7194,16 @@ function updateUIForUser() {
         if (adminUserNameEl) adminUserNameEl.textContent = getAdminMenuDisplayName(currentUser);
 
         // Populate name in role dashboards
-        const nameMap = { ruDashName: displayName, siDashName: displayName, alDashName: displayName };
-        Object.entries(nameMap).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; });
+        const ruDashNameEl = document.getElementById('ruDashName');
+        if (ruDashNameEl) ruDashNameEl.textContent = displayName;
         const dpUserNameEl = document.getElementById('dpUserName');
         if (dpUserNameEl) dpUserNameEl.textContent = displayName;
         const dpRoleBadgeEl = document.getElementById('dpRoleBadge');
         if (dpRoleBadgeEl) dpRoleBadgeEl.textContent = role === 'donor_partner' ? 'Donor Partner' : '';
+        const coUserNameEl = document.getElementById('coUserName');
+        if (coUserNameEl) coUserNameEl.textContent = displayName;
+        const coRoleBadgeEl = document.getElementById('coRoleBadge');
+        if (coRoleBadgeEl) coRoleBadgeEl.textContent = role === 'coordinator' ? 'Coordinator' : '';
         refreshUnreadMessageBadges();
         refreshNotifications({ silent: true });
         startNotificationPolling();
@@ -7501,7 +7659,10 @@ async function uploadHeroVideo(pageKey, file, inputEl) {
     try {
         const res = await fetch(`${API_BASE_URL}/settings/hero-videos/${pageKey}`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${authToken}` },
+            headers: { 
+                'Authorization': `Bearer ${authToken}`,
+                'ngrok-skip-browser-warning': 'true'
+            },
             body: formData
         });
 
@@ -8107,7 +8268,7 @@ function setAdminSettingsView(view) {
 }
 
 async function fetchPlatformSettings() {
-    const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+    const headers = authToken ? { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' } : { 'ngrok-skip-browser-warning': 'true' };
     const res = await fetch(`${API_BASE_URL}/admin/settings`, { headers });
     if (res.status === 401) {
         logout();
@@ -8238,33 +8399,44 @@ boot().then(() => {
 
 /* =================== ROLE DASHBOARD HELPERS =================== */
 function usesAdminRoleLayout(prefix) {
-    return prefix === 'al' || prefix === 'dp';
+    return prefix === 'dp';
 }
 
 function usesAdminRoleNav(prefix) {
-    return prefix === 'al' || prefix === 'dp' || prefix === 'ru' || prefix === 'si';
+    return prefix === 'dp' || prefix === 'ru';
+}
+
+function getRoleTabSelector(prefix) {
+    if (prefix === 'co') return '.co-tab';
+    if (usesAdminRoleLayout(prefix)) return '.admin-tab-content';
+    return '.role-tab';
+}
+
+function getRoleNavSelector(prefix) {
+    if (prefix === 'co') return '.cdash-nav-btn[data-co-tab]';
+    if (usesAdminRoleNav(prefix)) return '.admin-nav-btn';
+    return '.rdash-nav-btn';
 }
 
 function showRoleTab(prefix, tabId, btn) {
     // Deactivate all buttons and tabs for this dashboard
     const dashId = {
         ru: 'registered-user-dashboard',
-        si: 'student-innovator-dashboard',
-        al: 'alumni-dashboard',
         dp: 'donor-partner-dashboard',
+        co: 'coordinator-dashboard',
     }[prefix];
     if (!dashId) return;
     const dash = document.getElementById(dashId);
     if (!dash) return;
 
-    const usesAdminLayout = usesAdminRoleLayout(prefix);
-    const navSelector = usesAdminRoleNav(prefix) ? '.admin-nav-btn' : '.rdash-nav-btn';
-    const tabSelector = usesAdminLayout ? '.admin-tab-content' : '.role-tab';
+    const navSelector = getRoleNavSelector(prefix);
+    const tabSelector = getRoleTabSelector(prefix);
 
     dash.querySelectorAll(navSelector).forEach(b => b.classList.remove('active'));
     dash.querySelectorAll(tabSelector).forEach(t => t.classList.remove('active'));
     if (!btn) {
-        btn = dash.querySelector(`[data-ru-tab="${tabId}"]`)
+        btn = dash.querySelector(`[data-co-tab="${tabId}"]`)
+            || dash.querySelector(`[data-ru-tab="${tabId}"]`)
             || dash.querySelector(`${navSelector}[onclick*="'${tabId}'"]`)
             || dash.querySelector(`${navSelector}[onclick*='"${tabId}"']`);
     }
@@ -8284,6 +8456,13 @@ function showRoleTab(prefix, tabId, btn) {
     }
     if (prefix === 'ru' && tabId === 'overview') {
         loadRuOverviewStats();
+    }
+    if (prefix === 'co' && tabId === 'overview') {
+        loadCoordinatorStats();
+    }
+    if (prefix === 'co' && CO_TAB_FORM_TYPES[tabId]) {
+        coordinatorActiveTab = tabId;
+        loadCoordinatorSubmissions(tabId);
     }
     if (tabId === 'messages') {
         initMessaging(prefix);
@@ -8313,72 +8492,35 @@ function returnToPublic() {
 }
 
 function populateRoleDashboard(dashId) {
+    ensureRoleDashboardTabActive(dashId);
     // Pre-fill profile data if available
     if (currentUser) {
         if (dashId === 'registered-user-dashboard') {
             populateRuDashboard();
         }
-        if (dashId === 'alumni-dashboard') {
-            populateAlumniDashboard();
-        }
-        if (dashId === 'student-innovator-dashboard') {
-            populateSiDashboard();
-        }
         if (dashId === 'donor-partner-dashboard') {
             populateDpDashboard();
+        }
+        if (dashId === 'coordinator-dashboard') {
+            populateCoordinatorDashboard();
         }
         refreshNotifications({ silent: true });
     }
     lucide.createIcons();
 }
 
-function populateSiDashboard() {
-    if (!currentUser) return;
-
-    const displayName = currentUser.name || 'Innovator';
-    const welcome = document.getElementById('siWelcomeTitle');
-    if (welcome) welcome.textContent = `Welcome back, ${displayName}`;
-
-    const dateEl = document.getElementById('siDateDisplay');
-    if (dateEl) {
-        dateEl.textContent = new Date().toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    }
-
-    const nameEl = document.getElementById('siDashName');
-    if (nameEl) nameEl.textContent = displayName;
-
-    const badge = document.getElementById('siRoleBadge');
-    if (badge) badge.textContent = 'Student Innovator';
-}
-
-function siDashSearch() {
-    const input = document.getElementById('siDashSearch');
-    if (!input) return;
-    const query = input.value.trim().toLowerCase();
-    if (!query) return;
-
-    const tabMap = [
-        ['overview', ['dashboard', 'overview', 'home']],
-        ['submissions', ['submission', 'submissions', 'my submissions']],
-        ['submit-innovation', ['innovation', 'submit innovation', 'idea']],
-        ['submit-startup', ['startup', 'register startup', 'venture']],
-        ['status', ['status', 'approval', 'pending', 'review']],
-        ['messages', ['mentor', 'message', 'messages']],
-        ['techpark', ['tech park', 'techpark', 'incubation']],
-    ];
-
-    for (const [tabId, keywords] of tabMap) {
-        if (keywords.some(k => query.includes(k) || k.includes(query))) {
-            showRoleTab('si', tabId, findRoleTabButton('si', tabId));
-            return;
-        }
-    }
-    showToast('No matching section found. Try "submissions", "innovation", or "messages".');
+function ensureRoleDashboardTabActive(dashId) {
+    const prefixMap = {
+        'registered-user-dashboard': 'ru',
+        'donor-partner-dashboard': 'dp',
+        'coordinator-dashboard': 'co',
+    };
+    const prefix = prefixMap[dashId];
+    if (!prefix) return;
+    const dash = document.getElementById(dashId);
+    if (!dash || dash.querySelector('.admin-tab-content.active')) return;
+    const btn = findRoleTabButton(prefix, 'overview');
+    if (btn) showRoleTab(prefix, 'overview', btn);
 }
 
 function populateRuDashboard() {
@@ -8542,45 +8684,6 @@ function ruEmptyStatePanel(icon, title, message, actionHtml = '') {
         </div>`;
 }
 
-function populateAlumniDashboard() {
-    if (!currentUser) return;
-
-    const displayName = currentUser.name || 'Alumni';
-    const welcome = document.getElementById('alWelcomeTitle');
-    if (welcome) welcome.textContent = `Welcome back, ${displayName}`;
-
-    const dateEl = document.getElementById('alDateDisplay');
-    if (dateEl) {
-        dateEl.textContent = new Date().toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    }
-
-    const nameEl = document.getElementById('alDashName');
-    if (nameEl) nameEl.textContent = displayName;
-
-    const badge = document.getElementById('alRoleBadge');
-    if (badge) badge.textContent = 'Alumni';
-
-    const parts = displayName.split(/\s+/).filter(Boolean);
-    const fn = document.getElementById('alFirstName');
-    const ln = document.getElementById('alLastName');
-    if (fn && !fn.value && parts[0]) fn.value = parts[0];
-    if (ln && !ln.value && parts.length > 1) ln.value = parts.slice(1).join(' ');
-
-    const profileFields = ['alFirstName', 'alLastName', 'alYear', 'alProgram', 'alRole', 'alCountry'];
-    const filled = profileFields.filter(id => {
-        const el = document.getElementById(id);
-        return el && String(el.value || '').trim();
-    }).length;
-    const pct = Math.round((filled / profileFields.length) * 100);
-    const statProfile = document.getElementById('alStatProfile');
-    if (statProfile) statProfile.textContent = `${pct}%`;
-}
-
 function getMyDonations(allDonations) {
     if (!Array.isArray(allDonations) || !currentUser?.name) return [];
     const myName = currentUser.name.trim().toLowerCase();
@@ -8683,6 +8786,389 @@ async function populateDpDashboard() {
     lucide.createIcons();
 }
 
+/* =================== COORDINATOR DASHBOARD =================== */
+const CO_TAB_FORM_TYPES = {
+    innovation: 'innovation_join',
+    alumni: 'alumni_join',
+    donations: 'donation_pledge',
+    community: 'community_join',
+    research: 'research_join',
+};
+
+const CO_FORM_CONFIG = {
+    innovation: {
+        formType: 'innovation_join',
+        tbodyId: 'co-tbody-innovation',
+        tableId: 'co-table-innovation',
+        loadingId: 'co-innovation-loading',
+        emptyId: 'co-innovation-empty',
+        paginationId: 'co-pagination-innovation',
+        countId: 'co-pagination-innovation-count',
+        filterId: 'co-filter-innovation-status',
+        navBadgeId: 'co-nav-innovation-badge',
+        statPendingId: 'co-stat-innovation-pending',
+    },
+    alumni: {
+        formType: 'alumni_join',
+        tbodyId: 'co-tbody-alumni',
+        tableId: 'co-table-alumni',
+        loadingId: 'co-alumni-loading',
+        emptyId: 'co-alumni-empty',
+        paginationId: 'co-pagination-alumni',
+        countId: 'co-pagination-alumni-count',
+        filterId: 'co-filter-alumni-status',
+        navBadgeId: 'co-nav-alumni-badge',
+        statPendingId: 'co-stat-alumni-pending',
+    },
+    donations: {
+        formType: 'donation_pledge',
+        tbodyId: 'co-tbody-donations',
+        tableId: 'co-table-donations',
+        loadingId: 'co-donations-loading',
+        emptyId: 'co-donations-empty',
+        paginationId: 'co-pagination-donations',
+        countId: 'co-pagination-donations-count',
+        filterId: 'co-filter-donations-status',
+        navBadgeId: 'co-nav-donations-badge',
+        statPendingId: 'co-stat-donations-pending',
+    },
+    community: {
+        formType: 'community_join',
+        tbodyId: 'co-tbody-community',
+        tableId: 'co-table-community',
+        loadingId: 'co-community-loading',
+        emptyId: 'co-community-empty',
+        paginationId: 'co-pagination-community',
+        countId: 'co-pagination-community-count',
+        filterId: 'co-filter-community-status',
+        navBadgeId: 'co-nav-community-badge',
+        statPendingId: 'co-stat-community-pending',
+    },
+    research: {
+        formType: 'research_join',
+        tbodyId: 'co-tbody-research',
+        tableId: 'co-table-research',
+        loadingId: 'co-research-loading',
+        emptyId: 'co-research-empty',
+        paginationId: 'co-pagination-research',
+        countId: 'co-pagination-research-count',
+        filterId: 'co-filter-research-status',
+        navBadgeId: 'co-nav-research-badge',
+        statPendingId: 'co-stat-research-pending',
+    },
+};
+
+let coordinatorActiveTab = 'innovation';
+let coordinatorUiInitialized = false;
+let coordinatorDetailSubmission = null;
+
+function normalizeCoordinatorSubmission(sub) {
+    const firstName = (sub.first_name || '').trim();
+    const lastName = (sub.last_name || '').trim();
+    const name = [firstName, lastName].filter(Boolean).join(' ')
+        || (sub.submitter_name || sub.name || 'Unknown');
+    return {
+        ...sub,
+        name,
+        email: sub.email || sub.submitter_email || '—',
+    };
+}
+
+function coExtraCellValue(tabKey, sub) {
+    const payload = sub.payload || sub.data || sub;
+    if (tabKey === 'alumni') return payload.graduation_year || payload.year || sub.details || '—';
+    if (tabKey === 'donations') {
+        const amount = sub.amount ?? payload.amount;
+        return amount != null ? `$${Number(amount).toLocaleString()}` : '—';
+    }
+    if (tabKey === 'community') return payload.interest_area || payload.interest || payload.program || sub.details || '—';
+    if (tabKey === 'research') return payload.research_area || payload.area || payload.program || sub.details || '—';
+    return '';
+}
+
+function renderSubmissionRow(sub, tabKey) {
+    const normalized = normalizeCoordinatorSubmission(sub);
+    const name = escapeHtml(normalized.name);
+    const email = escapeHtml(normalized.email);
+    const status = sub.status || 'pending';
+    const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+    const date = formatShortDate(sub.created_at);
+    const extra = coExtraCellValue(tabKey, sub);
+    const hasExtra = ['alumni', 'donations', 'community', 'research'].includes(tabKey);
+    const pendingActions = status === 'pending'
+        ? `<button type="button" class="admin-table-action-btn" onclick="openCoordinatorSubmissionDetail(${sub.id}, '${tabKey}')"><i data-lucide="eye"></i> View</button>
+           <button type="button" class="btn-approve" onclick="updateSubmissionStatus(${sub.id}, 'approved', '${tabKey}')"><i data-lucide="check"></i> Approve</button>
+           <button type="button" class="btn-reject" onclick="updateSubmissionStatus(${sub.id}, 'rejected', '${tabKey}')"><i data-lucide="x"></i> Reject</button>`
+        : `<button type="button" class="admin-table-action-btn" onclick="openCoordinatorSubmissionDetail(${sub.id}, '${tabKey}')"><i data-lucide="eye"></i> View</button>`;
+
+    return `
+        <tr class="co-submission-row" id="co-submission-row-${sub.id}">
+            <td class="co-cell-applicant">
+                <div class="user-cell">
+                    <div class="avatar"><i data-lucide="user"></i></div>
+                    <strong class="co-cell-name">${name}</strong>
+                </div>
+            </td>
+            ${tabKey === 'donations'
+                ? `<td class="co-cell-extra">${escapeHtml(extra)}</td><td class="co-cell-email">${email}</td>`
+                : `<td class="co-cell-email">${email}</td>${hasExtra ? `<td class="co-cell-extra">${escapeHtml(extra)}</td>` : ''}`}
+            <td class="co-cell-submitted">${date}</td>
+            <td class="co-cell-status"><span class="status-badge ${ruStoryStatusClass(status)}">${statusLabel}</span></td>
+            <td class="co-cell-actions">
+                <div class="admin-table-actions co-row-actions">${pendingActions}</div>
+            </td>
+        </tr>`;
+}
+
+function setCoordinatorPanelState(tabKey, state) {
+    const cfg = CO_FORM_CONFIG[tabKey];
+    if (!cfg) return;
+    const loading = document.getElementById(cfg.loadingId);
+    const empty = document.getElementById(cfg.emptyId);
+    const table = document.getElementById(cfg.tableId);
+    const pagination = document.getElementById(cfg.paginationId);
+    if (loading) loading.hidden = state !== 'loading';
+    if (empty) empty.hidden = state !== 'empty';
+    if (table) table.hidden = state !== 'ready';
+    if (pagination) pagination.hidden = state !== 'ready';
+}
+
+async function loadCoordinatorSubmissions(formTypeOrTab) {
+    const tabKey = CO_FORM_CONFIG[formTypeOrTab] ? formTypeOrTab : Object.keys(CO_FORM_CONFIG).find(
+        key => CO_FORM_CONFIG[key].formType === formTypeOrTab
+    );
+    const cfg = tabKey ? CO_FORM_CONFIG[tabKey] : null;
+    if (!cfg) return;
+
+    const tbody = document.getElementById(cfg.tbodyId);
+    if (!tbody) return;
+
+    if (!authToken) {
+        setCoordinatorPanelState(tabKey, 'empty');
+        return;
+    }
+
+    setCoordinatorPanelState(tabKey, 'loading');
+
+    const filterEl = document.getElementById(cfg.filterId);
+    const statusFilter = filterEl?.value || 'pending';
+    const query = statusFilter === 'all'
+        ? `form_type=${encodeURIComponent(cfg.formType)}`
+        : `form_type=${encodeURIComponent(cfg.formType)}&status=${encodeURIComponent(statusFilter)}`;
+    const items = await apiGet(`/forms/submissions?${query}`);
+
+    if (!Array.isArray(items)) {
+        setCoordinatorPanelState(tabKey, 'empty');
+        return;
+    }
+
+    if (!items.length) {
+        tbody.innerHTML = '';
+        setCoordinatorPanelState(tabKey, 'empty');
+        return;
+    }
+
+    tbody.innerHTML = items.map(item => renderSubmissionRow(normalizeCoordinatorSubmission(item), tabKey)).join('');
+    const countEl = document.getElementById(cfg.countId);
+    if (countEl) countEl.textContent = `${items.length} submission${items.length === 1 ? '' : 's'}`;
+    setCoordinatorPanelState(tabKey, 'ready');
+    lucide.createIcons();
+}
+
+async function updateSubmissionStatus(id, status, tabKey) {
+    if (!authToken) {
+        showToast('Please sign in first.', 'error');
+        return;
+    }
+
+    const res = await apiPatch(`/forms/submissions/${id}`, { status });
+    if (res.ok) {
+        showToast(`Submission ${status}.`);
+        closeCoordinatorSubmissionDetail();
+        await loadCoordinatorStats();
+        const activeTab = tabKey || coordinatorActiveTab;
+        if (activeTab && CO_FORM_CONFIG[activeTab]) {
+            await loadCoordinatorSubmissions(activeTab);
+        }
+    } else {
+        const detail = res.data?.detail;
+        showToast(typeof detail === 'string' ? detail : 'Failed to update submission.', 'error');
+    }
+}
+
+async function openCoordinatorSubmissionDetail(id, tabKey) {
+    coordinatorDetailSubmission = { id, tabKey };
+    const modal = document.getElementById('co-submission-detail-modal');
+    const titleEl = document.getElementById('co-detail-title');
+    const bodyEl = document.getElementById('co-detail-body');
+    const statusEl = document.getElementById('co-detail-status-badge');
+    const submittedEl = document.getElementById('co-detail-submitted-at');
+    const formTypeEl = document.getElementById('co-detail-form-type');
+    const actionsEl = document.getElementById('co-detail-actions');
+    if (!modal || !bodyEl) return;
+
+    const sub = await apiGet(`/forms/submissions/${id}`);
+    if (!sub || Array.isArray(sub)) {
+        showToast('Could not load submission details.', 'error');
+        return;
+    }
+
+    const normalized = normalizeCoordinatorSubmission(sub);
+    const status = sub.status || 'pending';
+    const cfg = CO_FORM_CONFIG[tabKey];
+
+    if (titleEl) titleEl.innerHTML = `<i data-lucide="file-text"></i> ${escapeHtml(normalized.name)}`;
+    if (statusEl) {
+        statusEl.textContent = status;
+        statusEl.className = `status-badge ${ruStoryStatusClass(status)}`;
+    }
+    if (submittedEl) submittedEl.textContent = `Submitted ${formatShortDate(sub.created_at)}`;
+    if (formTypeEl) formTypeEl.textContent = cfg?.formType || sub.form_type || tabKey;
+
+    const lines = [
+        `<dl class="co-detail-field"><dt>Email</dt><dd>${escapeHtml(normalized.email)}</dd></dl>`,
+    ];
+    if (sub.phone) {
+        lines.push(`<dl class="co-detail-field"><dt>Phone</dt><dd>${escapeHtml(sub.phone)}</dd></dl>`);
+    }
+    if (sub.amount != null) {
+        lines.push(`<dl class="co-detail-field"><dt>Amount</dt><dd>$${Number(sub.amount).toLocaleString()}</dd></dl>`);
+    }
+    if (sub.details) {
+        lines.push(`<dl class="co-detail-field"><dt>Details</dt><dd>${escapeHtml(sub.details)}</dd></dl>`);
+    }
+    if (sub.notes) {
+        lines.push(`<dl class="co-detail-field"><dt>Notes</dt><dd>${escapeHtml(sub.notes)}</dd></dl>`);
+    }
+    bodyEl.innerHTML = lines.join('');
+
+    if (actionsEl) {
+        actionsEl.hidden = status !== 'pending';
+    }
+
+    modal.classList.add('show');
+    lucide.createIcons();
+}
+
+function closeCoordinatorSubmissionDetail() {
+    const modal = document.getElementById('co-submission-detail-modal');
+    if (modal) modal.classList.remove('show');
+    coordinatorDetailSubmission = null;
+}
+
+function initCoordinatorDashboardUi() {
+    if (coordinatorUiInitialized) return;
+    coordinatorUiInitialized = true;
+
+    document.querySelectorAll('#coordinator-dashboard .cdash-nav-btn[data-co-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.coTab;
+            if (tabId) showRoleTab('co', tabId, btn);
+        });
+    });
+
+    Object.keys(CO_FORM_CONFIG).forEach(tabKey => {
+        const filterEl = document.getElementById(CO_FORM_CONFIG[tabKey].filterId);
+        if (filterEl) {
+            filterEl.addEventListener('change', () => loadCoordinatorSubmissions(tabKey));
+        }
+    });
+
+    const closeBtn = document.getElementById('co-detail-close');
+    const closeSecondary = document.getElementById('co-detail-close-secondary');
+    const approveBtn = document.getElementById('co-detail-approve');
+    const rejectBtn = document.getElementById('co-detail-reject');
+    if (closeBtn) closeBtn.addEventListener('click', closeCoordinatorSubmissionDetail);
+    if (closeSecondary) closeSecondary.addEventListener('click', closeCoordinatorSubmissionDetail);
+    if (approveBtn) {
+        approveBtn.addEventListener('click', () => {
+            if (coordinatorDetailSubmission) {
+                updateSubmissionStatus(
+                    coordinatorDetailSubmission.id,
+                    'approved',
+                    coordinatorDetailSubmission.tabKey
+                );
+            }
+        });
+    }
+    if (rejectBtn) {
+        rejectBtn.addEventListener('click', () => {
+            if (coordinatorDetailSubmission) {
+                updateSubmissionStatus(
+                    coordinatorDetailSubmission.id,
+                    'rejected',
+                    coordinatorDetailSubmission.tabKey
+                );
+            }
+        });
+    }
+}
+
+async function loadCoordinatorStats() {
+    const stats = await apiGet('/forms/stats');
+    if (!stats || Array.isArray(stats)) return;
+
+    const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+    const byType = stats.by_form_type || stats.by_type || {};
+    Object.entries(CO_FORM_CONFIG).forEach(([tabKey, cfg]) => {
+        const bucket = byType[cfg.formType] || byType[tabKey] || {};
+        const pending = bucket.pending ?? stats[`${tabKey}_pending`] ?? stats[`${cfg.formType}_pending`];
+        if (pending != null) {
+            setStat(cfg.statPendingId, pending);
+            const badge = document.getElementById(cfg.navBadgeId);
+            if (badge) {
+                if (pending > 0) {
+                    badge.textContent = pending > 99 ? '99+' : String(pending);
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+    });
+
+    const pendingTotal = stats.pending ?? stats.total_pending ?? Object.values(byType).reduce(
+        (sum, bucket) => sum + (bucket?.pending || 0), 0
+    );
+    setStat('co-stat-total-pending', pendingTotal);
+    setStat('co-stat-approved-today', stats.approved_today ?? stats.approved ?? 0);
+    setStat('co-stat-rejected-today', stats.rejected_today ?? stats.rejected ?? 0);
+}
+
+async function populateCoordinatorDashboard() {
+    if (!currentUser || currentUser.role !== 'coordinator') return;
+
+    initCoordinatorDashboardUi();
+
+    const displayName = getUserDisplayName(currentUser) || 'Coordinator';
+
+    const welcome = document.getElementById('coWelcomeTitle');
+    if (welcome) welcome.textContent = `Welcome back, ${displayName}`;
+
+    const dateEl = document.getElementById('coDateDisplay');
+    if (dateEl) {
+        dateEl.textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    }
+
+    const nameEl = document.getElementById('coUserName');
+    if (nameEl) nameEl.textContent = displayName;
+
+    const badge = document.getElementById('coRoleBadge');
+    if (badge) badge.textContent = 'Coordinator';
+
+    await loadCoordinatorStats();
+    if (coordinatorActiveTab && CO_TAB_FORM_TYPES[coordinatorActiveTab]) {
+        await loadCoordinatorSubmissions(coordinatorActiveTab);
+    }
+    lucide.createIcons();
+}
+
 function ruStoryStatusClass(status) {
     if (status === 'approved') return 'approved';
     if (status === 'pending') return 'pending';
@@ -8771,39 +9257,6 @@ function escapeHtml(text) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
-}
-
-async function submitInnovation() {
-    const title = document.getElementById('siInnovTitle')?.value.trim();
-    const desc  = document.getElementById('siInnovDesc')?.value.trim();
-    const cat   = document.getElementById('siInnovCategory')?.value;
-    const img   = document.getElementById('siInnovImage')?.value.trim();
-    if (!title || !desc) { showToast('Title and description are required.', 'error'); return; }
-    const res = await apiPost('/content/innovations', { title, description: desc, category: cat, image: img });
-    if (res.ok) {
-        showToast('Innovation submitted for review!');
-        document.getElementById('siInnovTitle').value = '';
-        document.getElementById('siInnovDesc').value  = '';
-        document.getElementById('siInnovImage').value = '';
-    } else {
-        showToast(res.data?.detail || 'Submission failed', 'error');
-    }
-}
-
-async function submitStartup() {
-    const name  = document.getElementById('siStartupName')?.value.trim();
-    const desc  = document.getElementById('siStartupDesc')?.value.trim();
-    const focus = document.getElementById('siStartupFocus')?.value;
-    const img   = document.getElementById('siStartupImage')?.value.trim();
-    if (!name || !desc) { showToast('Name and description are required.', 'error'); return; }
-    const res = await apiPost('/content/startups', { name, description: desc, focus, image: img });
-    if (res.ok) {
-        showToast('Startup registered! Awaiting approval.');
-        document.getElementById('siStartupName').value = '';
-        document.getElementById('siStartupDesc').value  = '';
-    } else {
-        showToast(res.data?.detail || 'Registration failed', 'error');
-    }
 }
 
 async function makeDonation() {
@@ -9008,32 +9461,13 @@ async function sendMiniChatMessage() {
 const messagingState = {
     admin: { selectedUserId: null, selectedUser: null, pollTimer: null, searchTimer: null, initialized: false },
     ru: { selectedUserId: null, selectedUser: null, pollTimer: null, searchTimer: null, initialized: false },
-    al: { selectedUserId: null, selectedUser: null, pollTimer: null, searchTimer: null, initialized: false },
-    si: { selectedUserId: null, selectedUser: null, pollTimer: null, searchTimer: null, initialized: false },
     dp: { selectedUserId: null, selectedUser: null, pollTimer: null, searchTimer: null, initialized: false },
 };
 
 const MSG_CONTEXT_CONFIG = {
-    admin: {
-        prefix: 'admin',
-        badgeId: 'nav-messages-badge',
-    },
-    ru: {
-        prefix: 'ru',
-        badgeId: 'ru-nav-messages-badge',
-    },
-    al: {
-        prefix: 'al',
-        badgeId: 'al-nav-messages-badge',
-    },
-    si: {
-        prefix: 'si',
-        badgeId: 'si-nav-messages-badge',
-    },
-    dp: {
-        prefix: 'dp',
-        badgeId: 'dp-nav-messages-badge',
-    },
+    admin: { prefix: 'admin', badgeId: 'nav-messages-badge' },
+    ru: { prefix: 'ru', badgeId: 'ru-nav-messages-badge' },
+    dp: { prefix: 'dp', badgeId: 'dp-nav-messages-badge' },
 };
 
 function msgEl(context, suffix) {
@@ -9105,8 +9539,6 @@ async function refreshUnreadMessageBadges() {
     const isAdmin = ['super_admin', 'content_editor', 'admin'].includes(currentUser.role);
     if (isAdmin) setMsgBadge('nav-messages-badge', count);
     if (currentUser.role === 'registered_user') setMsgBadge('ru-nav-messages-badge', count);
-    if (currentUser.role === 'alumni') setMsgBadge('al-nav-messages-badge', count);
-    if (currentUser.role === 'student_innovator') setMsgBadge('si-nav-messages-badge', count);
     if (currentUser.role === 'donor_partner') setMsgBadge('dp-nav-messages-badge', count);
 }
 
@@ -9409,8 +9841,6 @@ const NOTIFY_TYPE_LABELS = {
 const NOTIFY_DASHBOARD_MAP = {
     admin: 'admin-dashboard',
     ru: 'registered-user-dashboard',
-    si: 'student-innovator-dashboard',
-    al: 'alumni-dashboard',
     dp: 'donor-partner-dashboard',
 };
 
@@ -9419,8 +9849,6 @@ function getActiveNotifyContext() {
     const role = currentUser.role;
     if (['super_admin', 'content_editor', 'admin'].includes(role)) return 'admin';
     if (role === 'registered_user') return 'ru';
-    if (role === 'student_innovator') return 'si';
-    if (role === 'alumni') return 'al';
     if (role === 'donor_partner') return 'dp';
     return null;
 }
@@ -9577,17 +10005,27 @@ function findAdminTabButton(tabId) {
 
 function findRoleTabButton(prefix, tabId) {
     const dashId = NOTIFY_DASHBOARD_MAP[prefix];
-    const navClass = ['ru', 'si', 'al', 'dp'].includes(prefix) ? 'admin-nav-btn' : 'rdash-nav-btn';
-    return document.querySelector(`#${dashId} .${navClass}[onclick*="showRoleTab('${prefix}','${tabId}'"]`)
+    let navClass = 'rdash-nav-btn';
+    if (prefix === 'co') navClass = 'cdash-nav-btn';
+    else if (['ru', 'dp'].includes(prefix)) navClass = 'admin-nav-btn';
+    return document.querySelector(`#${dashId} .${navClass}[data-co-tab="${tabId}"]`)
+        || document.querySelector(`#${dashId} .${navClass}[onclick*="showRoleTab('${prefix}','${tabId}'"]`)
         || document.querySelector(`#${dashId} .${navClass}[onclick*='showRoleTab("${prefix}","${tabId}"']`);
 }
 
 async function navigateFromNotificationLink(link) {
     if (!link) return;
     const parts = link.split(':');
-    const ctx = parts[0];
-    const tab = parts[1];
+    let ctx = parts[0];
+    let tab = parts[1];
     const extra = parts[2];
+
+    if (!NOTIFY_DASHBOARD_MAP[ctx] && LEGACY_NOTIFY_CONTEXT_MAP[ctx]) {
+        ctx = LEGACY_NOTIFY_CONTEXT_MAP[ctx];
+        if (tab === 'mentor') tab = 'messages';
+        if (tab === 'submissions') tab = 'stories';
+        if (tab === 'achievement') tab = 'profile';
+    }
 
     const dashId = NOTIFY_DASHBOARD_MAP[ctx];
     if (!dashId) return;

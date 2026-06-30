@@ -11,10 +11,10 @@ db = SessionLocal()
 
 users_to_create = [
     {"email": "user@iuea.ac.ug", "name": "Test User", "role": "registered_user", "password": "password"},
-    {"email": "innovator@iuea.ac.ug", "name": "Student Innovator", "role": "student_innovator", "password": "password"},
     {"email": "alumni@iuea.ac.ug", "name": "IUEA Alumni", "role": "alumni", "password": "password"},
     {"email": "donor@iuea.ac.ug", "name": "Partner Donor", "role": "donor_partner", "password": "password"},
     {"email": "editor@iuea.ac.ug", "name": "Content Editor", "role": "content_editor", "password": "password"},
+    {"email": "coordinator@iuea.ac.ug", "name": "Form Coordinator", "role": "coordinator", "password": "password"},
     {"email": "superadmin@iuea.ac.ug", "name": "Super Admin", "role": "super_admin", "password": "password"}
 ]
 

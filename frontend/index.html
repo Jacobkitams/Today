@@ -386,7 +386,7 @@
             </div>
 
             <section class="tab-section" style="padding-top: 1.5rem; padding-bottom: 2rem;">
-                <div id="endowmentStats" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;"></div>
+                <div id="endowmentStats" class="endowment-stats-grid"></div>
             </section>
 
             <section class="tab-section" style="padding-top: 1rem;">
@@ -823,7 +823,6 @@
                         <button class="admin-nav-btn rdash-nav-btn" data-ru-tab="saved" onclick="showRoleTab('ru','saved',this)"><i data-lucide="bookmark"></i> Saved Content</button>
                         <button class="admin-nav-btn rdash-nav-btn" data-ru-tab="followed" onclick="showRoleTab('ru','followed',this)"><i data-lucide="heart"></i> Followed Items</button>
                         <button class="admin-nav-btn rdash-nav-btn" data-ru-tab="stories" onclick="showRoleTab('ru','stories',this)"><i data-lucide="file-text"></i> My Shared Stories</button>
-                        <button class="admin-nav-btn rdash-nav-btn" data-ru-tab="events" onclick="showRoleTab('ru','events',this)"><i data-lucide="calendar"></i> Event Registrations</button>
                     </nav>
                 </div>
 
@@ -880,14 +879,6 @@
                             </div>
                             <div class="stat-value" id="ru-stat-stories">—</div>
                             <div class="stat-trend"><i data-lucide="pen-tool"></i> Your submissions</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Events</span>
-                                <div class="stat-icon-wrap bg-green"><i data-lucide="calendar"></i></div>
-                            </div>
-                            <div class="stat-value" id="ru-stat-events">0</div>
-                            <div class="stat-trend"><i data-lucide="calendar-check"></i> Registrations</div>
                         </div>
                     </div>
 
@@ -992,25 +983,6 @@
                     </div>
                 </div>
 
-                <!-- EVENT REGISTRATIONS -->
-                <div id="ru-tab-events" class="role-tab">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Event Registrations</h3>
-                            <p>Events you've signed up for.</p>
-                        </div>
-                        <button class="btn-primary" onclick="returnToPublic()"><i data-lucide="calendar"></i> Browse Events</button>
-                    </div>
-                    <div class="admin-panel">
-                        <div class="ru-empty-state">
-                            <i data-lucide="calendar-x"></i>
-                            <h3>No event registrations</h3>
-                            <p>Register for campus events to see them here.</p>
-                            <button class="btn-primary" onclick="returnToPublic()">Browse Events</button>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- MESSAGES -->
                 <div id="ru-tab-messages" class="role-tab">
                     <div class="admin-panel-header">
@@ -1064,650 +1036,6 @@
         </div>
     </div>
 
-    <!-- ===== STUDENT INNOVATOR DASHBOARD ===== -->
-    <div id="student-innovator-dashboard" class="page-section admin-page-wrapper si-page-wrapper">
-        <header class="admin-topbar">
-            <div class="admin-topbar-left">
-                <div class="admin-logo" onclick="returnToPublic()" title="Back to IUEA Today">
-                    <img src="assets/images/iuea-logo.png" alt="IUEA Logo">
-                </div>
-            </div>
-
-            <div class="admin-topbar-center">
-                <div class="admin-search-wrap">
-                    <i data-lucide="search"></i>
-                    <input type="text" id="siDashSearch" placeholder="Search submissions, mentors, or actions..." aria-label="Search innovator dashboard" onkeydown="if(event.key==='Enter')siDashSearch()">
-                    <span class="admin-search-shortcut" aria-hidden="true">⌘K</span>
-                </div>
-            </div>
-
-            <div class="admin-topbar-right">
-                <button type="button" class="admin-btn-create" onclick="showRoleTab('si','submit-innovation',findRoleTabButton('si','submit-innovation'))">
-                    <i data-lucide="plus"></i>
-                    <span>New Submission</span>
-                </button>
-                <div class="admin-topbar-actions">
-                    <div class="notify-wrap" data-notify-context="si">
-                        <button type="button" class="admin-icon-btn admin-icon-btn--notify notify-btn" aria-label="Notifications" aria-expanded="false">
-                            <i data-lucide="bell"></i>
-                            <span class="admin-notification-badge notify-badge" style="display:none">0</span>
-                        </button>
-                        <div class="notify-dropdown" hidden>
-                            <div class="notify-dropdown-header">
-                                <h3>Notifications</h3>
-                                <button type="button" class="notify-mark-all">Mark all read</button>
-                            </div>
-                            <div class="notify-dropdown-list"></div>
-                            <div class="notify-dropdown-empty" hidden>
-                                <i data-lucide="bell-off"></i>
-                                <p>No notifications yet</p>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" onclick="returnToPublic()" class="admin-icon-btn" title="View Public Site" aria-label="View public site">
-                        <i data-lucide="external-link"></i>
-                    </button>
-                </div>
-                <div class="admin-topbar-divider" aria-hidden="true"></div>
-                <div class="admin-user-area">
-                    <div class="admin-user-menu" aria-label="Signed in user profile">
-                        <div class="admin-avatar" aria-hidden="true"><i data-lucide="lightbulb"></i></div>
-                        <div class="admin-user-info">
-                            <span id="siDashName" class="admin-user-name">Student</span>
-                            <span id="siRoleBadge" class="admin-role-badge">Student Innovator</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <div class="admin-layout">
-            <aside class="admin-sidebar">
-                <div class="admin-sidebar-section">
-                    <div class="admin-sidebar-label">Main Menu</div>
-                    <nav class="admin-nav">
-                        <button class="admin-nav-btn rdash-nav-btn active" onclick="showRoleTab('si','overview',this)"><i data-lucide="layout-dashboard"></i> Dashboard</button>
-                        <button class="admin-nav-btn rdash-nav-btn" onclick="showRoleTab('si','submissions',this)"><i data-lucide="list"></i> My Submissions</button>
-                        <button class="admin-nav-btn rdash-nav-btn" onclick="showRoleTab('si','status',this)"><i data-lucide="clock"></i> Approval Status <span class="nav-badge" id="si-nav-pending-badge">0</span></button>
-                        <button class="admin-nav-btn rdash-nav-btn" onclick="showRoleTab('si','messages',this)"><i data-lucide="message-circle"></i> Messages <span class="nav-badge nav-badge-unread" id="si-nav-messages-badge" style="display:none">0</span></button>
-                    </nav>
-                </div>
-
-                <div class="admin-sidebar-section">
-                    <div class="admin-sidebar-label">Create</div>
-                    <nav class="admin-nav">
-                        <button class="admin-nav-btn rdash-nav-btn" onclick="showRoleTab('si','submit-innovation',this)"><i data-lucide="lightbulb"></i> Submit Innovation</button>
-                        <button class="admin-nav-btn rdash-nav-btn" onclick="showRoleTab('si','submit-startup',this)"><i data-lucide="rocket"></i> Submit Startup</button>
-                        <button class="admin-nav-btn rdash-nav-btn" onclick="showRoleTab('si','techpark',this)"><i data-lucide="building-2"></i> Tech Park Apply</button>
-                    </nav>
-                </div>
-
-                <div class="admin-sidebar-section admin-sidebar-footer">
-                    <div class="admin-sidebar-label">Account</div>
-                    <nav class="admin-nav">
-                        <button class="admin-nav-btn rdash-nav-btn" onclick="returnToPublic()"><i data-lucide="globe"></i> Public Site</button>
-                        <button type="button" class="admin-nav-btn rdash-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
-                            <i data-lucide="log-out"></i> Sign Out
-                        </button>
-                    </nav>
-                </div>
-            </aside>
-
-            <main class="admin-main">
-                <!-- OVERVIEW -->
-                <div id="si-tab-overview" class="role-tab active">
-                    <div class="admin-welcome-banner">
-                        <div class="admin-welcome-content">
-                            <h2 id="siWelcomeTitle">Welcome, Innovator!</h2>
-                            <p>Track your ideas, submissions, and mentorship from one central hub. Here's your innovation journey at a glance.</p>
-                            <div class="admin-welcome-actions">
-                                <button class="btn-primary" onclick="showRoleTab('si','submit-innovation',findRoleTabButton('si','submit-innovation'))">Submit Innovation</button>
-                                <button class="btn-secondary" style="color:var(--iuea-gray); border-color:rgba(255,255,255,0.5)" onclick="showRoleTab('si','submissions',findRoleTabButton('si','submissions'))">View Submissions</button>
-                            </div>
-                        </div>
-                        <div class="admin-welcome-status">
-                            <div class="date-display" id="siDateDisplay">Loading date...</div>
-                            <div class="platform-status"><span class="status-dot"></span> Portal Active</div>
-                        </div>
-                    </div>
-
-                    <div class="admin-stats-grid">
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Innovations</span>
-                                <div class="stat-icon-wrap bg-gold"><i data-lucide="lightbulb"></i></div>
-                            </div>
-                            <div class="stat-value" id="siStatInnovations">0</div>
-                            <div class="stat-trend positive"><i data-lucide="sparkles"></i> Ideas submitted</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Startups</span>
-                                <div class="stat-icon-wrap bg-orange"><i data-lucide="rocket"></i></div>
-                            </div>
-                            <div class="stat-value" id="siStatStartups">0</div>
-                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> Ventures registered</div>
-                        </div>
-                        <div class="admin-stat-card-pro warning">
-                            <div class="stat-header">
-                                <span class="stat-title">Pending Review</span>
-                                <div class="stat-icon-wrap bg-red"><i data-lucide="clock"></i></div>
-                            </div>
-                            <div class="stat-value" id="siStatPending">0</div>
-                            <div class="stat-trend negative"><i data-lucide="alert-circle"></i> Awaiting approval</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Approved</span>
-                                <div class="stat-icon-wrap bg-green"><i data-lucide="check-circle"></i></div>
-                            </div>
-                            <div class="stat-value" id="siStatApproved">0</div>
-                            <div class="stat-trend positive"><i data-lucide="badge-check"></i> Live on platform</div>
-                        </div>
-                    </div>
-
-                    <div class="admin-dashboard-grid">
-                        <div class="admin-panel">
-                            <div class="panel-header">
-                                <h3>Quick Actions</h3>
-                            </div>
-                            <div class="si-quick-actions">
-                                <button class="si-quick-action-btn" onclick="showRoleTab('si','submit-innovation',findRoleTabButton('si','submit-innovation'))">
-                                    <div class="si-quick-action-icon bg-gold"><i data-lucide="lightbulb"></i></div>
-                                    <div>
-                                        <strong>Submit Innovation</strong>
-                                        <span>Share a new idea with the community</span>
-                                    </div>
-                                    <i data-lucide="chevron-right" class="si-quick-action-arrow"></i>
-                                </button>
-                                <button class="si-quick-action-btn" onclick="showRoleTab('si','submit-startup',findRoleTabButton('si','submit-startup'))">
-                                    <div class="si-quick-action-icon bg-orange"><i data-lucide="rocket"></i></div>
-                                    <div>
-                                        <strong>Register Startup</strong>
-                                        <span>List your venture in the ecosystem</span>
-                                    </div>
-                                    <i data-lucide="chevron-right" class="si-quick-action-arrow"></i>
-                                </button>
-                                <button class="si-quick-action-btn" onclick="showRoleTab('si','techpark',findRoleTabButton('si','techpark'))">
-                                    <div class="si-quick-action-icon bg-maroon"><i data-lucide="building-2"></i></div>
-                                    <div>
-                                        <strong>Tech Park Apply</strong>
-                                        <span>Request incubation space and resources</span>
-                                    </div>
-                                    <i data-lucide="chevron-right" class="si-quick-action-arrow"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="admin-panel">
-                            <div class="panel-header">
-                                <h3>Getting Started</h3>
-                            </div>
-                            <div class="activity-feed">
-                                <div class="activity-item">
-                                    <div class="activity-icon bg-gold"><i data-lucide="lightbulb"></i></div>
-                                    <div class="activity-details">
-                                        <p><strong>Step 1:</strong> Submit your innovation or startup idea</p>
-                                        <span>Content goes to admin review</span>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="activity-icon bg-red"><i data-lucide="clock"></i></div>
-                                    <div class="activity-details">
-                                        <p><strong>Step 2:</strong> Track approval status in real time</p>
-                                        <span>Get notified when reviewed</span>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="activity-icon bg-green"><i data-lucide="check-circle"></i></div>
-                                    <div class="activity-details">
-                                        <p><strong>Step 3:</strong> Go live on IUEA Today</p>
-                                        <span>Approved content appears publicly</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SUBMIT INNOVATION -->
-                <div id="si-tab-submit-innovation" class="role-tab">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Submit an Innovation</h3>
-                            <p>Share your breakthrough idea with the IUEA community for review and publication.</p>
-                        </div>
-                        <div class="admin-panel-header-actions">
-                            <span class="status-badge pending">Requires Review</span>
-                        </div>
-                    </div>
-                    <div class="admin-panel">
-                        <div class="form-row">
-                            <div class="form-group"><label>Innovation Title *</label><input type="text" id="siInnovTitle" placeholder="e.g. Solar-Powered Water Purifier"></div>
-                            <div class="form-group"><label>Category</label><select id="siInnovCategory"><option>AgriTech</option><option>HealthTech</option><option>FinTech</option><option>EdTech</option><option>CleanEnergy</option><option>Other</option></select></div>
-                        </div>
-                        <div class="form-group"><label>Description *</label><textarea id="siInnovDesc" rows="4" placeholder="Describe your innovation, its impact, and how it works..."></textarea></div>
-                        <div class="form-group"><label>Image URL</label><input type="text" id="siInnovImage" placeholder="https://..."></div>
-                        <button class="btn-primary" onclick="submitInnovation()"><i data-lucide="send"></i> Submit Innovation</button>
-                    </div>
-                </div>
-
-                <!-- SUBMIT STARTUP -->
-                <div id="si-tab-submit-startup" class="role-tab">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Register a Startup</h3>
-                            <p>List your venture in the IUEA startup ecosystem and connect with mentors and investors.</p>
-                        </div>
-                        <div class="admin-panel-header-actions">
-                            <span class="status-badge pending">Requires Review</span>
-                        </div>
-                    </div>
-                    <div class="admin-panel">
-                        <div class="form-row">
-                            <div class="form-group"><label>Startup Name *</label><input type="text" id="siStartupName" placeholder="e.g. AgroVision Ltd"></div>
-                            <div class="form-group"><label>Focus Area</label><select id="siStartupFocus"><option>Agriculture</option><option>Health</option><option>Finance</option><option>Education</option><option>Energy</option><option>Other</option></select></div>
-                        </div>
-                        <div class="form-group"><label>Description *</label><textarea id="siStartupDesc" rows="4" placeholder="What does your startup do? Who does it serve?"></textarea></div>
-                        <div class="form-group"><label>Image URL</label><input type="text" id="siStartupImage" placeholder="https://..."></div>
-                        <button class="btn-primary" onclick="submitStartup()"><i data-lucide="send"></i> Register Startup</button>
-                    </div>
-                </div>
-
-                <!-- MY SUBMISSIONS -->
-                <div id="si-tab-submissions" class="role-tab">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>My Submissions</h3>
-                            <p>All your innovations and startups in one place.</p>
-                        </div>
-                        <div class="admin-panel-header-actions">
-                            <button class="btn-secondary" onclick="showRoleTab('si','submit-innovation',findRoleTabButton('si','submit-innovation'))"><i data-lucide="plus"></i> New Submission</button>
-                        </div>
-                    </div>
-                    <div id="siSubmissionsList" class="admin-panel p-0">
-                        <div class="admin-empty-state">
-                            <div class="empty-icon"><i data-lucide="inbox"></i></div>
-                            <h3>No submissions yet</h3>
-                            <p>Submit an innovation or startup to see it listed here with status and review details.</p>
-                            <button class="btn-primary mt-3" onclick="showRoleTab('si','submit-innovation',findRoleTabButton('si','submit-innovation'))"><i data-lucide="lightbulb"></i> Submit Innovation</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- APPROVAL STATUS -->
-                <div id="si-tab-status" class="role-tab">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Approval Status</h3>
-                            <p>Track the review progress of your submitted content.</p>
-                        </div>
-                    </div>
-                    <div id="siStatusList" class="admin-panel p-0">
-                        <div class="admin-empty-state">
-                            <div class="empty-icon"><i data-lucide="shield-check"></i></div>
-                            <h3>No items under review</h3>
-                            <p>Submitted content will appear here once it enters the review queue. You'll receive a notification when reviewed.</p>
-                            <button class="btn-secondary mt-3" onclick="showRoleTab('si','submit-innovation',findRoleTabButton('si','submit-innovation'))"><i data-lucide="plus"></i> Submit Content</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MESSAGES -->
-                <div id="si-tab-messages" class="role-tab">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Messages</h3>
-                            <p>Connect with mentors, administrators, and the IUEA innovation team.</p>
-                        </div>
-                    </div>
-                    <div class="msg-layout msg-layout-si">
-                        <div class="msg-sidebar">
-                            <div class="msg-search-wrap">
-                                <i data-lucide="search"></i>
-                                <input type="text" id="si-msg-search" placeholder="Search contacts..." autocomplete="off">
-                            </div>
-                            <div class="msg-conversation-list" id="si-msg-conversations"></div>
-                        </div>
-                        <div class="msg-main" id="si-msg-main">
-                            <div class="msg-empty-state" id="si-msg-empty">
-                                <i data-lucide="message-circle"></i>
-                                <h3>Select a conversation</h3>
-                                <p>Choose a mentor or contact from the list or search to start chatting.</p>
-                            </div>
-                            <div class="msg-thread" id="si-msg-thread" hidden>
-                                <div class="msg-thread-header" id="si-msg-thread-header"></div>
-                                <div class="msg-messages" id="si-msg-messages"></div>
-                                <div class="msg-compose">
-                                    <textarea id="si-msg-input" rows="1" placeholder="Type a message…" maxlength="5000"></textarea>
-                                    <button type="button" class="msg-send-btn" id="si-msg-send" title="Send"><i data-lucide="send"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TECH PARK -->
-                <div id="si-tab-techpark" class="role-tab">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Tech Park Application</h3>
-                            <p>Apply for incubation space, lab resources, and mentorship at the IUEA Tech Park.</p>
-                        </div>
-                        <div class="admin-panel-header-actions">
-                            <span class="status-badge approved">Open Applications</span>
-                        </div>
-                    </div>
-                    <div class="admin-panel">
-                        <div class="form-group"><label>Project / Startup Name *</label><input type="text" placeholder="Name of your project"></div>
-                        <div class="form-group"><label>Resources Needed</label><textarea rows="3" placeholder="Lab space, funding, mentorship, equipment..."></textarea></div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Expected Duration</label><select><option>3 months</option><option>6 months</option><option>1 year</option></select></div>
-                            <div class="form-group"><label>Team Size</label><select><option>1–2 members</option><option>3–5 members</option><option>6+ members</option></select></div>
-                        </div>
-                        <button class="btn-primary" onclick="showToast('Tech Park application submitted!')"><i data-lucide="send"></i> Submit Application</button>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- ===== ALUMNI DASHBOARD ===== -->
-    <div id="alumni-dashboard" class="page-section admin-page-wrapper alumni-dash">
-        <header class="admin-topbar">
-            <div class="admin-topbar-left">
-                <div class="admin-logo" onclick="returnToPublic()" title="Back to IUEA Today">
-                    <img src="assets/images/iuea-logo.png" alt="IUEA Logo">
-                </div>
-            </div>
-
-            <div class="admin-topbar-center">
-                <div class="admin-search-wrap">
-                    <i data-lucide="search"></i>
-                    <input type="text" placeholder="Search events, messages, or profile..." aria-label="Search alumni dashboard">
-                    <span class="admin-search-shortcut" aria-hidden="true">⌘K</span>
-                </div>
-            </div>
-
-            <div class="admin-topbar-right">
-                <div class="admin-topbar-actions">
-                    <div class="notify-wrap" data-notify-context="al">
-                        <button type="button" class="admin-icon-btn admin-icon-btn--notify notify-btn" aria-label="Notifications" aria-expanded="false">
-                            <i data-lucide="bell"></i>
-                            <span class="admin-notification-badge notify-badge" style="display:none">0</span>
-                        </button>
-                        <div class="notify-dropdown" hidden>
-                            <div class="notify-dropdown-header">
-                                <h3>Notifications</h3>
-                                <button type="button" class="notify-mark-all">Mark all read</button>
-                            </div>
-                            <div class="notify-dropdown-list"></div>
-                            <div class="notify-dropdown-empty" hidden>
-                                <i data-lucide="bell-off"></i>
-                                <p>No notifications yet</p>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" onclick="returnToPublic()" class="admin-icon-btn" title="View Public Site" aria-label="View public site">
-                        <i data-lucide="external-link"></i>
-                    </button>
-                </div>
-                <div class="admin-topbar-divider" aria-hidden="true"></div>
-                <div class="admin-user-area">
-                    <div class="admin-user-menu" aria-label="Signed in alumni profile">
-                        <div class="admin-avatar" aria-hidden="true"><i data-lucide="graduation-cap"></i></div>
-                        <div class="admin-user-info">
-                            <span id="alDashName" class="admin-user-name">Alumni</span>
-                            <span id="alRoleBadge" class="admin-role-badge">Alumni</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <div class="admin-layout">
-            <aside class="admin-sidebar">
-                <div class="admin-sidebar-section">
-                    <div class="admin-sidebar-label">Main Menu</div>
-                    <nav class="admin-nav">
-                        <button class="admin-nav-btn active" onclick="showRoleTab('al','overview',this)"><i data-lucide="layout-dashboard"></i> Overview</button>
-                        <button class="admin-nav-btn" onclick="showRoleTab('al','profile',this)"><i data-lucide="user"></i> My Alumni Profile</button>
-                        <button class="admin-nav-btn" onclick="showRoleTab('al','messages',this)"><i data-lucide="message-circle"></i> Messages <span class="nav-badge nav-badge-unread" id="al-nav-messages-badge" style="display:none">0</span></button>
-                    </nav>
-                </div>
-
-                <div class="admin-sidebar-section">
-                    <div class="admin-sidebar-label">Network</div>
-                    <nav class="admin-nav">
-                        <button class="admin-nav-btn" onclick="showRoleTab('al','achievement',this)"><i data-lucide="award"></i> Update Achievement</button>
-                        <button class="admin-nav-btn" onclick="showRoleTab('al','events',this)"><i data-lucide="calendar"></i> Alumni Events</button>
-                        <button class="admin-nav-btn" onclick="showRoleTab('al','mentorship',this)"><i data-lucide="users"></i> Mentorship Requests</button>
-                        <button class="admin-nav-btn" onclick="showRoleTab('al','donations',this)"><i data-lucide="heart"></i> Donation History</button>
-                    </nav>
-                </div>
-
-                <div class="admin-sidebar-section admin-sidebar-footer">
-                    <div class="admin-sidebar-label">Account</div>
-                    <nav class="admin-nav">
-                        <button type="button" class="admin-nav-btn" onclick="returnToPublic()"><i data-lucide="globe"></i> Public Site</button>
-                        <button type="button" class="admin-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
-                            <i data-lucide="log-out"></i> Sign Out
-                        </button>
-                    </nav>
-                </div>
-            </aside>
-
-            <main class="admin-main">
-                <!-- OVERVIEW -->
-                <div id="al-tab-overview" class="admin-tab-content active">
-                    <div class="admin-welcome-banner alumni-welcome-banner">
-                        <div class="admin-welcome-content">
-                            <h2 id="alWelcomeTitle">Welcome back, Alumni</h2>
-                            <p>Stay connected with IUEA — manage your profile, mentorship, events, and giving from one place.</p>
-                            <div class="admin-welcome-actions">
-                                <button class="btn-primary" onclick="showRoleTab('al','profile')">Edit Profile</button>
-                                <button class="btn-secondary" style="color:var(--iuea-gray); border-color:rgba(255,255,255,0.5)" onclick="showRoleTab('al','events')">Browse Events</button>
-                            </div>
-                        </div>
-                        <div class="admin-welcome-status">
-                            <div class="date-display" id="alDateDisplay">Loading date...</div>
-                            <div class="platform-status alumni-status"><span class="status-dot"></span> Alumni Network Active</div>
-                        </div>
-                    </div>
-
-                    <div class="admin-stats-grid">
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Profile Completeness</span>
-                                <div class="stat-icon-wrap bg-maroon"><i data-lucide="user-check"></i></div>
-                            </div>
-                            <div class="stat-value" id="alStatProfile">—</div>
-                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> Keep your profile updated</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Upcoming Events</span>
-                                <div class="stat-icon-wrap bg-green"><i data-lucide="calendar"></i></div>
-                            </div>
-                            <div class="stat-value" id="alStatEvents">0</div>
-                            <div class="stat-trend positive"><i data-lucide="calendar"></i> Homecoming &amp; networking</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Mentorship Requests</span>
-                                <div class="stat-icon-wrap bg-purple"><i data-lucide="users"></i></div>
-                            </div>
-                            <div class="stat-value" id="alStatMentorship">0</div>
-                            <div class="stat-trend positive"><i data-lucide="user-plus"></i> Guide the next generation</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Total Donations</span>
-                                <div class="stat-icon-wrap bg-gold"><i data-lucide="heart"></i></div>
-                            </div>
-                            <div class="stat-value" id="alStatDonations">$0</div>
-                            <div class="stat-trend positive"><i data-lucide="gift"></i> Support your alma mater</div>
-                        </div>
-                    </div>
-
-                    <div class="admin-dashboard-grid">
-                        <div class="admin-panel">
-                            <div class="panel-header">
-                                <h3>Quick Actions</h3>
-                            </div>
-                            <div class="alumni-quick-actions">
-                                <button type="button" class="alumni-action-card" onclick="showRoleTab('al','achievement')">
-                                    <i data-lucide="award"></i>
-                                    <span>Share Achievement</span>
-                                </button>
-                                <button type="button" class="alumni-action-card" onclick="showRoleTab('al','messages')">
-                                    <i data-lucide="message-circle"></i>
-                                    <span>Open Messages</span>
-                                </button>
-                                <button type="button" class="alumni-action-card" onclick="returnToPublic(); navigateTo('endowment')">
-                                    <i data-lucide="heart"></i>
-                                    <span>Make a Donation</span>
-                                </button>
-                                <button type="button" class="alumni-action-card" onclick="returnToPublic(); navigateTo('alumni')">
-                                    <i data-lucide="globe"></i>
-                                    <span>View Public Network</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="admin-panel">
-                            <div class="panel-header">
-                                <h3>Recent Activity</h3>
-                            </div>
-                            <div class="admin-empty-state alumni-activity-empty">
-                                <div class="empty-icon"><i data-lucide="activity"></i></div>
-                                <h3>No recent activity</h3>
-                                <p>Updates to your profile, events, and messages will appear here.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PROFILE -->
-                <div id="al-tab-profile" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>My Alumni Profile</h3>
-                            <p>Your public alumni record in the IUEA network.</p>
-                        </div>
-                        <button class="btn-primary" onclick="showToast('Profile updated!')"><i data-lucide="save"></i> Save Profile</button>
-                    </div>
-                    <div class="admin-panel">
-                        <div class="form-row">
-                            <div class="form-group"><label>First Name</label><input type="text" id="alFirstName" placeholder="First name"></div>
-                            <div class="form-group"><label>Last Name</label><input type="text" id="alLastName" placeholder="Last name"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Graduation Year</label><input type="number" id="alYear" placeholder="e.g. 2022"></div>
-                            <div class="form-group"><label>Program</label><input type="text" id="alProgram" placeholder="e.g. BSc Computer Science"></div>
-                        </div>
-                        <div class="form-group"><label>Current Role</label><input type="text" id="alRole" placeholder="e.g. Software Engineer at Google"></div>
-                        <div class="form-group"><label>Country</label><input type="text" id="alCountry" placeholder="e.g. Uganda"></div>
-                    </div>
-                </div>
-
-                <!-- MESSAGES -->
-                <div id="al-tab-messages" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Messages</h3>
-                            <p>Chat with IUEA administrators, mentors, and fellow alumni.</p>
-                        </div>
-                    </div>
-                    <div class="msg-layout msg-layout-al">
-                        <div class="msg-sidebar">
-                            <div class="msg-search-wrap">
-                                <i data-lucide="search"></i>
-                                <input type="text" id="al-msg-search" placeholder="Search contacts..." autocomplete="off">
-                            </div>
-                            <div class="msg-conversation-list" id="al-msg-conversations"></div>
-                        </div>
-                        <div class="msg-main" id="al-msg-main">
-                            <div class="msg-empty-state" id="al-msg-empty">
-                                <i data-lucide="message-circle"></i>
-                                <h3>Select a conversation</h3>
-                                <p>Choose a contact from the list or search to start chatting.</p>
-                            </div>
-                            <div class="msg-thread" id="al-msg-thread" hidden>
-                                <div class="msg-thread-header" id="al-msg-thread-header"></div>
-                                <div class="msg-messages" id="al-msg-messages"></div>
-                                <div class="msg-compose">
-                                    <textarea id="al-msg-input" rows="1" placeholder="Type a message…" maxlength="5000"></textarea>
-                                    <button type="button" class="msg-send-btn" id="al-msg-send" title="Send"><i data-lucide="send"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ACHIEVEMENT -->
-                <div id="al-tab-achievement" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Update Achievement</h3>
-                            <p>Share a milestone or recognition with the IUEA community.</p>
-                        </div>
-                    </div>
-                    <div class="admin-panel">
-                        <div class="form-group"><label>Achievement Title *</label><input type="text" placeholder="e.g. Forbes 30 Under 30"></div>
-                        <div class="form-group"><label>Description</label><textarea rows="4" placeholder="Describe your achievement..."></textarea></div>
-                        <div class="form-group"><label>Date</label><input type="date"></div>
-                        <button class="btn-primary" onclick="showToast('Achievement submitted for review!')"><i data-lucide="send"></i> Submit for Review</button>
-                    </div>
-                </div>
-
-                <!-- EVENTS -->
-                <div id="al-tab-events" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Alumni Events</h3>
-                            <p>Exclusive events for IUEA graduates.</p>
-                        </div>
-                    </div>
-                    <div class="admin-empty-state">
-                        <div class="empty-icon"><i data-lucide="calendar-x"></i></div>
-                        <h3>No upcoming alumni events</h3>
-                        <p>Check back soon for homecoming and networking events.</p>
-                        <button class="btn-primary" style="margin-top:1rem" onclick="returnToPublic(); navigateTo('events-all')">Browse Campus Events</button>
-                    </div>
-                </div>
-
-                <!-- MENTORSHIP -->
-                <div id="al-tab-mentorship" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Mentorship Requests</h3>
-                            <p>Students requesting your mentorship.</p>
-                        </div>
-                    </div>
-                    <div class="admin-empty-state">
-                        <div class="empty-icon"><i data-lucide="user-plus"></i></div>
-                        <h3>No mentorship requests</h3>
-                        <p>When students request your mentorship, they'll appear here.</p>
-                    </div>
-                </div>
-
-                <!-- DONATIONS -->
-                <div id="al-tab-donations" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Donation History</h3>
-                            <p>Your contributions to IUEA's endowment fund.</p>
-                        </div>
-                    </div>
-                    <div id="alDonationHistory" class="admin-empty-state">
-                        <div class="empty-icon"><i data-lucide="gift"></i></div>
-                        <h3>No donations yet</h3>
-                        <p>Give back to your alma mater through the Endowment Fund.</p>
-                        <button class="btn-primary" style="margin-top:1rem" onclick="returnToPublic(); navigateTo('endowment')">Donate Now</button>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
 
     <!-- ===== DONOR / PARTNER DASHBOARD ===== -->
     <div id="donor-partner-dashboard" class="page-section admin-page-wrapper dp-dashboard-wrapper">
@@ -2000,6 +1328,444 @@
 
             </main>
         </div>
+    </div>
+
+    <!-- ===== COORDINATOR DASHBOARD ===== -->
+    <div id="coordinator-dashboard" class="page-section admin-page-wrapper coordinator-dash co-theme">
+        <header class="admin-topbar">
+            <div class="admin-topbar-left">
+                <div class="admin-logo" onclick="returnToPublic()" title="Back to IUEA Today">
+                    <img src="assets/images/iuea-logo.png" alt="IUEA Logo">
+                </div>
+            </div>
+
+            <div class="admin-topbar-center">
+                <div class="admin-search-wrap">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="co-dash-search" placeholder="Search submissions by name, email, or ID…" aria-label="Search coordinator dashboard">
+                    <span class="admin-search-shortcut" aria-hidden="true">⌘K</span>
+                </div>
+            </div>
+
+            <div class="admin-topbar-right">
+                <div class="admin-topbar-actions">
+                    <div class="notify-wrap" data-notify-context="co">
+                        <button type="button" class="admin-icon-btn admin-icon-btn--notify notify-btn" aria-label="Notifications" aria-expanded="false">
+                            <i data-lucide="bell"></i>
+                            <span class="admin-notification-badge notify-badge" id="co-notify-badge" style="display:none">0</span>
+                        </button>
+                        <div class="notify-dropdown" hidden>
+                            <div class="notify-dropdown-header">
+                                <h3>Notifications</h3>
+                                <button type="button" class="notify-mark-all">Mark all read</button>
+                            </div>
+                            <div class="notify-dropdown-list" id="co-notify-list"></div>
+                            <div class="notify-dropdown-empty" hidden>
+                                <i data-lucide="bell-off"></i>
+                                <p>No notifications yet</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="returnToPublic()" class="admin-icon-btn" title="View Public Site" aria-label="View public site">
+                        <i data-lucide="external-link"></i>
+                    </button>
+                </div>
+                <div class="admin-topbar-divider" aria-hidden="true"></div>
+                <div class="admin-user-area">
+                    <div class="admin-user-menu" aria-label="Signed in coordinator profile">
+                        <div class="admin-avatar co-avatar" aria-hidden="true"><i data-lucide="clipboard-check"></i></div>
+                        <div class="admin-user-info">
+                            <span id="coUserName" class="admin-user-name">Coordinator</span>
+                            <span id="coRoleBadge" class="admin-role-badge">Coordinator</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-layout">
+            <aside class="admin-sidebar">
+                <div class="admin-sidebar-section">
+                    <div class="admin-sidebar-label">Main Menu</div>
+                    <nav class="admin-nav">
+                        <button type="button" class="admin-nav-btn cdash-nav-btn active" data-co-tab="overview" id="co-nav-overview"><i data-lucide="layout-dashboard"></i> Overview</button>
+                    </nav>
+                </div>
+
+                <div class="admin-sidebar-section">
+                    <div class="admin-sidebar-label">Form Submissions</div>
+                    <nav class="admin-nav">
+                        <button type="button" class="admin-nav-btn cdash-nav-btn" data-co-tab="innovation" id="co-nav-innovation"><i data-lucide="lightbulb"></i> Innovation Join <span class="nav-badge" id="co-nav-innovation-badge" style="display:none">0</span></button>
+                        <button type="button" class="admin-nav-btn cdash-nav-btn" data-co-tab="alumni" id="co-nav-alumni"><i data-lucide="graduation-cap"></i> Alumni Join <span class="nav-badge" id="co-nav-alumni-badge" style="display:none">0</span></button>
+                        <button type="button" class="admin-nav-btn cdash-nav-btn" data-co-tab="donations" id="co-nav-donations"><i data-lucide="gift"></i> Donations <span class="nav-badge" id="co-nav-donations-badge" style="display:none">0</span></button>
+                        <button type="button" class="admin-nav-btn cdash-nav-btn" data-co-tab="community" id="co-nav-community"><i data-lucide="users"></i> Community Join <span class="nav-badge" id="co-nav-community-badge" style="display:none">0</span></button>
+                        <button type="button" class="admin-nav-btn cdash-nav-btn" data-co-tab="research" id="co-nav-research"><i data-lucide="microscope"></i> Research Join <span class="nav-badge" id="co-nav-research-badge" style="display:none">0</span></button>
+                    </nav>
+                </div>
+
+                <div class="admin-sidebar-section admin-sidebar-footer">
+                    <div class="admin-sidebar-label">Account</div>
+                    <nav class="admin-nav">
+                        <button type="button" class="admin-nav-btn cdash-nav-btn" onclick="returnToPublic()"><i data-lucide="globe"></i> Public Site</button>
+                        <button type="button" class="admin-nav-btn cdash-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
+                            <i data-lucide="log-out"></i> Sign Out
+                        </button>
+                    </nav>
+                </div>
+            </aside>
+
+            <main class="admin-main">
+
+                <!-- OVERVIEW -->
+                <div id="co-tab-overview" class="co-tab active">
+                    <div class="admin-welcome-banner co-welcome-banner">
+                        <div class="admin-welcome-content">
+                            <h2 id="coWelcomeTitle">Coordinator Dashboard</h2>
+                            <p>Review and manage join-form submissions across innovation, alumni, donations, community, and research programs.</p>
+                        </div>
+                        <div class="admin-welcome-status">
+                            <div class="date-display" id="coDateDisplay">Loading date…</div>
+                            <div class="platform-status"><span class="status-dot co-status-dot"></span> Review queue active</div>
+                        </div>
+                    </div>
+
+                    <div class="admin-stats-grid co-stats-grid">
+                        <div class="admin-stat-card-pro co-stat-card co-stat-card--innovation">
+                            <div class="stat-header">
+                                <span class="stat-title">Innovation Join</span>
+                                <div class="stat-icon-wrap co-icon-innovation"><i data-lucide="lightbulb"></i></div>
+                            </div>
+                            <div class="stat-value" id="co-stat-innovation-pending">0</div>
+                            <div class="stat-trend"><i data-lucide="clock"></i> <span id="co-stat-innovation-label">pending review</span></div>
+                        </div>
+                        <div class="admin-stat-card-pro co-stat-card co-stat-card--alumni">
+                            <div class="stat-header">
+                                <span class="stat-title">Alumni Join</span>
+                                <div class="stat-icon-wrap co-icon-alumni"><i data-lucide="graduation-cap"></i></div>
+                            </div>
+                            <div class="stat-value" id="co-stat-alumni-pending">0</div>
+                            <div class="stat-trend"><i data-lucide="clock"></i> <span id="co-stat-alumni-label">pending review</span></div>
+                        </div>
+                        <div class="admin-stat-card-pro co-stat-card co-stat-card--donations">
+                            <div class="stat-header">
+                                <span class="stat-title">Donations</span>
+                                <div class="stat-icon-wrap co-icon-donations"><i data-lucide="gift"></i></div>
+                            </div>
+                            <div class="stat-value" id="co-stat-donations-pending">0</div>
+                            <div class="stat-trend"><i data-lucide="clock"></i> <span id="co-stat-donations-label">pending review</span></div>
+                        </div>
+                        <div class="admin-stat-card-pro co-stat-card co-stat-card--community">
+                            <div class="stat-header">
+                                <span class="stat-title">Community Join</span>
+                                <div class="stat-icon-wrap co-icon-community"><i data-lucide="users"></i></div>
+                            </div>
+                            <div class="stat-value" id="co-stat-community-pending">0</div>
+                            <div class="stat-trend"><i data-lucide="clock"></i> <span id="co-stat-community-label">pending review</span></div>
+                        </div>
+                        <div class="admin-stat-card-pro co-stat-card co-stat-card--research">
+                            <div class="stat-header">
+                                <span class="stat-title">Research Join</span>
+                                <div class="stat-icon-wrap co-icon-research"><i data-lucide="microscope"></i></div>
+                            </div>
+                            <div class="stat-value" id="co-stat-research-pending">0</div>
+                            <div class="stat-trend"><i data-lucide="clock"></i> <span id="co-stat-research-label">pending review</span></div>
+                        </div>
+                    </div>
+
+                    <div class="admin-panel co-overview-summary">
+                        <div class="panel-header">
+                            <h3>Submission Queue Summary</h3>
+                        </div>
+                        <div class="co-summary-row">
+                            <div class="co-summary-metric">
+                                <span class="co-summary-label">Total Pending</span>
+                                <strong id="co-stat-total-pending">0</strong>
+                            </div>
+                            <div class="co-summary-metric">
+                                <span class="co-summary-label">Approved Today</span>
+                                <strong id="co-stat-approved-today">0</strong>
+                            </div>
+                            <div class="co-summary-metric">
+                                <span class="co-summary-label">Rejected Today</span>
+                                <strong id="co-stat-rejected-today">0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INNOVATION JOIN -->
+                <div id="co-tab-innovation" class="co-tab">
+                    <div class="admin-panel-header">
+                        <div>
+                            <h3>Innovation Join Submissions</h3>
+                            <p>Applications from the innovation join form — innovation team join requests.</p>
+                        </div>
+                        <div class="admin-panel-header-actions co-filter-bar">
+                            <select id="co-filter-innovation-status" class="co-filter-select" aria-label="Filter innovation submissions by status">
+                                <option value="all">All statuses</option>
+                                <option value="pending" selected>Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin-panel p-0 co-submissions-panel">
+                        <div id="co-innovation-loading" class="co-loading-state" hidden>
+                            <i data-lucide="loader"></i>
+                            <p>Loading submissions…</p>
+                        </div>
+                        <div id="co-innovation-empty" class="co-empty-state">
+                            <i data-lucide="inbox"></i>
+                            <h3>No innovation submissions</h3>
+                            <p>New join requests will appear here for review.</p>
+                        </div>
+                        <table class="admin-table-modern co-submissions-table" id="co-table-innovation" hidden>
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Email</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="co-tbody-innovation"></tbody>
+                        </table>
+                        <div class="table-pagination" id="co-pagination-innovation" hidden>
+                            <span id="co-pagination-innovation-count">0 submissions</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALUMNI JOIN -->
+                <div id="co-tab-alumni" class="co-tab">
+                    <div class="admin-panel-header">
+                        <div>
+                            <h3>Alumni Join Submissions</h3>
+                            <p>Applications from the alumni join form — alumni network registration requests.</p>
+                        </div>
+                        <div class="admin-panel-header-actions co-filter-bar">
+                            <select id="co-filter-alumni-status" class="co-filter-select" aria-label="Filter alumni submissions by status">
+                                <option value="all">All statuses</option>
+                                <option value="pending" selected>Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin-panel p-0 co-submissions-panel">
+                        <div id="co-alumni-loading" class="co-loading-state" hidden>
+                            <i data-lucide="loader"></i>
+                            <p>Loading submissions…</p>
+                        </div>
+                        <div id="co-alumni-empty" class="co-empty-state">
+                            <i data-lucide="inbox"></i>
+                            <h3>No alumni submissions</h3>
+                            <p>New alumni join requests will appear here for review.</p>
+                        </div>
+                        <table class="admin-table-modern co-submissions-table" id="co-table-alumni" hidden>
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Email</th>
+                                    <th>Graduation Year</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="co-tbody-alumni"></tbody>
+                        </table>
+                        <div class="table-pagination" id="co-pagination-alumni" hidden>
+                            <span id="co-pagination-alumni-count">0 submissions</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DONATIONS -->
+                <div id="co-tab-donations" class="co-tab">
+                    <div class="admin-panel-header">
+                        <div>
+                            <h3>Donation Submissions</h3>
+                            <p>Contributions from the donation form — pending verification and acknowledgment.</p>
+                        </div>
+                        <div class="admin-panel-header-actions co-filter-bar">
+                            <select id="co-filter-donations-status" class="co-filter-select" aria-label="Filter donation submissions by status">
+                                <option value="all">All statuses</option>
+                                <option value="pending" selected>Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin-panel p-0 co-submissions-panel">
+                        <div id="co-donations-loading" class="co-loading-state" hidden>
+                            <i data-lucide="loader"></i>
+                            <p>Loading submissions…</p>
+                        </div>
+                        <div id="co-donations-empty" class="co-empty-state">
+                            <i data-lucide="inbox"></i>
+                            <h3>No donation submissions</h3>
+                            <p>New donation form entries will appear here for review.</p>
+                        </div>
+                        <table class="admin-table-modern co-submissions-table" id="co-table-donations" hidden>
+                            <thead>
+                                <tr>
+                                    <th>Donor</th>
+                                    <th>Amount</th>
+                                    <th>Email</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="co-tbody-donations"></tbody>
+                        </table>
+                        <div class="table-pagination" id="co-pagination-donations" hidden>
+                            <span id="co-pagination-donations-count">0 submissions</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMMUNITY JOIN -->
+                <div id="co-tab-community" class="co-tab">
+                    <div class="admin-panel-header">
+                        <div>
+                            <h3>Community Join Submissions</h3>
+                            <p>Applications from the community join form — community membership requests.</p>
+                        </div>
+                        <div class="admin-panel-header-actions co-filter-bar">
+                            <select id="co-filter-community-status" class="co-filter-select" aria-label="Filter community submissions by status">
+                                <option value="all">All statuses</option>
+                                <option value="pending" selected>Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin-panel p-0 co-submissions-panel">
+                        <div id="co-community-loading" class="co-loading-state" hidden>
+                            <i data-lucide="loader"></i>
+                            <p>Loading submissions…</p>
+                        </div>
+                        <div id="co-community-empty" class="co-empty-state">
+                            <i data-lucide="inbox"></i>
+                            <h3>No community submissions</h3>
+                            <p>New community join requests will appear here for review.</p>
+                        </div>
+                        <table class="admin-table-modern co-submissions-table" id="co-table-community" hidden>
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Email</th>
+                                    <th>Interest Area</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="co-tbody-community"></tbody>
+                        </table>
+                        <div class="table-pagination" id="co-pagination-community" hidden>
+                            <span id="co-pagination-community-count">0 submissions</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RESEARCH JOIN -->
+                <div id="co-tab-research" class="co-tab">
+                    <div class="admin-panel-header">
+                        <div>
+                            <h3>Research Join Submissions</h3>
+                            <p>Applications from the research join form — research program join requests.</p>
+                        </div>
+                        <div class="admin-panel-header-actions co-filter-bar">
+                            <select id="co-filter-research-status" class="co-filter-select" aria-label="Filter research submissions by status">
+                                <option value="all">All statuses</option>
+                                <option value="pending" selected>Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin-panel p-0 co-submissions-panel">
+                        <div id="co-research-loading" class="co-loading-state" hidden>
+                            <i data-lucide="loader"></i>
+                            <p>Loading submissions…</p>
+                        </div>
+                        <div id="co-research-empty" class="co-empty-state">
+                            <i data-lucide="inbox"></i>
+                            <h3>No research submissions</h3>
+                            <p>New research join requests will appear here for review.</p>
+                        </div>
+                        <table class="admin-table-modern co-submissions-table" id="co-table-research" hidden>
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Email</th>
+                                    <th>Research Area</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="co-tbody-research"></tbody>
+                        </table>
+                        <div class="table-pagination" id="co-pagination-research" hidden>
+                            <span id="co-pagination-research-count">0 submissions</span>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+
+        <!-- Submission detail modal (populated by JS) -->
+        <div id="co-submission-detail-modal" class="detail-modal">
+            <div class="create-modal-box co-detail-modal-box">
+                <div class="create-modal-header">
+                    <div>
+                        <h2 id="co-detail-title"><i data-lucide="file-text"></i> Submission Details</h2>
+                        <p id="co-detail-subtitle">Review full application data before approving or rejecting.</p>
+                    </div>
+                    <button type="button" class="close-modal" id="co-detail-close" aria-label="Close details"><i data-lucide="x"></i></button>
+                </div>
+                <div class="co-detail-body" id="co-detail-body"></div>
+                <div class="co-detail-meta">
+                    <span class="status-badge pending" id="co-detail-status-badge">pending</span>
+                    <span class="co-detail-meta-item" id="co-detail-submitted-at">—</span>
+                    <span class="co-detail-meta-item" id="co-detail-form-type">—</span>
+                </div>
+                <div class="co-detail-actions" id="co-detail-actions">
+                    <button type="button" class="btn-approve" id="co-detail-approve"><i data-lucide="check"></i> Approve</button>
+                    <button type="button" class="btn-reject" id="co-detail-reject"><i data-lucide="x"></i> Reject</button>
+                    <button type="button" class="admin-table-action-btn" id="co-detail-close-secondary"><i data-lucide="x"></i> Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row template for JS rendering -->
+        <template id="co-submission-row-template">
+            <tr class="co-submission-row">
+                <td class="co-cell-applicant">
+                    <div class="user-cell">
+                        <div class="avatar"><i data-lucide="user"></i></div>
+                        <strong class="co-cell-name">—</strong>
+                    </div>
+                </td>
+                <td class="co-cell-email">—</td>
+                <td class="co-cell-extra" hidden>—</td>
+                <td class="co-cell-submitted">—</td>
+                <td class="co-cell-status"><span class="status-badge pending">pending</span></td>
+                <td class="co-cell-actions">
+                    <div class="admin-table-actions co-row-actions">
+                        <button type="button" class="admin-table-action-btn co-btn-view"><i data-lucide="eye"></i> View</button>
+                        <button type="button" class="btn-approve co-btn-approve"><i data-lucide="check"></i> Approve</button>
+                        <button type="button" class="btn-reject co-btn-reject"><i data-lucide="x"></i> Reject</button>
+                    </div>
+                </td>
+            </tr>
+        </template>
     </div>
 
     <!-- ===== CONTENT EDITOR DASHBOARD — handled by existing admin-dashboard ===== -->
@@ -3080,18 +2846,26 @@
     <!-- Auth Modal -->
     <div id="authModal" class="detail-modal">
         <div class="auth-modal-container">
-            <button class="close-modal" onclick="closeAuthModal()"><i data-lucide="x"></i></button>
+            <button class="close-modal" type="button" onclick="closeAuthModal()" aria-label="Close sign in"><i data-lucide="x"></i></button>
             <div id="authFormContent">
-                <h2 style="color:var(--iuea-maroon); margin-bottom:1rem;">Sign In</h2>
-                <div class="form-group"><label>Email</label><input type="email" id="loginEmail"
-                        placeholder="you@example.com"></div>
-                <div class="form-group"><label>Password</label><input type="password" id="loginPassword"
-                        placeholder="••••••••"></div>
-                <button class="btn-primary" style="width:100%; justify-content:center; margin-top:1rem;"
-                    onclick="signIn()">Sign In</button>
-                <p style="margin-top:1.5rem; text-align:center; color:var(--iuea-gray-light)">Don't have an account? <a
-                        href="#" onclick="showSignUp()" style="color:var(--iuea-maroon); font-weight:600;">Sign Up</a>
-                </p>
+                <div class="auth-modal-header">
+                    <h2>Sign In</h2>
+                    <p>Welcome back to IUEA Today</p>
+                </div>
+                <div class="auth-modal-body">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+                    </div>
+                    <button type="button" class="btn-primary auth-submit-btn" onclick="signIn()">Sign In</button>
+                </div>
+                <div class="auth-modal-footer">
+                    <p>Don't have an account? <a href="#" onclick="showSignUp(); return false;">Sign Up</a></p>
+                </div>
             </div>
         </div>
     </div>
@@ -3573,7 +3347,7 @@
                         <a href="https://www.facebook.com/IUEAUganda" id="footerFacebook" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                             <svg class="footer-social-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                         </a>
-                        <a href="https://twitter.com/IUEAUganda" id="footerTwitter" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                        <a href="https://twitter.com/IUEAUganda" id="footerTwitter" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)">
                             <svg class="footer-social-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                         </a>
                         <a href="https://www.linkedin.com/company/international-university-of-east-africa-iuea" id="footerLinkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
@@ -3581,20 +3355,21 @@
                         </a>
                     </div>
                 </div>
-                <div class="footer-links">
+                <nav class="footer-links" aria-label="Platform links">
                     <h4>Platform</h4>
-                    <a href="#" onclick="navigateTo('home')">Home</a>
-                    <a href="#" onclick="navigateTo('innovation')">Innovations</a>
-                    <a href="#" onclick="navigateTo('startups')">Startups</a>
-                    <a href="#" onclick="navigateTo('research')">Research</a>
-                </div>
-                <div class="footer-links">
+                    <a href="#" onclick="navigateTo('home'); return false;">Home</a>
+                    <a href="#" onclick="navigateTo('innovation'); return false;">Innovations</a>
+                    <a href="#" onclick="navigateToInnovationStartups(); return false;">Startups</a>
+                    <a href="#" onclick="navigateTo('research'); return false;">Research</a>
+                    <a href="#" onclick="navigateTo('community'); return false;">Community</a>
+                </nav>
+                <nav class="footer-links" aria-label="Community links">
                     <h4>Community</h4>
-                    <a href="#" onclick="navigateTo('alumni')">Alumni Network</a>
-                    <a href="#" onclick="navigateTo('events')">Events</a>
-                    <a href="#" onclick="navigateTo('endowment')">Endowment Fund</a>
-                    <a href="#" onclick="navigateTo('techpark')">Tech Park</a>
-                </div>
+                    <a href="#" onclick="navigateTo('alumni'); return false;">Alumni Network</a>
+                    <a href="#" onclick="navigateTo('events-all'); return false;">Events</a>
+                    <a href="#" onclick="navigateTo('endowment'); return false;">Endowment Fund</a>
+                    <a href="#" onclick="navigateTo('techpark'); return false;">Tech Park</a>
+                </nav>
                 <div class="footer-contact">
                     <h4>Contact Us</h4>
                     <p><i data-lucide="map-pin"></i> <span id="footerContactAddress">Kansanga, Kampala, Uganda</span></p>
@@ -3604,10 +3379,10 @@
             </div>
             <div class="footer-bottom">
                 <p id="footerCopyright">&copy; 2026 International University of East Africa. All rights reserved.</p>
-                <div class="footer-legal">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
-                </div>
+                <nav class="footer-legal" aria-label="Legal links">
+                    <a href="#" onclick="return false;">Privacy Policy</a>
+                    <a href="#" onclick="return false;">Terms of Service</a>
+                </nav>
             </div>
         </div>
     </footer>
