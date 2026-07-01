@@ -504,7 +504,7 @@ def _validate_platform_settings_payload(data: schemas.PlatformSettingsUpdate):
     for color_key in ("primary_color", "accent_color"):
         if color_key in payload and payload[color_key] and not HEX_COLOR_RE.match(payload[color_key]):
             raise HTTPException(status_code=400, detail=f"Invalid {color_key.replace('_', ' ')} (use #RRGGBB)")
-    for url_key in ("logo_url", "website_url", "facebook_url", "twitter_url", "linkedin_url"):
+    for url_key in ("logo_url", "website_url", "facebook_url", "twitter_url", "linkedin_url", "instagram_url", "youtube_url"):
         if url_key in payload and payload[url_key]:
             url_val = (payload[url_key] or "").strip()
             if not url_val:

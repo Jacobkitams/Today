@@ -655,6 +655,8 @@ class PlatformSettingsResponse(BaseModel):
     facebook_url: Optional[str] = ""
     twitter_url: Optional[str] = ""
     linkedin_url: Optional[str] = ""
+    instagram_url: Optional[str] = ""
+    youtube_url: Optional[str] = ""
     primary_color: str
     accent_color: str
     timezone: Optional[str] = "Africa/Kampala"
@@ -677,6 +679,8 @@ class PlatformSettingsPublicResponse(BaseModel):
     facebook_url: Optional[str] = ""
     twitter_url: Optional[str] = ""
     linkedin_url: Optional[str] = ""
+    instagram_url: Optional[str] = ""
+    youtube_url: Optional[str] = ""
     primary_color: str
     accent_color: str
     maintenance_mode: bool = False
@@ -762,6 +766,8 @@ class PlatformSettingsUpdate(BaseModel):
     facebook_url: Optional[str] = None
     twitter_url: Optional[str] = None
     linkedin_url: Optional[str] = None
+    instagram_url: Optional[str] = None
+    youtube_url: Optional[str] = None
     primary_color: Optional[str] = None
     accent_color: Optional[str] = None
     timezone: Optional[str] = None

@@ -15,9 +15,11 @@ PLATFORM_SETTINGS_DEFAULTS = {
     "contact_phone": "+256 414 000 000",
     "contact_address": "Kansanga, Kampala, Uganda",
     "website_url": "https://iuea.ac.ug",
-    "facebook_url": "https://www.facebook.com/IUEAUganda",
-    "twitter_url": "https://twitter.com/IUEAUganda",
-    "linkedin_url": "https://www.linkedin.com/company/international-university-of-east-africa-iuea",
+    "facebook_url": "https://www.facebook.com/IUEAUganda/",
+    "twitter_url": "https://x.com/iuea_uganda",
+    "linkedin_url": "https://ug.linkedin.com/school/international-university-of-east-africa-iuea-/",
+    "instagram_url": "https://www.instagram.com/iuea_uganda/",
+    "youtube_url": "https://www.youtube.com/@iuea_uganda",
     "primary_color": "#800000",
     "accent_color": "#cba052",
     "timezone": "Africa/Kampala",
@@ -29,7 +31,7 @@ PLATFORM_SETTINGS_DEFAULTS = {
 BACKFILL_ON_EMPTY = frozenset({
     "university_name", "motto", "tagline", "logo_url",
     "contact_email", "contact_phone", "contact_address", "website_url",
-    "facebook_url", "twitter_url", "linkedin_url",
+    "facebook_url", "twitter_url", "linkedin_url", "instagram_url", "youtube_url",
     "primary_color", "accent_color", "timezone",
 })
 

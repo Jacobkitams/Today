@@ -374,6 +374,8 @@ class PlatformSettings(Base):
     facebook_url = Column(String(255), default="")
     twitter_url = Column(String(255), default="")
     linkedin_url = Column(String(255), default="")
+    instagram_url = Column(String(255), default="")
+    youtube_url = Column(String(255), default="")
     primary_color = Column(String(7), default="#800000")
     accent_color = Column(String(7), default="#cba052")
     timezone = Column(String(50), default="Africa/Kampala")

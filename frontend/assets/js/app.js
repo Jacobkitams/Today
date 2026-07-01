@@ -7721,9 +7721,11 @@ const PLATFORM_SETTINGS_DEFAULTS = {
     contact_phone: '+256 414 000 000',
     contact_address: 'Kansanga, Kampala, Uganda',
     website_url: 'https://iuea.ac.ug',
-    facebook_url: 'https://www.facebook.com/IUEAUganda',
-    twitter_url: 'https://twitter.com/IUEAUganda',
-    linkedin_url: 'https://www.linkedin.com/company/international-university-of-east-africa-iuea',
+    facebook_url: 'https://www.facebook.com/IUEAUganda/',
+    twitter_url: 'https://x.com/iuea_uganda',
+    linkedin_url: 'https://ug.linkedin.com/school/international-university-of-east-africa-iuea-/',
+    instagram_url: 'https://www.instagram.com/iuea_uganda/',
+    youtube_url: 'https://www.youtube.com/@iuea_uganda',
     primary_color: '#800000',
     accent_color: '#cba052',
     timezone: 'Africa/Kampala',
@@ -7746,7 +7748,7 @@ function isValidSettingsUrl(value) {
     return /^https?:\/\/\S+$/i.test(trimmed);
 }
 
-const SOCIAL_URL_KEYS = ['facebook_url', 'twitter_url', 'linkedin_url'];
+const SOCIAL_URL_KEYS = ['facebook_url', 'twitter_url', 'linkedin_url', 'instagram_url', 'youtube_url'];
 
 function mergePlatformSettings(data) {
     const merged = { ...PLATFORM_SETTINGS_DEFAULTS, ...(data || {}) };
@@ -7836,6 +7838,8 @@ function applyPublicPlatformSettings(settings) {
         ['footerFacebook', resolveSocialUrl('facebook_url', s)],
         ['footerTwitter', resolveSocialUrl('twitter_url', s)],
         ['footerLinkedin', resolveSocialUrl('linkedin_url', s)],
+        ['footerInstagram', resolveSocialUrl('instagram_url', s)],
+        ['footerYoutube', resolveSocialUrl('youtube_url', s)],
     ];
     socialMap.forEach(([id, href]) => {
         const el = document.getElementById(id);
@@ -8084,6 +8088,8 @@ function collectAdminSettingsPayload() {
         facebook_url: document.getElementById('settingsFacebookUrl')?.value.trim() || '',
         twitter_url: document.getElementById('settingsTwitterUrl')?.value.trim() || '',
         linkedin_url: document.getElementById('settingsLinkedinUrl')?.value.trim() || '',
+        instagram_url: document.getElementById('settingsInstagramUrl')?.value.trim() || '',
+        youtube_url: document.getElementById('settingsYoutubeUrl')?.value.trim() || '',
         primary_color: normalizeHexColor(
             document.getElementById('settingsPrimaryColor')?.value,
             PLATFORM_SETTINGS_DEFAULTS.primary_color
@@ -8133,6 +8139,8 @@ function populateAdminSettingsForm(data) {
     setVal('settingsFacebookUrl', values.facebook_url);
     setVal('settingsTwitterUrl', values.twitter_url);
     setVal('settingsLinkedinUrl', values.linkedin_url);
+    setVal('settingsInstagramUrl', values.instagram_url);
+    setVal('settingsYoutubeUrl', values.youtube_url);
     setVal('settingsTimezone', values.timezone);
 
     const primary = normalizeHexColor(values.primary_color, PLATFORM_SETTINGS_DEFAULTS.primary_color);
@@ -8217,6 +8225,8 @@ function validateAdminSettingsForm() {
         ['settingsFacebookUrl', payload.facebook_url, 'Facebook URL'],
         ['settingsTwitterUrl', payload.twitter_url, 'Twitter URL'],
         ['settingsLinkedinUrl', payload.linkedin_url, 'LinkedIn URL'],
+        ['settingsInstagramUrl', payload.instagram_url, 'Instagram URL'],
+        ['settingsYoutubeUrl', payload.youtube_url, 'YouTube URL'],
     ];
     urlChecks.forEach(([fieldId, value, label]) => {
         if (!isValidSettingsUrl(value)) {
