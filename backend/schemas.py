@@ -11,6 +11,11 @@ class UserCreate(UserBase):
     password: str
     role: Optional[str] = "public_visitor"
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+
 class UserResponse(UserBase):
     id: int
     role: str

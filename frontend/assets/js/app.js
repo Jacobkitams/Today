@@ -8458,6 +8458,12 @@ function showRoleTab(prefix, tabId, btn) {
     if (prefix === 'ru' && tabId === 'stories') {
         loadRuSharedStories();
     }
+    if (prefix === 'ru' && tabId === 'profile') {
+        const nameInput = document.getElementById('ruProfileName');
+        const emailInput = document.getElementById('ruProfileEmail');
+        if (nameInput) nameInput.value = currentUser?.name || '';
+        if (emailInput) emailInput.value = currentUser?.email || '';
+    }
     if (prefix === 'ru' && tabId === 'saved') {
         loadRuSavedContent();
     }
@@ -9294,8 +9300,47 @@ async function makeDonation() {
     }
 }
 
-function saveProfile() {
-    showToast('Profile saved successfully!');
+async function saveProfile() {
+    if (!currentUser) return;
+    const nameEl = document.getElementById('ruProfileName');
+    const emailEl = document.getElementById('ruProfileEmail');
+    const passEl = document.getElementById('ruProfilePassword');
+    
+    if (!nameEl || !emailEl || !passEl) return;
+    
+    const name = nameEl.value.trim();
+    const email = emailEl.value.trim();
+    const password = passEl.value;
+    
+    if (!name || !email) {
+        showToast('Name and email are required.', 'error');
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/me`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ name, email, password })
+        });
+        
+        if (res.ok) {
+            const updatedUser = await res.json();
+            currentUser = updatedUser;
+            updateUIForUser();
+            showToast('Profile saved successfully!', 'success');
+            passEl.value = ''; // clear password field
+        } else {
+            const data = await res.json();
+            showToast(data.detail || 'Failed to update profile.', 'error');
+        }
+    } catch (err) {
+        console.error('Error saving profile:', err);
+        showToast('Error saving profile.', 'error');
+    }
 }
 
 /* =================== MINI CHAT (direct message overlay) =================== */
@@ -10122,6 +10167,14 @@ function initNotificationsUI() {
 
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.notify-wrap')) closeAllNotifyDropdowns();
+        
+        // Auto-close admin sidebar on mobile when a link is clicked
+        if (window.innerWidth <= 991 && e.target.closest('.admin-sidebar .admin-nav-btn')) {
+            const sidebar = e.target.closest('.admin-sidebar');
+            if (sidebar && sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        }
     });
 
     notificationState.initialized = true;

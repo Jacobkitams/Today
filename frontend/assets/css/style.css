@@ -8565,19 +8565,88 @@ body.app-offline .offline-admin-notice {
     font-size: 0.875rem;
 }
 
+.admin-mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--dash-text-primary);
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-right: 1rem;
+    border-radius: var(--dash-radius);
+    transition: background-color var(--transition-speed);
+}
+.admin-mobile-menu-toggle:hover {
+    background-color: var(--dash-bg-subtle);
+}
+
 @media (max-width: 991px) {
+    .admin-mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .admin-topbar-left {
+        display: flex;
+        align-items: center;
+    }
+
     .admin-page-wrapper .admin-layout > .row {
         flex-wrap: wrap;
     }
 
+    /* Off-canvas sidebar for admin dashboard */
+    .admin-page-wrapper .admin-sidebar,
     .admin-page-wrapper .admin-sidebar.col-auto {
-        flex: 0 0 100%;
-        max-width: 100%;
-        position: relative;
-        top: 0;
-        height: auto;
+        position: fixed;
+        top: var(--dash-topbar-height);
+        left: -300px;
+        width: 280px;
+        height: calc(100vh - var(--dash-topbar-height));
+        z-index: 1040;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: var(--iuea-maroon) !important;
         border-right: none;
-        border-bottom: 1px solid var(--dash-border);
+        border-bottom: none;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+        flex: none;
+        max-width: none;
+        overflow-y: auto;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    
+    .admin-page-wrapper .admin-sidebar.open {
+        left: 0;
+    }
+    
+    /* Make text and icons white on the maroon background */
+    .admin-page-wrapper .admin-sidebar .admin-sidebar-label {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    
+    .admin-page-wrapper .admin-sidebar .admin-nav-btn {
+        color: #fff !important;
+    }
+    
+    .admin-page-wrapper .admin-sidebar .admin-nav-btn i {
+        color: rgba(255, 255, 255, 0.9) !important;
+    }
+    
+    .admin-page-wrapper .admin-sidebar .admin-nav-btn:hover,
+    .admin-page-wrapper .admin-sidebar .admin-nav-btn:focus,
+    .admin-page-wrapper .admin-sidebar .admin-nav-btn.active {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        color: #fff !important;
+    }
+    
+    /* Ensure content adjusts underneath */
+    .admin-page-wrapper .admin-main.col {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        width: 100%;
+        max-width: 100%;
+        flex: 1 0 100%;
     }
 }
 
@@ -8876,6 +8945,15 @@ body.app-offline .offline-admin-notice {
         padding: 0 3px;
     }
 
+    .ru-dashboard.active {
+        transform: none !important;
+        animation: fadeInOpacity 0.3s ease forwards !important;
+    }
+
+    .ru-dashboard .admin-mobile-menu-toggle {
+        display: none !important;
+    }
+
     .ru-dashboard .admin-main {
         padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px)) !important;
     }
@@ -8913,4 +8991,9 @@ body.app-offline .offline-admin-notice {
     .ru-dashboard .msg-empty-state {
         padding: 2rem 1rem;
     }
+}
+
+@keyframes fadeInOpacity {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
