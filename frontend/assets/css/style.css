@@ -8592,6 +8592,14 @@ body.app-offline .offline-admin-notice {
         align-items: center;
     }
 
+    /* Strip transform from admin dashboards — transform creates a stacking context
+       that causes position:fixed children (like the off-canvas sidebar) to scroll
+       with the page instead of staying fixed to the viewport. */
+    .admin-page-wrapper.active {
+        transform: none !important;
+        animation: fadeInOpacity 0.3s ease forwards !important;
+    }
+
     .admin-page-wrapper .admin-layout > .row {
         flex-wrap: wrap;
     }
