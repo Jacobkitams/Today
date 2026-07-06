@@ -8805,3 +8805,112 @@ body.app-offline .offline-admin-notice {
         padding-top: 1rem !important;
     }
 }
+
+/* ==========================================================================
+   USER DASHBOARD MOBILE OVERRIDES
+   ========================================================================== */
+.ru-mobile-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .ru-mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border-top: 1px solid #e2e8f0;
+        box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+        z-index: 1000;
+        justify-content: space-around;
+        padding: 0.5rem 0.25rem calc(0.5rem + env(safe-area-inset-bottom, 0px)) 0.25rem;
+    }
+
+    .ru-mob-nav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        background: none;
+        border: none;
+        color: #64748b;
+        font-size: 0.65rem;
+        font-weight: 500;
+        padding: 0.25rem;
+        flex: 1;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .ru-mob-nav-btn i {
+        width: 20px;
+        height: 20px;
+        margin-bottom: 0.15rem;
+    }
+
+    .ru-mob-nav-btn.active {
+        color: var(--iuea-maroon);
+    }
+
+    .ru-mob-nav-btn.active i {
+        stroke-width: 2.5;
+    }
+
+    .ru-mob-nav-badge {
+        position: absolute;
+        top: 0;
+        right: calc(50% - 15px);
+        background: #ef4444;
+        color: white;
+        font-size: 0.6rem;
+        font-weight: bold;
+        min-width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        padding: 0 3px;
+    }
+
+    .ru-dashboard .admin-main {
+        padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    .ru-dashboard .admin-topbar {
+        position: sticky;
+        top: 0;
+    }
+
+    /* Messaging on mobile */
+    .ru-dashboard .msg-layout {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--dash-topbar-height) - 4rem - env(safe-area-inset-bottom, 0px) - 2rem);
+        max-height: none;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        margin: -1.25rem;
+        width: calc(100% + 2.5rem);
+    }
+    
+    .ru-dashboard .msg-sidebar {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        flex-shrink: 0;
+        max-height: 30vh !important;
+    }
+
+    .ru-dashboard .msg-main {
+        flex: 1;
+        min-height: 0;
+    }
+
+    .ru-dashboard .msg-empty-state {
+        padding: 2rem 1rem;
+    }
+}

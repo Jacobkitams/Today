@@ -8483,6 +8483,15 @@ function ruGoToTab(tabId) {
     const dash = document.getElementById('registered-user-dashboard');
     const btn = dash?.querySelector(`[data-ru-tab="${tabId}"]`);
     showRoleTab('ru', tabId, btn || null);
+    
+    // Update mobile bottom nav if it exists
+    document.querySelectorAll('.ru-mob-nav-btn').forEach(b => b.classList.remove('active'));
+    const mobBtn = document.querySelector(`.ru-mob-nav-btn[data-ru-tab="${tabId}"]`);
+    if (mobBtn) mobBtn.classList.add('active');
+}
+
+function ruMobileNav(tabId, btn) {
+    ruGoToTab(tabId);
 }
 
 function returnToPublic() {
