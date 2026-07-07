@@ -8156,6 +8156,7 @@ body.app-offline .offline-admin-notice {
     }
 
     .premium-footer {
+        display: none;
         padding-top: 3.5rem;
         padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
         margin-top: 2.5rem;
@@ -9004,4 +9005,10 @@ body.app-offline .offline-admin-notice {
 @keyframes fadeInOpacity {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+@media (max-width: 767px) {
+    footer {
+        display: none !important;
+    }
 }
