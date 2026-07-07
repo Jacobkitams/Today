@@ -18,21 +18,13 @@ from routes.upload_routes import MAX_UPLOAD_BYTES
 
 # Starlette defaults to 1 MB per multipart part; FastAPI calls request.form() with that default.
 # Raise it so image (20 MB) and video (200 MB) uploads are accepted before route handlers run.
-MultiPartParser.spool_max_size = MAX_UPLOAD_BYTES
-_orig_request_form = Request.form
+MultiPartParser.max_file_size = MAX_UPLOAD_BYTES
+MultiPartParser.max_part_size = MAX_UPLOAD_BYTES
 
-def _request_form_with_upload_limit(
-    self,
-    *,
-    max_files: int | float = 1000,
-    max_fields: int | float = 1000,
-    max_part_size: int = MAX_UPLOAD_BYTES,
-):
-    return _orig_request_form(
-        self, max_files=max_files, max_fields=max_fields, max_part_size=max_part_size
-    )
-
-Request.form = _request_form_with_upload_limit
+# Removed monkey patch as it conflicts with newer python-multipart/starlette parsing
+# _orig_request_form = Request.form
+# def _request_form_with_upload_limit(...): ...
+# Request.form = _request_form_with_upload_limit
 
 # Auto-create all tables
 Base.metadata.create_all(bind=engine)
