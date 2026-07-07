@@ -60,11 +60,23 @@ app.include_router(upload_routes.router, prefix="/upload", tags=["Uploads"])
 app.include_router(settings_routes.router, prefix="/settings", tags=["Settings"])
 app.include_router(form_submissions_routes.router, prefix="/forms", tags=["Form Submissions"])
 
+from fastapi.responses import FileResponse
+
 # Serve uploaded video files
 BACKEND_UPLOADS = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(os.path.join(BACKEND_UPLOADS, "videos"), exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=os.path.abspath(BACKEND_UPLOADS)), name="uploads")
 
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+
 @app.get("/")
-def read_root():
-    return {"message": "IUEA Today API v2.0", "docs": "/docs"}
+def serve_index():
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.get("/{filename:path}")
+def serve_frontend_files(filename: str):
+    file_path = os.path.join(FRONTEND_DIR, filename)
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+    # If file not found, fall back to index.html (useful if you ever add HTML5 routing)
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
