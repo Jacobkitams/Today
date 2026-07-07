@@ -16,7 +16,8 @@ const FRONTEND_BASE = (() => {
     const marker = '/frontend/';
     const idx = path.indexOf(marker);
     if (idx !== -1) return path.slice(0, idx + marker.length - 1);
-    const dir = path.endsWith('/') ? path : path.replace(/\/[^/]*$/, '');
+    let dir = path.endsWith('/') ? path : path.replace(/\/[^/]*$/, '');
+    if (dir.endsWith('/')) dir = dir.slice(0, -1);
     return dir || '';
 })();
 
