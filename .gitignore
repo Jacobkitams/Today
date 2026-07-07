@@ -1,3 +1,23 @@
 
 # Local ngrok config (contains authtoken)
 .ngrok/
+
+# SQLite database (transferred separately, not via git)
+backend/iuea_today.db
+backend/iuea_today_dump.sql
+backend/mysql_to_sqlite.py
+
+# Python venv
+backend/venv/
+backend/.venv/
+
+# Uploads (large binary files)
+backend/uploads/
+
+# Python cache
+**/__pycache__/
+*.pyc
+
+# Environment secrets
+backend/.env
+frontend/.env
