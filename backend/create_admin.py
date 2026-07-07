@@ -1,11 +1,8 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from database import SessionLocal, engine
 from models import User, Base
 import bcrypt
 
-engine = create_engine("mysql+pymysql://root:@localhost/iuea_today")
 Base.metadata.create_all(bind=engine)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 db = SessionLocal()
 email = "admin@iuea.ac.ug"
