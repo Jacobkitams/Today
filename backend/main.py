@@ -2,6 +2,11 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 
+# Load .env file before anything else so DATABASE_URL, SECRET_KEY, etc. are set
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
