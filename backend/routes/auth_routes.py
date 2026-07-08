@@ -76,6 +76,8 @@ def update_me(
         current_user.email = user_update.email
     if user_update.password is not None and user_update.password != "":
         current_user.hashed_password = auth.get_password_hash(user_update.password)
+    if user_update.profile_picture is not None:
+        current_user.profile_picture = user_update.profile_picture
     
     db.commit()
     db.refresh(current_user)

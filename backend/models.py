@@ -10,6 +10,7 @@ class User(Base):
     name = Column(String(100))
     role = Column(String(50), default="public_visitor")
     is_active = Column(Boolean, default=True)
+    profile_picture = Column(String(255), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class News(Base):
@@ -382,3 +383,10 @@ class PlatformSettings(Base):
     maintenance_mode = Column(Boolean, default=False)
     allow_registrations = Column(Boolean, default=True)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class ContentLike(Base):
+    __tablename__ = "content_likes"
+    id = Column(Integer, primary_key=True, index=True)
+    like_key = Column(String(255), unique=True, nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+

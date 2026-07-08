@@ -15,11 +15,13 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
     password: Optional[str] = None
+    profile_picture: Optional[str] = None
 
 class UserResponse(UserBase):
     id: int
     role: str
     is_active: bool
+    profile_picture: Optional[str] = None
     created_at: Optional[datetime] = None
     class Config:
         from_attributes = True
@@ -34,6 +36,7 @@ class PublicUserProfile(BaseModel):
     id: int
     name: str
     role: str
+    profile_picture: Optional[str] = None
     member_since: Optional[datetime] = None
     stories_count: int = 0
     bio: str = "IUEA community member"
@@ -242,6 +245,7 @@ class AlumniCommentResponse(BaseModel):
 
 class LikeResponse(BaseModel):
     likes: int
+    liked: bool = True
 
 # ---------- DONATION ----------
 class DonationCreate(BaseModel):

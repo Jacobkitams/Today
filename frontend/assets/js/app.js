@@ -7,7 +7,7 @@ const API_BASE_URL = (() => {
     if (host.includes('ngrok-free.dev')) {
         return `https://${host}/MyProject/today/frontend/api`;
     }
-    return `http://${host}:8001`;
+    return `http://${host}:8002`;
 })();
 
 // Same-origin relative prefix for static media (Apache serves frontend/assets and frontend/uploads)
@@ -5909,8 +5909,13 @@ function handleShareDeepLink() {
 async function likeAlumni(id) {
     const res = await apiPost(`/content/alumni/${id}/like`, {}, false);
     if (res.ok && res.data?.likes !== undefined) {
+        const liked = res.data.liked !== false;
         updateCardEngagementStat('alumni', id, 'heart', `${res.data.likes} likes`);
-        showToast(res.queued ? 'Like saved offline — will sync when online.' : 'Thanks for the like!', res.queued ? 'info' : 'success');
+        _updateLikeButtons('alumni', id, liked);
+        showToast(
+            res.queued ? 'Like saved offline — will sync when online.' : (liked ? '❤️ Liked!' : 'Like removed'),
+            res.queued ? 'info' : 'success'
+        );
     } else {
         showToast('Could not like this profile', 'error');
     }
@@ -5920,11 +5925,43 @@ async function likeContent(type, id) {
     const apiType = commentApiPath(type);
     const res = await apiPost(`/content/${apiType}/${id}/like`, {}, false);
     if (res.ok && res.data?.likes !== undefined) {
+        const liked = res.data.liked !== false;
         updateCardEngagementStat(type, id, 'heart', `${res.data.likes} likes`);
-        showToast(res.queued ? 'Like saved offline — will sync when online.' : 'Thanks for the like!', res.queued ? 'info' : 'success');
+        _updateLikeButtons(type, id, liked);
+        showToast(
+            res.queued ? 'Like saved offline — will sync when online.' : (liked ? '❤️ Liked!' : 'Like removed'),
+            res.queued ? 'info' : 'success'
+        );
     } else {
         showToast('Could not like this item', 'error');
     }
+}
+
+function _updateLikeButtons(type, id, liked) {
+    // Update all like buttons for this card (on card + in detail modal)
+    const selectors = [
+        `.modern-card[data-content-type="${type}"][data-content-id="${id}"] button`,
+        `#cardDetailModal button`
+    ];
+    selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(btn => {
+            const icon = btn.querySelector('i[data-lucide="heart"]');
+            if (!icon) return;
+            if (liked) {
+                btn.classList.add('liked');
+                icon.style.fill = '#e11d48';
+                icon.style.color = '#e11d48';
+                const txt = btn.querySelector('span') || btn.childNodes[btn.childNodes.length - 1];
+                if (txt && txt.nodeType === Node.TEXT_NODE) txt.textContent = ' Unlike';
+                else if (btn.textContent.includes('Like')) btn.innerHTML = btn.innerHTML.replace(/\bLike\b/, 'Unlike');
+            } else {
+                btn.classList.remove('liked');
+                icon.style.fill = '';
+                icon.style.color = '';
+                if (btn.textContent.includes('Unlike')) btn.innerHTML = btn.innerHTML.replace(/\bUnlike\b/, 'Like');
+            }
+        });
+    });
 }
 
 const COMMENT_CHAR_LIMIT = 500;
@@ -8462,8 +8499,13 @@ function showRoleTab(prefix, tabId, btn) {
     if (prefix === 'ru' && tabId === 'profile') {
         const nameInput = document.getElementById('ruProfileName');
         const emailInput = document.getElementById('ruProfileEmail');
+        const picPreview = document.getElementById('ruProfilePicturePreview');
         if (nameInput) nameInput.value = currentUser?.name || '';
         if (emailInput) emailInput.value = currentUser?.email || '';
+        if (picPreview) {
+            picPreview.src = currentUser?.profile_picture ? resolveMediaUrl(currentUser.profile_picture) : 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E';
+            picPreview.style.padding = currentUser?.profile_picture ? '0' : '10px';
+        }
     }
     if (prefix === 'ru' && tabId === 'saved') {
         loadRuSavedContent();
@@ -9301,11 +9343,24 @@ async function makeDonation() {
     }
 }
 
+function previewProfilePicture(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('ruProfilePicturePreview');
+            preview.src = e.target.result;
+            preview.style.padding = '0';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
 async function saveProfile() {
     if (!currentUser) return;
     const nameEl = document.getElementById('ruProfileName');
     const emailEl = document.getElementById('ruProfileEmail');
     const passEl = document.getElementById('ruProfilePassword');
+    const picInput = document.getElementById('ruProfilePictureInput');
     
     if (!nameEl || !emailEl || !passEl) return;
     
@@ -9318,6 +9373,30 @@ async function saveProfile() {
         return;
     }
     
+    let profile_picture = currentUser.profile_picture;
+    if (picInput && picInput.files && picInput.files[0]) {
+        const formData = new FormData();
+        formData.append('file', picInput.files[0]);
+        try {
+            const uploadRes = await fetch(`${API_BASE_URL}/upload/image`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${authToken}` },
+                body: formData
+            });
+            if (uploadRes.ok) {
+                const uploadData = await uploadRes.json();
+                profile_picture = uploadData.url;
+            } else {
+                showToast('Failed to upload profile picture.', 'error');
+                return;
+            }
+        } catch (e) {
+            console.error('Upload error:', e);
+            showToast('Upload error', 'error');
+            return;
+        }
+    }
+    
     try {
         const res = await fetch(`${API_BASE_URL}/auth/me`, {
             method: 'PUT',
@@ -9325,7 +9404,7 @@ async function saveProfile() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             },
-            body: JSON.stringify({ name, email, password })
+            body: JSON.stringify({ name, email, password, profile_picture })
         });
         
         if (res.ok) {
@@ -9334,6 +9413,7 @@ async function saveProfile() {
             updateUIForUser();
             showToast('Profile saved successfully!', 'success');
             passEl.value = ''; // clear password field
+            if (picInput) picInput.value = '';
         } else {
             const data = await res.json();
             showToast(data.detail || 'Failed to update profile.', 'error');

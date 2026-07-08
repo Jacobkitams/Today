@@ -3,7 +3,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
@@ -337,8 +337,8 @@ def get_endowment_info(db: Session = Depends(get_db)):
     return db.query(models.EndowmentInfo).filter(models.EndowmentInfo.status == "approved").order_by(models.EndowmentInfo.created_at.desc()).all()
 
 @router.post("/endowment-campaigns/{item_id}/like", response_model=schemas.LikeResponse)
-def like_endowment_campaign(item_id: int, db: Session = Depends(get_db)):
-    return _increment_likes(db, models.EndowmentCampaign, item_id)
+def like_endowment_campaign(item_id: int, request: Request, db: Session = Depends(get_db)):
+    return _toggle_likes(db, models.EndowmentCampaign, item_id, request)
 
 @router.get("/community", response_model=List[schemas.CommunityResponse])
 @router.get("/commission", response_model=List[schemas.CommunityResponse], include_in_schema=False)
@@ -538,18 +538,40 @@ def _list_content_comments(db: Session, item, comment_model, fk_name: str, item_
     count = item.comments_count or 0
     return [_comment_payload(db, c, fk_name, count) for c in comments]
 
-def _increment_likes(db: Session, model, item_id: int):
+def _toggle_likes(db: Session, model, item_id: int, request: Request):
     item = db.query(model).filter(model.id == item_id, model.status == "approved").first()
     if not item:
         raise HTTPException(status_code=404, detail="Content not found")
-    item.likes = (item.likes or 0) + 1
+
+    # Use client IP as a lightweight session key (no auth required for likes)
+    client_ip = request.client.host if request.client else "unknown"
+    model_name = model.__tablename__
+    like_key = f"{model_name}:{item_id}:{client_ip}"
+
+    # Check if this IP already liked this item
+    existing = db.query(models.ContentLike).filter(
+        models.ContentLike.like_key == like_key
+    ).first()
+
+    if existing:
+        # Already liked → unlike (remove like)
+        db.delete(existing)
+        item.likes = max((item.likes or 1) - 1, 0)
+        liked = False
+    else:
+        # Not yet liked → like (add like)
+        new_like = models.ContentLike(like_key=like_key)
+        db.add(new_like)
+        item.likes = (item.likes or 0) + 1
+        liked = True
+
     db.commit()
     db.refresh(item)
-    return {"likes": item.likes}
+    return {"likes": item.likes, "liked": liked}
 
 @router.post("/news/{item_id}/like", response_model=schemas.LikeResponse)
-def like_news(item_id: int, db: Session = Depends(get_db)):
-    return _increment_likes(db, models.News, item_id)
+def like_news(item_id: int, request: Request, db: Session = Depends(get_db)):
+    return _toggle_likes(db, models.News, item_id, request)
 
 @router.post("/news/{news_id}/comment", response_model=schemas.NewsCommentResponse)
 def comment_news(
@@ -622,8 +644,8 @@ def get_news_comments(news_id: int, db: Session = Depends(get_db)):
     return _news_comments_tree(db, news_id, count)
 
 @router.post("/events/{item_id}/like", response_model=schemas.LikeResponse)
-def like_event(item_id: int, db: Session = Depends(get_db)):
-    return _increment_likes(db, models.Event, item_id)
+def like_event(item_id: int, request: Request, db: Session = Depends(get_db)):
+    return _toggle_likes(db, models.Event, item_id, request)
 
 def _event_comment_payload(db: Session, comment: models.EventComment, comments_count: int) -> dict:
     author_name = None
@@ -696,16 +718,16 @@ def get_event_comments(event_id: int, db: Session = Depends(get_db)):
     return [_event_comment_payload(db, c, count) for c in comments]
 
 @router.post("/innovations/{item_id}/like", response_model=schemas.LikeResponse)
-def like_innovation(item_id: int, db: Session = Depends(get_db)):
-    return _increment_likes(db, models.Innovation, item_id)
+def like_innovation(item_id: int, request: Request, db: Session = Depends(get_db)):
+    return _toggle_likes(db, models.Innovation, item_id, request)
 
 @router.post("/startups/{item_id}/like", response_model=schemas.LikeResponse)
-def like_startup(item_id: int, db: Session = Depends(get_db)):
-    return _increment_likes(db, models.Startup, item_id)
+def like_startup(item_id: int, request: Request, db: Session = Depends(get_db)):
+    return _toggle_likes(db, models.Startup, item_id, request)
 
 @router.post("/alumni/{alumni_id}/like", response_model=schemas.LikeResponse)
-def like_alumni(alumni_id: int, db: Session = Depends(get_db)):
-    return _increment_likes(db, models.AlumniProfile, alumni_id)
+def like_alumni(alumni_id: int, request: Request, db: Session = Depends(get_db)):
+    return _toggle_likes(db, models.AlumniProfile, alumni_id, request)
 
 def _alumni_comment_payload(db: Session, comment: models.AlumniComment, comments_count: int) -> dict:
     return {
@@ -812,8 +834,8 @@ def get_startup_comments(item_id: int, db: Session = Depends(get_db)):
 
 @router.post("/community/{item_id}/like", response_model=schemas.LikeResponse)
 @router.post("/commission/{item_id}/like", response_model=schemas.LikeResponse, include_in_schema=False)
-def like_community(item_id: int, db: Session = Depends(get_db)):
-    return _increment_likes(db, models.CommunityItem, item_id)
+def like_community(item_id: int, request: Request, db: Session = Depends(get_db)):
+    return _toggle_likes(db, models.CommunityItem, item_id, request)
 
 @router.post("/community/{item_id}/comment", response_model=schemas.CommunityCommentResponse)
 @router.post("/commission/{item_id}/comment", response_model=schemas.CommunityCommentResponse, include_in_schema=False)
@@ -890,8 +912,8 @@ def get_research_lab_comments(item_id: int, db: Session = Depends(get_db)):
     return _list_content_comments(db, item, models.ResearchLabComment, "research_lab_id", item_id)
 
 @router.post("/tech-park/{item_id}/like", response_model=schemas.LikeResponse)
-def like_tech_park(item_id: int, db: Session = Depends(get_db)):
-    return _increment_likes(db, models.TechParkItem, item_id)
+def like_tech_park(item_id: int, request: Request, db: Session = Depends(get_db)):
+    return _toggle_likes(db, models.TechParkItem, item_id, request)
 
 @router.post("/tech-park/{item_id}/comment", response_model=schemas.TechParkCommentResponse)
 def comment_tech_park(

@@ -1030,6 +1030,14 @@
                         <button class="btn-primary" onclick="saveProfile()"><i data-lucide="save"></i> Save Changes</button>
                     </div>
                     <div class="admin-panel">
+                        <div class="form-group" style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
+                            <img id="ruProfilePicturePreview" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E" alt="Profile Picture" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: #eee; padding: 10px;">
+                            <div>
+                                <label style="margin-bottom: 0.5rem; display: block;">Profile Picture</label>
+                                <input type="file" id="ruProfilePictureInput" accept="image/*" style="font-size: 0.85rem; padding: 0.5rem;" onchange="previewProfilePicture(this)">
+                                <p style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; margin-bottom: 0;">Square image recommended. Max 2MB.</p>
+                            </div>
+                        </div>
                         <div class="form-group"><label>Full Name</label><input type="text" id="ruProfileName" placeholder="Your full name"></div>
                         <div class="form-group"><label>Email</label><input type="email" id="ruProfileEmail" placeholder="you@example.com"></div>
                         <div class="form-group"><label>New Password</label><input type="password" id="ruProfilePassword" placeholder="Leave blank to keep current"></div>

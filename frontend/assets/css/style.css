@@ -5873,6 +5873,117 @@ nav {
     }
 }
 
+/* --- Mobile phone: full-width bottom-sheet card popup --- */
+@media (max-width: 600px) {
+    /* Align modal to bottom of screen */
+    #cardDetailModal .modal-dialog {
+        margin: 0 !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    #cardDetailModal .modal-content {
+        border-radius: 0 !important;
+    }
+
+    /* Box: stack image on top, content below, limited to 90vh total */
+    #cardDetailModal .card-detail-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 20px 20px 0 0 !important;
+        max-height: 90vh !important;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto 1fr !important;
+        display: grid !important;
+        overflow: hidden;
+    }
+
+    /* Image banner: compact, fixed height at top */
+    .card-detail-media {
+        display: flex !important;
+        min-height: 200px !important;
+        max-height: 200px !important;
+        height: 200px !important;
+        width: 100% !important;
+        border-radius: 20px 20px 0 0 !important;
+        overflow: hidden !important;
+        flex-shrink: 0 !important;
+    }
+
+    .card-detail-media-el {
+        width: 100% !important;
+        height: 200px !important;
+        min-height: 200px !important;
+        object-fit: cover !important;
+        border-radius: 0 !important;
+    }
+
+    .card-detail-media-empty {
+        min-height: 200px !important;
+        max-height: 200px !important;
+    }
+
+    /* Content: scrollable below the image */
+    .card-detail-content {
+        padding: 1.25rem 1.1rem 1.5rem !important;
+        overflow-y: auto !important;
+        max-height: calc(90vh - 200px) !important;
+        gap: 0.75rem !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Pull-handle at the very top of the content area */
+    .card-detail-content::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        background: #d1d5db;
+        border-radius: 999px;
+        margin: -0.25rem auto 0.4rem;
+        flex-shrink: 0;
+    }
+
+    .card-detail-content h2 {
+        font-size: 1.2rem !important;
+        line-height: 1.2 !important;
+        letter-spacing: -0.02em !important;
+    }
+
+    .card-detail-badge {
+        font-size: 0.7rem !important;
+    }
+
+    .card-detail-description {
+        font-size: 0.9rem !important;
+        line-height: 1.65 !important;
+    }
+
+    .card-detail-actions {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem !important;
+    }
+
+    .card-detail-actions button {
+        padding: 0.65rem 0.5rem !important;
+        font-size: 0.82rem !important;
+        border-radius: 10px !important;
+    }
+
+    /* Close button sits over the image */
+    .card-detail-close {
+        top: 0.85rem !important;
+        right: 0.85rem !important;
+        z-index: 30 !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        backdrop-filter: blur(4px) !important;
+    }
+}
+
 /* =============================================
    SHARE MODAL
    ============================================= */
@@ -8093,6 +8204,14 @@ body.app-offline .offline-admin-notice {
         align-items: flex-end;
     }
 
+    #contentCommentModal,
+    #contentCommentModal.show,
+    #shareModal,
+    #shareModal.show {
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
     .modal-container {
         grid-template-columns: 1fr;
         margin: 0;
@@ -8138,15 +8257,21 @@ body.app-offline .offline-admin-notice {
     }
 
     .fixed-apply-btn {
-        bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-        right: max(1rem, env(safe-area-inset-right, 0px));
-        min-height: var(--touch-target-min);
-        padding: 0.7rem 1.15rem;
-        font-size: 0.82rem;
-        max-width: calc(100vw - 2rem - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        /* Centered floating pill on mobile */
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        bottom: max(1.25rem, env(safe-area-inset-bottom, 0px)) !important;
+        width: auto !important;
+        max-width: calc(100vw - 3rem) !important;
+        border-radius: 999px !important;
+        justify-content: center !important;
+        padding: 0.8rem 1.75rem !important;
+        font-size: 0.9rem !important;
+        font-weight: 800 !important;
+        min-height: 48px !important;
+        white-space: nowrap !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22) !important;
     }
 
     .toast-container {
@@ -8155,12 +8280,10 @@ body.app-offline .offline-admin-notice {
         bottom: max(5.5rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
     }
 
+
+
     .premium-footer {
-        display: none;
-        padding-top: 3.5rem;
-        padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
-        margin-top: 2.5rem;
-        margin-bottom: 4.5rem;
+        display: none !important;
     }
 
     .premium-footer .footer-grid {
@@ -8322,10 +8445,13 @@ body.app-offline .offline-admin-notice {
     }
 
     .fixed-apply-btn {
-        left: max(0.875rem, env(safe-area-inset-left, 0px));
-        right: max(0.875rem, env(safe-area-inset-right, 0px));
-        width: auto;
-        justify-content: center;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        bottom: max(1rem, env(safe-area-inset-bottom, 0px)) !important;
+        max-width: calc(100vw - 2rem) !important;
+        border-radius: 999px !important;
+        padding: 0.75rem 1.5rem !important;
     }
 
     .toast-container {
