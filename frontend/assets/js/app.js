@@ -4,6 +4,10 @@ const API_BASE_URL = (() => {
         return override.replace(/\/$/, '');
     }
     const host = window.location.hostname || 'localhost';
+    // Production domain — API is served by same FastAPI process via Nginx proxy (same origin, no port)
+    if (host === 'today.iuea.ac.ug' || host.endsWith('.iuea.ac.ug')) {
+        return '';
+    }
     if (host.includes('ngrok-free.dev')) {
         return `https://${host}/MyProject/today/frontend/api`;
     }

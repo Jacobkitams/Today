@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE = `iuea-today-static-${CACHE_VERSION}`;
 const API_CACHE = `iuea-today-api-${CACHE_VERSION}`;
 
@@ -111,7 +111,7 @@ function assetUrl(path) {
 }
 
 function isApiRequest(url) {
-  return url.port === '8001';
+  return url.port === '8001' || url.port === '8002' || /^\/(auth|content|admin|upload|settings|forms)\//.test(url.pathname);
 }
 
 function isHeroVideo(url) {

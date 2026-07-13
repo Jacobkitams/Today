@@ -30,6 +30,11 @@ def require_super_admin(current_user: User = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Super admin access required")
     return current_user
 
+def require_innovation_admin(current_user: User = Depends(get_current_user)):
+    if current_user.role not in ["innovation_admin", "super_admin", "admin"]:
+        raise HTTPException(status_code=403, detail="Innovation admin access required")
+    return current_user
+
 # --- APPROVAL CONTENT TYPES (shared by stats + kanban) ---
 APPROVAL_CONTENT_TYPES = [
     ("news", models.News),
@@ -59,6 +64,7 @@ USER_ROLE_LABELS = {
     "donor_partner": "Donors & Partners",
     "content_editor": "Content Editors",
     "coordinator": "Coordinators",
+    "innovation_admin": "Innovation Admins",
     "super_admin": "Super Admins",
     "admin": "Admins",
 }
@@ -249,7 +255,7 @@ def update_user_role(user_id: int, data: schemas.UserRoleUpdate, db: Session = D
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    valid_roles = ["public_visitor", "registered_user", "donor_partner", "content_editor", "coordinator", "super_admin"]
+    valid_roles = ["public_visitor", "registered_user", "donor_partner", "content_editor", "coordinator", "innovation_admin", "super_admin"]
     if data.role not in valid_roles:
         raise HTTPException(status_code=400, detail="Invalid role")
     user.role = data.role
@@ -266,6 +272,31 @@ def update_user_status(user_id: int, data: schemas.UserStatusUpdate, db: Session
     user.is_active = data.is_active
     db.commit()
     return {"message": f"User {'activated' if data.is_active else 'deactivated'}"}
+
+@router.put("/users/{user_id}")
+def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(get_db), current_user: User = Depends(require_super_admin)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if data.name is not None:
+        name = data.name.strip()
+        if not name:
+            raise HTTPException(status_code=400, detail="Name cannot be empty")
+        user.name = name
+    if data.email is not None:
+        email = data.email.strip().lower()
+        if "@" not in email:
+            raise HTTPException(status_code=400, detail="Invalid email address")
+        existing = db.query(models.User).filter(models.User.email == email, models.User.id != user_id).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use by another account")
+        user.email = email
+    if data.password is not None and data.password.strip():
+        from auth import get_password_hash
+        user.hashed_password = get_password_hash(data.password.strip())
+    db.commit()
+    db.refresh(user)
+    return {"message": "User updated", "user": {"id": user.id, "name": user.name, "email": user.email}}
 
 @router.delete("/users/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_super_admin)):
@@ -540,3 +571,146 @@ def update_platform_settings(
     db.commit()
     db.refresh(settings)
     return settings
+
+
+# ===== INNOVATION ADMIN ROUTES =====
+INNOVATION_ADMIN_TYPES = [
+    ("innovations", models.Innovation),
+    ("startups", models.Startup),
+]
+
+@router.get("/innovation-admin/stats")
+def get_innovation_admin_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_innovation_admin),
+):
+    stats = {}
+    for content_type, model in INNOVATION_ADMIN_TYPES:
+        total   = db.query(model).count()
+        pending  = db.query(model).filter(model.status == "pending").count()
+        approved = db.query(model).filter(model.status == "approved").count()
+        rejected = db.query(model).filter(model.status == "rejected").count()
+        stats[content_type] = {
+            "total": total,
+            "pending": pending,
+            "approved": approved,
+            "rejected": rejected,
+        }
+    return stats
+
+@router.get("/innovation-admin/content/{content_type}")
+def list_innovation_admin_content(
+    content_type: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_innovation_admin),
+):
+    model_map = dict(INNOVATION_ADMIN_TYPES)
+    model = model_map.get(content_type)
+    if not model:
+        raise HTTPException(status_code=400, detail="Invalid content type. Must be 'innovations' or 'startups'.")
+    items = db.query(model).order_by(model.created_at.desc()).all()
+    return [_content_to_dict(item) for item in items]
+
+@router.get("/innovation-admin/content/{content_type}/{content_id}")
+def get_innovation_admin_item(
+    content_type: str,
+    content_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_innovation_admin),
+):
+    model_map = dict(INNOVATION_ADMIN_TYPES)
+    model = model_map.get(content_type)
+    if not model:
+        raise HTTPException(status_code=400, detail="Invalid content type.")
+    item = db.query(model).filter(model.id == content_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return _content_to_dict(item)
+
+@router.put("/innovation-admin/content/{content_type}/{content_id}")
+def update_innovation_admin_item(
+    content_type: str,
+    content_id: int,
+    data: schemas.AdminContentUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_innovation_admin),
+):
+    model_map = dict(INNOVATION_ADMIN_TYPES)
+    model = model_map.get(content_type)
+    if not model:
+        raise HTTPException(status_code=400, detail="Invalid content type.")
+    item = db.query(model).filter(model.id == content_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    for key, value in data.dict(exclude_unset=True).items():
+        if hasattr(item, key):
+            setattr(item, key, value)
+    db.commit()
+    db.refresh(item)
+    return {"message": "Updated", "item": _content_to_dict(item)}
+
+@router.delete("/innovation-admin/content/{content_type}/{content_id}")
+def delete_innovation_admin_item(
+    content_type: str,
+    content_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_innovation_admin),
+):
+    model_map = dict(INNOVATION_ADMIN_TYPES)
+    model = model_map.get(content_type)
+    if not model:
+        raise HTTPException(status_code=400, detail="Invalid content type.")
+    item = db.query(model).filter(model.id == content_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    db.delete(item)
+    db.commit()
+    return {"message": "Deleted"}
+
+@router.put("/innovation-admin/content/{content_type}/{content_id}/approve")
+def approve_innovation_admin_item(
+    content_type: str,
+    content_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_innovation_admin),
+):
+    model_map = dict(INNOVATION_ADMIN_TYPES)
+    model = model_map.get(content_type)
+    if not model:
+        raise HTTPException(status_code=400, detail="Invalid content type.")
+    item = db.query(model).filter(model.id == content_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    item.status = "approved"
+    if hasattr(item, "updated_at"):
+        item.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    author_id = getattr(item, "author_id", None)
+    title = _activity_title(item, content_type)
+    notifications_service.notify_content_status(db, author_id, content_type, title, "approved")
+    db.commit()
+    return {"message": "Approved"}
+
+@router.put("/innovation-admin/content/{content_type}/{content_id}/reject")
+def reject_innovation_admin_item(
+    content_type: str,
+    content_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_innovation_admin),
+):
+    model_map = dict(INNOVATION_ADMIN_TYPES)
+    model = model_map.get(content_type)
+    if not model:
+        raise HTTPException(status_code=400, detail="Invalid content type.")
+    item = db.query(model).filter(model.id == content_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    item.status = "rejected"
+    if hasattr(item, "updated_at"):
+        item.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    author_id = getattr(item, "author_id", None)
+    title = _activity_title(item, content_type)
+    notifications_service.notify_content_status(db, author_id, content_type, title, "rejected")
+    db.commit()
+    return {"message": "Rejected"}

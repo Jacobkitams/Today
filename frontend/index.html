@@ -14,7 +14,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=5">
 </head>
 
 <body>
@@ -1812,6 +1812,270 @@
 
     <!-- ===== CONTENT EDITOR DASHBOARD — handled by existing admin-dashboard ===== -->
 
+    <!-- ===== INNOVATION ADMIN DASHBOARD ===== -->
+    <div id="innovation-admin-dashboard" class="page-section admin-page-wrapper coordinator-dash" style="--co-accent:#800000;--co-accent-light:#fef2f2;--co-accent-mid:#fee2e2;">
+        <header class="admin-topbar">
+            <div class="admin-topbar-left">
+                <button type="button" class="admin-mobile-menu-toggle" aria-label="Toggle Menu" onclick="this.closest('.admin-page-wrapper').querySelector('.admin-sidebar').classList.toggle('open'); lucide.createIcons();">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="admin-logo" onclick="returnToPublic()" title="Back to IUEA Today">
+                    <img src="assets/images/iuea-logo.png" alt="IUEA Logo">
+                </div>
+            </div>
+
+            <div class="admin-topbar-center">
+                <div class="admin-search-wrap">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="Search innovations, startups…" aria-label="Search innovation admin dashboard">
+                    <span class="admin-search-shortcut" aria-hidden="true">⌘K</span>
+                </div>
+            </div>
+
+            <div class="admin-topbar-right">
+                <div class="admin-topbar-actions">
+                    <div class="notify-wrap" data-notify-context="ia">
+                        <button type="button" class="admin-icon-btn admin-icon-btn--notify notify-btn" aria-label="Notifications" aria-expanded="false">
+                            <i data-lucide="bell"></i>
+                            <span class="admin-notification-badge notify-badge" id="ia-notify-badge" style="display:none">0</span>
+                        </button>
+                        <div class="notify-dropdown" hidden>
+                            <div class="notify-dropdown-header">
+                                <h3>Notifications</h3>
+                                <button type="button" class="notify-mark-all">Mark all read</button>
+                            </div>
+                            <div class="notify-dropdown-list" id="ia-notify-list"></div>
+                            <div class="notify-dropdown-empty" hidden>
+                                <i data-lucide="bell-off"></i>
+                                <p>No notifications yet</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="returnToPublic()" class="admin-icon-btn" title="View Public Site" aria-label="View public site">
+                        <i data-lucide="external-link"></i>
+                    </button>
+                </div>
+                <div class="admin-topbar-divider" aria-hidden="true"></div>
+                <div class="admin-user-area">
+                    <div class="admin-user-menu" aria-label="Signed in innovation admin profile">
+                        <div class="admin-avatar co-avatar" aria-hidden="true" style="background:linear-gradient(135deg,#800000,#b91c1c)"><i data-lucide="lightbulb"></i></div>
+                        <div class="admin-user-info">
+                            <span id="iaUserName" class="admin-user-name">Innovation Admin</span>
+                            <span class="admin-role-badge" style="background:#fef2f2;color:#800000;border-color:#fecaca;">Innovation Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-layout">
+            <aside class="admin-sidebar">
+                <div class="admin-sidebar-section">
+                    <div class="admin-sidebar-label">Main Menu</div>
+                    <nav class="admin-nav">
+                        <button type="button" class="admin-nav-btn ia-nav-btn active" data-ia-tab="overview"><i data-lucide="layout-dashboard"></i> Overview</button>
+                    </nav>
+                </div>
+
+                <div class="admin-sidebar-section">
+                    <div class="admin-sidebar-label">Content</div>
+                    <nav class="admin-nav">
+                        <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="innovations"><i data-lucide="lightbulb"></i> Innovations</button>
+                        <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="startups"><i data-lucide="rocket"></i> Startups</button>
+                    </nav>
+                </div>
+
+                <div class="admin-sidebar-section admin-sidebar-footer">
+                    <div class="admin-sidebar-label">Account</div>
+                    <nav class="admin-nav">
+                        <button type="button" class="admin-nav-btn ia-nav-btn" onclick="returnToPublic()"><i data-lucide="globe"></i> Public Site</button>
+                        <button type="button" class="admin-nav-btn ia-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
+                            <i data-lucide="log-out"></i> Sign Out
+                        </button>
+                    </nav>
+                </div>
+            </aside>
+
+            <main class="admin-main">
+
+                <!-- OVERVIEW TAB -->
+                <div id="ia-tab-overview" class="ia-tab active">
+                    <div class="admin-welcome-banner co-welcome-banner" style="background:linear-gradient(135deg,#800000 0%,#b91c1c 60%,#991b1b 100%);">
+                        <div class="admin-welcome-content">
+                            <h2 id="iaWelcomeTitle">Innovation Admin Dashboard</h2>
+                            <p>Manage innovation submissions and startup showcases — approve, reject, or remove content across the IUEA innovation ecosystem.</p>
+                            <div class="admin-welcome-actions">
+                                <button class="btn-primary" style="background:#fff;color:#800000;" onclick="showIaTab('innovations', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=innovations]')); iaLoadContent('innovations')"><i data-lucide="lightbulb" style="width:16px;height:16px;margin-right:6px"></i> View Innovations</button>
+                                <button class="btn-secondary" style="color:#fff;border-color:rgba(255,255,255,0.5)" onclick="showIaTab('startups', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=startups]')); iaLoadContent('startups')">View Startups</button>
+                            </div>
+                        </div>
+                        <div class="admin-welcome-status">
+                            <div class="date-display" id="iaDateDisplay">Loading date…</div>
+                            <div class="platform-status"><span class="status-dot co-status-dot" style="background:#4ade80"></span> Innovation Portal Active</div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="admin-stats-grid co-stats-grid" style="--cols:3">
+                        <!-- Innovations block -->
+                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #800000">
+                            <div class="stat-header">
+                                <span class="stat-title">Innovations — Total</span>
+                                <div class="stat-icon-wrap" style="background:#fef2f2;color:#800000"><i data-lucide="lightbulb"></i></div>
+                            </div>
+                            <div class="stat-value" id="ia-stat-inn-total">—</div>
+                            <div class="stat-trend"><i data-lucide="database"></i> All submissions</div>
+                        </div>
+                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #f59e0b">
+                            <div class="stat-header">
+                                <span class="stat-title">Innovations — Pending</span>
+                                <div class="stat-icon-wrap" style="background:#fffbeb;color:#f59e0b"><i data-lucide="clock"></i></div>
+                            </div>
+                            <div class="stat-value" id="ia-stat-inn-pending">—</div>
+                            <div class="stat-trend"><i data-lucide="clock"></i> Awaiting review</div>
+                        </div>
+                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #22c55e">
+                            <div class="stat-header">
+                                <span class="stat-title">Innovations — Approved</span>
+                                <div class="stat-icon-wrap" style="background:#f0fdf4;color:#22c55e"><i data-lucide="check-circle"></i></div>
+                            </div>
+                            <div class="stat-value" id="ia-stat-inn-approved">—</div>
+                            <div class="stat-trend"><i data-lucide="check"></i> Live on platform</div>
+                        </div>
+                        <!-- Startups block -->
+                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #7c3aed">
+                            <div class="stat-header">
+                                <span class="stat-title">Startups — Total</span>
+                                <div class="stat-icon-wrap" style="background:#faf5ff;color:#7c3aed"><i data-lucide="rocket"></i></div>
+                            </div>
+                            <div class="stat-value" id="ia-stat-st-total">—</div>
+                            <div class="stat-trend"><i data-lucide="database"></i> All submissions</div>
+                        </div>
+                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #f59e0b">
+                            <div class="stat-header">
+                                <span class="stat-title">Startups — Pending</span>
+                                <div class="stat-icon-wrap" style="background:#fffbeb;color:#f59e0b"><i data-lucide="clock"></i></div>
+                            </div>
+                            <div class="stat-value" id="ia-stat-st-pending">—</div>
+                            <div class="stat-trend"><i data-lucide="clock"></i> Awaiting review</div>
+                        </div>
+                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #22c55e">
+                            <div class="stat-header">
+                                <span class="stat-title">Startups — Approved</span>
+                                <div class="stat-icon-wrap" style="background:#f0fdf4;color:#22c55e"><i data-lucide="check-circle"></i></div>
+                            </div>
+                            <div class="stat-value" id="ia-stat-st-approved">—</div>
+                            <div class="stat-trend"><i data-lucide="check"></i> Live on platform</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick actions -->
+                    <div class="admin-dashboard-grid">
+                        <div class="admin-panel">
+                            <div class="panel-header">
+                                <h3><i data-lucide="lightbulb" style="width:18px;height:18px;margin-right:6px;vertical-align:middle;color:#800000"></i>Innovations</h3>
+                                <button class="btn-primary" style="font-size:.8rem;padding:.4rem .9rem" onclick="showIaTab('innovations', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=innovations]')); iaLoadContent('innovations')">Manage →</button>
+                            </div>
+                            <p style="color:#64748b;font-size:.875rem;margin:0">Review, approve, and reject innovation project submissions from students and staff.</p>
+                        </div>
+                        <div class="admin-panel">
+                            <div class="panel-header">
+                                <h3><i data-lucide="rocket" style="width:18px;height:18px;margin-right:6px;vertical-align:middle;color:#7c3aed"></i>Startups</h3>
+                                <button class="btn-primary" style="font-size:.8rem;padding:.4rem .9rem;background:#7c3aed" onclick="showIaTab('startups', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=startups]')); iaLoadContent('startups')">Manage →</button>
+                            </div>
+                            <p style="color:#64748b;font-size:.875rem;margin:0">Review startup pitches and showcase profiles. Approve top ventures for the public listing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INNOVATIONS TAB -->
+                <div id="ia-tab-innovations" class="ia-tab">
+                    <div class="admin-panel-header">
+                        <div>
+                            <h3>Innovations</h3>
+                            <p>All innovation project submissions. Approve to make them visible on the public site.</p>
+                        </div>
+                        <div class="admin-panel-header-actions co-filter-bar">
+                            <select id="ia-filter-innovations-status" class="co-filter-select" aria-label="Filter innovations by status">
+                                <option value="all">All statuses</option>
+                                <option value="pending" selected>Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <button class="btn-primary" style="font-size:.8rem;padding:.45rem .9rem" onclick="iaLoadContent('innovations')"><i data-lucide="refresh-cw" style="width:14px;height:14px;margin-right:4px"></i>Refresh</button>
+                        </div>
+                    </div>
+                    <div class="admin-panel p-0 co-submissions-panel">
+                        <div id="ia-loading-innovations" class="co-loading-state" hidden>
+                            <i data-lucide="loader"></i>
+                            <p>Loading innovations…</p>
+                        </div>
+                        <div id="ia-empty-innovations" class="co-empty-state">
+                            <i data-lucide="inbox"></i>
+                            <h3>No innovations found</h3>
+                            <p>Submissions will appear here once filtered.</p>
+                        </div>
+                        <table class="admin-table-modern co-submissions-table" id="ia-table-innovations" hidden>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ia-tbody-innovations"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- STARTUPS TAB -->
+                <div id="ia-tab-startups" class="ia-tab">
+                    <div class="admin-panel-header">
+                        <div>
+                            <h3>Startups</h3>
+                            <p>Startup showcase submissions from student and staff founders.</p>
+                        </div>
+                        <div class="admin-panel-header-actions co-filter-bar">
+                            <select id="ia-filter-startups-status" class="co-filter-select" aria-label="Filter startups by status">
+                                <option value="all">All statuses</option>
+                                <option value="pending" selected>Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <button class="btn-primary" style="font-size:.8rem;padding:.45rem .9rem" onclick="iaLoadContent('startups')"><i data-lucide="refresh-cw" style="width:14px;height:14px;margin-right:4px"></i>Refresh</button>
+                        </div>
+                    </div>
+                    <div class="admin-panel p-0 co-submissions-panel">
+                        <div id="ia-loading-startups" class="co-loading-state" hidden>
+                            <i data-lucide="loader"></i>
+                            <p>Loading startups…</p>
+                        </div>
+                        <div id="ia-empty-startups" class="co-empty-state">
+                            <i data-lucide="inbox"></i>
+                            <h3>No startups found</h3>
+                            <p>Startup submissions will appear here once filtered.</p>
+                        </div>
+                        <table class="admin-table-modern co-submissions-table" id="ia-table-startups" hidden>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Founder</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ia-tbody-startups"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
     <!-- ADMIN DASHBOARD PAGE -->
     <div id="admin-dashboard" class="page-section admin-page-wrapper">
         <header class="admin-topbar">
@@ -1900,8 +2164,7 @@
                                 data-lucide="file-text"></i> News</button>
                         <button class="admin-nav-btn" data-module="events" onclick="loadAdminModule('events', this)"><i
                                 data-lucide="calendar"></i> Events</button>
-                        <button class="admin-nav-btn" data-module="innovations" onclick="loadAdminModule('innovations', this)"><i
-                                data-lucide="lightbulb"></i> Innovations</button>
+
                         <button class="admin-nav-btn" data-module="alumni" onclick="loadAdminModule('alumni', this)"><i
                                 data-lucide="graduation-cap"></i> Alumni</button>
                         <button class="admin-nav-btn" data-module="research" onclick="loadAdminModule('research', this)"><i
@@ -3450,13 +3713,16 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/app.js?v=15"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function () {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .catch(function (err) {
-                        console.warn('Service worker registration failed:', err);
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js?v=3')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
                     });
             });
         }
