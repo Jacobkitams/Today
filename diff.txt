@@ -1,0 +1,1000 @@
+diff --git a/frontend/assets/js/app.js b/frontend/assets/js/app.js
+index 645eee4..3e5edf4 100644
+--- a/frontend/assets/js/app.js
++++ b/frontend/assets/js/app.js
+@@ -7,7 +7,10 @@ const API_BASE_URL = (() => {
+     if (host.includes('ngrok-free.dev')) {
+         return `https://${host}/MyProject/today/frontend/api`;
+     }
+-    return `http://${host}:8001`;
++    if (host === 'today.iuea.ac.ug' || host === '159.65.195.188') {
++        return window.location.origin;
++    }
++    return `http://${host}:8002`;
+ })();
+ 
+ // Same-origin relative prefix for static media (Apache serves frontend/assets and frontend/uploads)
+@@ -25,6 +28,10 @@ const FRONTEND_BASE = (() => {
+ let currentUser = null;
+ let authToken = localStorage.getItem('jwt_token');
+ 
++// Stores intended navigation when an unauthenticated user hits a protected feature.
++// Shape: { type: 'navigate', pageId: string } | { type: 'toggleForm', formType: string } | null
++let pendingNavigation = null;
++
+ const HOME_NEWS_LIMIT = 6;
+ const INNOVATION_NEWS_LIMIT = 3;
+ const STARTUP_NEWS_LIMIT = 3;
+@@ -566,14 +573,14 @@ function jsStringLiteral(value) {
+ }
+ 
+ function authorChipHTML(authorId, authorName, contentType, contentId) {
+-    if (!authorId) return '';
+-    const name = (authorName || 'Community member').trim();
++    const aId = authorId || 1;
++    const name = (authorName || 'IUEA Admin').trim();
+     const initial = msgInitials(name, '');
+     const safeName = escapeHtml(name);
+     const typeArg = contentType ? jsStringLiteral(contentType) : 'null';
+     const idArg = contentId ? Number(contentId) : 'null';
+     return `<button type="button" class="author-chip"
+-        onclick="event.stopPropagation(); openAuthorProfileModal(${authorId}, ${jsStringLiteral(name)}, ${typeArg}, ${idArg})"
++        onclick="event.stopPropagation(); openAuthorProfileModal(${aId}, ${jsStringLiteral(name)}, ${typeArg}, ${idArg})"
+         aria-label="View profile of ${safeName}">
+         <span class="author-chip-avatar" aria-hidden="true">${initial}</span>
+         <span class="author-chip-text">
+@@ -672,6 +679,7 @@ const ROLE_DASHBOARD_MAP = {
+     'registered_user':   'registered-user-dashboard',
+     'donor_partner':     'donor-partner-dashboard',
+     'coordinator':       'coordinator-dashboard',
++    'innovation_admin':  'innovation-admin-dashboard',
+     'content_editor':    'admin-dashboard',
+     'super_admin':       'admin-dashboard',
+     'admin':             'admin-dashboard'
+@@ -679,9 +687,9 @@ const ROLE_DASHBOARD_MAP = {
+ 
+ const ASSIGNABLE_USER_ROLES = [
+     'public_visitor',
+-    'registered_user',
+     'donor_partner',
+     'coordinator',
++    'innovation_admin',
+     'content_editor',
+     'super_admin',
+ ];
+@@ -756,8 +764,8 @@ function navigateTo(pageId) {
+ 
+     // Guard: role dashboards require login
+     if (isRoleDash && !currentUser) {
+-        showToast('Please sign in first.', 'error');
+-        showAuthModal();
++        showToast('Please sign in to access your dashboard.', 'info');
++        showAuthModal({ type: 'navigate', pageId });
+         return;
+     }
+ 
+@@ -769,6 +777,14 @@ function navigateTo(pageId) {
+         return;
+     }
+ 
++    // Guard: innovation-admin dashboard requires innovation_admin role
++    if (pageId === 'innovation-admin-dashboard' && !['innovation_admin', 'super_admin', 'admin'].includes(currentUser?.role)) {
++        showToast('Access denied.', 'error');
++        if (currentUser) navigateToDashboard();
++        else navigateTo('home');
++        return;
++    }
++
+     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+     document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active-nav'));
+     const page = document.getElementById(pageId);
+@@ -1249,6 +1265,8 @@ function createAlumniCard(item) {
+     stats += statHTML('heart', `${item.likes || 0} likes`);
+     stats += cardCommentsStat(item);
+ 
++    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, 'alumni', item.id);
++
+     return `
+     <div class="modern-card" data-content-type="alumni" data-content-id="${item.id}">
+         <div class="card-media">
+@@ -1259,6 +1277,7 @@ function createAlumniCard(item) {
+         <div class="card-content">
+             <h3>${title}</h3>
+             <p>${truncateText(desc)}</p>
++            ${authorRow}
+             <div class="card-stats-row">${stats}</div>
+             <div class="card-actions">
+                 <button onclick="likeAlumni(${item.id})"><i data-lucide="heart"></i> Like</button>
+@@ -1393,19 +1412,25 @@ function createEndowmentCampaignCard(item) {
+     if (item.goal_amount) stats += statHTML('target', `Goal: ${item.goal_amount}`);
+     if (item.raised_amount) stats += statHTML('trending-up', `Raised: ${item.raised_amount}`);
+     if (item.likes !== undefined) stats += statHTML('heart', `${item.likes} likes`);
++    stats += cardCommentsStat(item);
++
++    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, contentType, item.id);
+ 
+     return `
+     <div class="modern-card" data-content-type="${contentType}" data-content-id="${item.id}">
+         <div class="card-media">
+             <img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" onerror="this.src='https://picsum.photos/600/400?random=${item.id}'">
+             <span class="card-badge">Campaign</span>
++            ${cardSaveButton(contentType, item.id)}
+         </div>
+         <div class="card-content">
+             <h3>${title}</h3>
+             <p>${truncateText(desc)}</p>
++            ${authorRow}
+             <div class="card-stats-row">${stats}</div>
+             <div class="card-actions">
+                 <button onclick="likeContent('${contentType}', ${item.id})"><i data-lucide="heart"></i> Like</button>
++                ${cardCommentButton(contentType, item.id)}
+                 ${cardShareButton(contentType, item.id, title, desc)}
+             </div>
+         </div>
+@@ -3008,8 +3033,8 @@ async function loadAdminUsers() {
+             tbody.innerHTML = users.map((u, i) => `
+                 <tr>
+                     <td style="color:var(--iuea-gray-light)">${i + 1}</td>
+-                    <td><strong>${u.name}</strong></td>
+-                    <td style="color:var(--iuea-gray-light)">${u.email}</td>
++                    <td><strong>${escapeHtml(u.name || '')}</strong></td>
++                    <td style="color:var(--iuea-gray-light)">${escapeHtml(u.email || '')}</td>
+                     <td>
+                         <select class="role-select" onchange="updateUserRole(${u.id}, this.value)">
+                             ${selectableRolesForUser(u.role).map(r =>
+@@ -3019,12 +3044,19 @@ async function loadAdminUsers() {
+                     </td>
+                     <td><span class="status-badge ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
+                     <td style="color:var(--iuea-gray-light); font-size:0.85rem">${u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
+-                    <td>
++                    <td style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+                         <button class="btn-deactivate ${u.is_active ? 'active' : 'inactive'}" onclick="toggleUserStatus(${u.id}, ${u.is_active})">
+                             ${u.is_active ? 'Deactivate' : 'Activate'}
+                         </button>
++                        <button class="btn-delete-user" onclick="deleteUser(${u.id}, ${jsStringLiteral(u.name || u.email || 'this user')})" title="Delete user" style="background:rgba(220,38,38,0.12); color:#ef4444; border:1.5px solid rgba(220,38,38,0.35); border-radius:8px; padding:5px 14px; font-size:0.8rem; font-weight:600; cursor:pointer; transition:background 0.2s,transform 0.15s;" onmouseover="this.style.background='rgba(220,38,38,0.25)'" onmouseout="this.style.background='rgba(220,38,38,0.12)'">
++                            <i data-lucide="trash-2" style="width:13px;height:13px;display:inline;vertical-align:middle;margin-right:4px"></i>Delete
++                        </button>
++                        <button onclick="openEditUserModal(${u.id}, ${jsStringLiteral(u.name || '')}, ${jsStringLiteral(u.email || '')})" title="Edit user" style="background:rgba(59,130,246,0.12); color:#3b82f6; border:1.5px solid rgba(59,130,246,0.35); border-radius:8px; padding:5px 14px; font-size:0.8rem; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.25)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">
++                            <i data-lucide="pencil" style="width:13px;height:13px;display:inline;vertical-align:middle;margin-right:4px"></i>Edit
++                        </button>
+                     </td>
+                 </tr>`).join('');
++            refreshIconsIn(tbody);
+         }
+     } else {
+         if (usersTabBtn) usersTabBtn.style.display = 'none';
+@@ -3070,6 +3102,94 @@ async function toggleUserStatus(userId, currentStatus) {
+     else showToast('Failed to update status', 'error');
+ }
+ 
++async function deleteUser(userId, userName) {
++    if (!requireOnlineForAdmin('Deleting a user')) return;
++    if (!confirm(`Permanently delete "${userName}"?\n\nThis will remove the account and cannot be undone.`)) return;
++    const res = await apiDelete(`/admin/users/${userId}`);
++    if (res.ok) {
++        showToast(`"${userName}" has been deleted.`);
++        loadAdminUsers();
++        loadAdminStats();
++    } else {
++        showToast(res.data?.detail || 'Failed to delete user.', 'error');
++    }
++}
++
++function openEditUserModal(userId, userName, userEmail) {
++    // Remove any existing edit modal
++    const existing = document.getElementById('editUserModal');
++    if (existing) existing.remove();
++
++    const modal = document.createElement('div');
++    modal.id = 'editUserModal';
++    modal.style.cssText = `
++        position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center;
++        background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); padding:16px;
++    `;
++    modal.innerHTML = `
++        <div style="background:var(--iuea-dark-card,#1e1e2e); border:1px solid rgba(255,255,255,0.1); border-radius:20px;
++                    padding:32px; width:100%; max-width:440px; box-shadow:0 24px 64px rgba(0,0,0,0.5); position:relative;">
++            <button onclick="document.getElementById('editUserModal').remove()" style="position:absolute;top:16px;right:16px;
++                background:rgba(255,255,255,0.08);border:none;color:#94a3b8;border-radius:50%;width:32px;height:32px;
++                font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
++            <h3 style="margin:0 0 6px; font-size:1.2rem; color:#f1f5f9;">Edit User</h3>
++            <p style="margin:0 0 24px; font-size:0.82rem; color:#64748b;">Changes are saved immediately to the database.</p>
++
++            <label style="display:block;margin-bottom:6px;font-size:0.82rem;color:#94a3b8;font-weight:500;">Full Name</label>
++            <input id="editUserName" type="text" value="${escapeHtml(userName)}" placeholder="Full name"
++                style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);
++                       border-radius:10px;padding:10px 14px;color:#f1f5f9;font-size:0.92rem;outline:none;margin-bottom:16px;">
++
++            <label style="display:block;margin-bottom:6px;font-size:0.82rem;color:#94a3b8;font-weight:500;">Email Address</label>
++            <input id="editUserEmail" type="email" value="${escapeHtml(userEmail)}" placeholder="Email address"
++                style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);
++                       border-radius:10px;padding:10px 14px;color:#f1f5f9;font-size:0.92rem;outline:none;margin-bottom:16px;">
++
++            <label style="display:block;margin-bottom:6px;font-size:0.82rem;color:#94a3b8;font-weight:500;">New Password <span style="color:#475569;font-weight:400;">(leave blank to keep current)</span></label>
++            <input id="editUserPassword" type="password" placeholder="New password (optional)"
++                style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);
++                       border-radius:10px;padding:10px 14px;color:#f1f5f9;font-size:0.92rem;outline:none;margin-bottom:24px;">
++
++            <div style="display:flex;gap:10px;justify-content:flex-end;">
++                <button onclick="document.getElementById('editUserModal').remove()"
++                    style="padding:10px 20px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.12);
++                           background:transparent;color:#94a3b8;font-size:0.9rem;cursor:pointer;">Cancel</button>
++                <button onclick="saveEditUser(${userId})"
++                    style="padding:10px 24px;border-radius:10px;border:none;background:var(--iuea-maroon,#800000);
++                           color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;">Save Changes</button>
++            </div>
++            <p id="editUserError" style="margin:10px 0 0;font-size:0.82rem;color:#ef4444;display:none;"></p>
++        </div>
++    `;
++    // Close on backdrop click
++    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
++    document.body.appendChild(modal);
++    document.getElementById('editUserName').focus();
++}
++
++async function saveEditUser(userId) {
++    const name = document.getElementById('editUserName')?.value?.trim();
++    const email = document.getElementById('editUserEmail')?.value?.trim();
++    const password = document.getElementById('editUserPassword')?.value?.trim();
++    const errEl = document.getElementById('editUserError');
++
++    if (!name) { errEl.textContent = 'Name cannot be empty.'; errEl.style.display = 'block'; return; }
++    if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; errEl.style.display = 'block'; return; }
++
++    const payload = { name, email };
++    if (password) payload.password = password;
++
++    const res = await apiPut(`/admin/users/${userId}`, payload);
++    if (res.ok) {
++        showToast('User updated successfully!');
++        document.getElementById('editUserModal')?.remove();
++        loadAdminUsers();
++    } else {
++        errEl.textContent = res.data?.detail || 'Failed to save changes.';
++        errEl.style.display = 'block';
++    }
++}
++
+ /* =================== ADMIN CONTENT MODULES =================== */
+ let currentAdminModule = null;
+ let adminContentItemsCache = {};
+@@ -3084,12 +3204,6 @@ const RESEARCH_SUBMODULES = [
+     { key: 'research-labs', label: 'Research Labs', createLabel: 'Add Research Lab', endpoint: '/content/research-labs', createType: 'research-labs', icon: 'flask-conical' }
+ ];
+ 
+-const INNOVATIONS_SUBMODULES = [
+-    { key: 'innovation-news', label: 'Innovation News', createLabel: 'Add Innovation News', endpoint: '/content/news?type=innovation', createType: 'innovation-news', icon: 'newspaper' },
+-    { key: 'innovations', label: 'Innovations', createLabel: 'Add Innovation', endpoint: '/content/innovations', createType: 'innovation', icon: 'lightbulb' },
+-    { key: 'startup-news', label: 'Startup News', createLabel: 'Add Startup News', endpoint: '/content/news?type=startup', createType: 'startup-news', icon: 'newspaper' },
+-    { key: 'startups', label: 'Startups', createLabel: 'Add Startup', endpoint: '/content/startups', createType: 'startup', icon: 'rocket' }
+-];
+ 
+ const COMMUNITY_SUBMODULES = [
+     { key: 'community-news', label: 'Community News', createLabel: 'Add Community News', endpoint: '/content/community?type=news', createType: 'community-news', icon: 'newspaper' },
+@@ -3971,7 +4085,7 @@ async function prefetchHeroVideos() {
+ async function refreshAdminModuleInBackground(moduleName) {
+     if (currentAdminModule !== moduleName) return;
+     if (moduleName === 'research') return refreshResearchAdminModuleInBackground();
+-    if (moduleName === 'innovations') return refreshInnovationsAdminModuleInBackground();
++
+     if (moduleName === 'alumni') return refreshAlumniAdminModuleInBackground();
+     if (moduleName === 'community') return refreshCommunityAdminModuleInBackground();
+     if (moduleName === 'techpark') return refreshTechParkAdminModuleInBackground();
+@@ -4048,7 +4162,7 @@ async function getAdminContentItem(moduleName, id) {
+ 
+ async function loadAdminModule(moduleName, btn, options = {}) {
+     const { forceRefresh = false } = options;
+-    if (moduleName === 'startups') moduleName = 'innovations';
++
+     if (isDisplaySectionedAdminModule(moduleName)) {
+         await loadDisplaySectionedAdminModule(moduleName, btn, options);
+         return;
+@@ -4057,10 +4171,7 @@ async function loadAdminModule(moduleName, btn, options = {}) {
+         await loadResearchAdminModule(btn, options);
+         return;
+     }
+-    if (moduleName === 'innovations') {
+-        await loadInnovationsAdminModule(btn, options);
+-        return;
+-    }
++
+     if (moduleName === 'alumni') {
+         await loadAlumniAdminModule(btn, options);
+         return;
+@@ -4148,42 +4259,6 @@ async function loadResearchAdminModule(btn, options = {}) {
+ }
+ 
+ async function loadInnovationsAdminModule(btn, options = {}) {
+-    const { forceRefresh = false } = options;
+-    currentAdminModule = 'innovations';
+-    showAdminTab('content', btn || document.querySelector('.admin-nav-btn[data-module="innovations"]'));
+-    updateAdminContentHeader('innovations');
+-
+-    const area = document.getElementById('adminContentArea');
+-    const allCached = INNOVATIONS_SUBMODULES.every(sub => adminModuleCacheReady.has(sub.key));
+-
+-    if (allCached && !forceRefresh) {
+-        renderInnovationsAdminModule();
+-        refreshInnovationsAdminModuleInBackground();
+-        return;
+-    }
+-
+-    if (allCached && forceRefresh) {
+-        renderInnovationsAdminModule({ refreshing: true });
+-    } else if (area) {
+-        area.innerHTML = '<div class="admin-empty-state" style="padding:2rem;"><p>Loading…</p></div>';
+-    }
+-
+-    const results = await Promise.all(
+-        INNOVATIONS_SUBMODULES.map(async (sub) => {
+-            const items = await fetchAdminContentList(sub.key);
+-            return { key: sub.key, items: Array.isArray(items) ? items : [] };
+-        })
+-    );
+-
+-    if (currentAdminModule !== 'innovations') return;
+-
+-    results.forEach(({ key, items }) => {
+-        adminContentItemsCache[key] = items;
+-        adminModuleCacheReady.add(key);
+-    });
+-    adminModuleCacheReady.add('innovations');
+-    renderInnovationsAdminModule();
+-}
+ 
+ async function loadAlumniAdminModule(btn, options = {}) {
+     const { forceRefresh = false } = options;
+@@ -4729,31 +4804,6 @@ function renderResearchAdminModule(options = {}) {
+     lucide.createIcons();
+ }
+ 
+-function renderInnovationsAdminModule(options = {}) {
+-    const { refreshing = false } = options;
+-    const area = document.getElementById('adminContentArea');
+-    if (!area) return;
+-
+-    area.classList.toggle('admin-content-refreshing', refreshing);
+-    area.innerHTML = `
+-        <div class="admin-research-sections">
+-            ${INNOVATIONS_SUBMODULES.map(sub => {
+-                const items = adminContentItemsCache[sub.key] || [];
+-                return `
+-                <section class="admin-research-block">
+-                    <div class="admin-research-block-header">
+-                        <div class="admin-research-block-title">
+-                            <i data-lucide="${sub.icon}"></i>
+-                            <h4>${sub.label}</h4>
+-                        </div>
+-                        <span class="admin-research-block-count">${items.length} item${items.length === 1 ? '' : 's'}</span>
+-                    </div>
+-                    ${buildAdminTableHTML(sub.key, items)}
+-                </section>`;
+-            }).join('')}
+-        </div>`;
+-    lucide.createIcons();
+-}
+ 
+ function renderAlumniAdminModule(options = {}) {
+     const { refreshing = false } = options;
+@@ -4807,35 +4857,6 @@ function renderTechParkAdminModule(options = {}) {
+     lucide.createIcons();
+ }
+ 
+-async function refreshInnovationsAdminModuleInBackground() {
+-    if (currentAdminModule !== 'innovations') return;
+-
+-    const area = document.getElementById('adminContentArea');
+-    if (area) area.classList.add('admin-content-refreshing');
+-
+-    try {
+-        const results = await Promise.all(
+-            INNOVATIONS_SUBMODULES.map(async (sub) => {
+-                const items = await fetchAdminContentList(sub.key);
+-                return { key: sub.key, items: Array.isArray(items) ? items : [] };
+-            })
+-        );
+-        if (currentAdminModule !== 'innovations') return;
+-
+-        let changed = false;
+-        results.forEach(({ key, items }) => {
+-            if (!adminContentListsEqual(adminContentItemsCache[key], items)) changed = true;
+-            adminContentItemsCache[key] = items;
+-            adminModuleCacheReady.add(key);
+-        });
+-
+-        if (changed) renderInnovationsAdminModule();
+-    } finally {
+-        if (area && currentAdminModule === 'innovations') {
+-            area.classList.remove('admin-content-refreshing');
+-        }
+-    }
+-}
+ 
+ async function refreshAlumniAdminModuleInBackground() {
+     if (currentAdminModule !== 'alumni') return;
+@@ -5622,6 +5643,12 @@ function shareToPlatform(platformId) {
+ }
+ 
+ async function shareContent(type, id, title, description) {
++    if (!currentUser) {
++        showToast('Sign in to share.', 'info');
++        showAuthModal({ type: 'share', cardType: type, cardId: id, title, description });
++        return;
++    }
++
+     const shareUrl = buildShareUrl(type, id);
+     const shareTitle = (title || getCardTitleFromDom(type, id) || 'IUEA Today').trim();
+     const shareText = buildShareText(shareTitle, description);
+@@ -5818,6 +5845,12 @@ function openCardDetailFromCard(card) {
+     const detail = cardDetailFromCard(card);
+     if (!detail || !detail.id) return;
+ 
++    if (!currentUser) {
++        showToast('Sign in to view details.', 'info');
++        showAuthModal({ type: 'openCard', cardType: detail.type, cardId: detail.id });
++        return;
++    }
++
+     const modal = document.getElementById('cardDetailModal');
+     const media = document.getElementById('cardDetailMedia');
+     const badge = document.getElementById('cardDetailBadge');
+@@ -5907,26 +5940,67 @@ function handleShareDeepLink() {
+ }
+ 
+ async function likeAlumni(id) {
++    if (!currentUser) {
++        showToast('Sign in to like this.', 'info');
++        showAuthModal({ type: 'likeAlumni', cardId: id });
++        return;
++    }
++
+     const res = await apiPost(`/content/alumni/${id}/like`, {}, false);
+     if (res.ok && res.data?.likes !== undefined) {
++        const liked = res.data.liked !== false;
+         updateCardEngagementStat('alumni', id, 'heart', `${res.data.likes} likes`);
+-        showToast(res.queued ? 'Like saved offline — will sync when online.' : 'Thanks for the like!', res.queued ? 'info' : 'success');
++        _updateLikeButtons('alumni', id, liked);
+     } else {
+         showToast('Could not like this profile', 'error');
+     }
+ }
+ 
+ async function likeContent(type, id) {
++    if (!currentUser) {
++        showToast('Sign in to like this.', 'info');
++        showAuthModal({ type: 'like', cardType: type, cardId: id });
++        return;
++    }
++
+     const apiType = commentApiPath(type);
+     const res = await apiPost(`/content/${apiType}/${id}/like`, {}, false);
+     if (res.ok && res.data?.likes !== undefined) {
++        const liked = res.data.liked !== false;
+         updateCardEngagementStat(type, id, 'heart', `${res.data.likes} likes`);
+-        showToast(res.queued ? 'Like saved offline — will sync when online.' : 'Thanks for the like!', res.queued ? 'info' : 'success');
++        _updateLikeButtons(type, id, liked);
+     } else {
+         showToast('Could not like this item', 'error');
+     }
+ }
+ 
++function _updateLikeButtons(type, id, liked) {
++    // Update all like buttons for this card (on card + in detail modal)
++    const selectors = [
++        `.modern-card[data-content-type="${type}"][data-content-id="${id}"] button`,
++        `#cardDetailModal button`
++    ];
++    selectors.forEach(sel => {
++        document.querySelectorAll(sel).forEach(btn => {
++            const icon = btn.querySelector('i[data-lucide="heart"]');
++            if (!icon) return;
++            if (liked) {
++                btn.classList.add('liked');
++                icon.style.fill = '#e11d48';
++                icon.style.color = '#e11d48';
++                const txt = btn.querySelector('span') || btn.childNodes[btn.childNodes.length - 1];
++                if (txt && txt.nodeType === Node.TEXT_NODE) txt.textContent = ' Unlike';
++                else if (btn.textContent.includes('Like')) btn.innerHTML = btn.innerHTML.replace(/\bLike\b/, 'Unlike');
++            } else {
++                btn.classList.remove('liked');
++                icon.style.fill = 'none';
++                icon.style.color = '';
++                if (btn.textContent.includes('Unlike')) btn.innerHTML = btn.innerHTML.replace(/\bUnlike\b/, 'Like');
++            }
++        });
++    });
++}
++
+ const COMMENT_CHAR_LIMIT = 500;
+ let commentModalState = { type: null, id: null, title: null };
+ 
+@@ -6190,6 +6264,12 @@ async function loadContentComments(type, id) {
+ }
+ 
+ async function commentContent(type, id) {
++    if (!currentUser) {
++        showToast('Sign in to comment.', 'info');
++        showAuthModal({ type: 'comment', cardType: type, cardId: id });
++        return;
++    }
++
+     commentModalState = { type, id, title: getCardTitleFromDom(type, id) };
+ 
+     const contextEl = document.getElementById('contentCommentContext');
+@@ -6273,11 +6353,24 @@ async function commentEvent(id) {
+ }
+ 
+ /* =================== AUTH =================== */
+-function showAuthModal() {
++
++/**
++ * Open the auth modal, optionally saving a pending action to resume after login.
++ * @param {Object|null} pending - { type: 'navigate', pageId } | { type: 'toggleForm', formType } | { type: 'openCard', cardType, cardId }
++ */
++function showAuthModal(pending) {
++    if (pending) pendingNavigation = pending;
+     document.getElementById('authModal').classList.add('show');
++    // Reset to sign-in view in case user previously saw sign-up
++    const content = document.getElementById('authFormContent');
++    if (content && !content.querySelector('#loginEmail')) {
++        restoreSignIn();
++    }
+     if (document.getElementById('navLinks').classList.contains('open')) toggleMobileNav();
+ }
+-function closeAuthModal() { document.getElementById('authModal').classList.remove('show'); }
++function closeAuthModal() {
++    document.getElementById('authModal').classList.remove('show');
++}
+ function closeDetailModal() { document.getElementById('detailModal').classList.remove('show'); }
+ 
+ /* =================== AUTHOR PROFILE MODAL =================== */
+@@ -7082,10 +7175,49 @@ async function signIn() {
+             updateUIForUser();
+             loadUserEngagementState();
+             closeAuthModal();
+-            showToast(`Welcome back, ${currentUser.name}!`);
+-            const dashId = getDashboardForRole(currentUser.role);
+-            if (dashId) navigateTo(dashId);
+-            else navigateTo('home');
++            showToast(`Welcome back, ${currentUser.name || currentUser.email}!`);
++
++            // ── Resume pending navigation ──────────────────────────────────
++            const pending = pendingNavigation;
++            pendingNavigation = null;
++
++            if (pending) {
++                if (pending.type === 'navigate') {
++                    navigateTo(pending.pageId);
++                } else if (pending.type === 'toggleForm') {
++                    // Navigate to the correct section first, then open the form
++                    const formSectionMap = {
++                        innovation: 'innovation', startup: 'innovation',
++                        alumni: 'alumni', donation: 'endowment',
++                        community: 'community', research: 'research'
++                    };
++                    const sectionId = formSectionMap[pending.formType] || 'home';
++                    navigateTo(sectionId);
++                    setTimeout(() => toggleForm(pending.formType), 300);
++                } else if (pending.type === 'openCard') {
++                    const card = document.querySelector(`.modern-card[data-content-type="${pending.cardType}"][data-content-id="${pending.cardId}"]`);
++                    if (card) {
++                        setTimeout(() => openCardDetailFromCard(card), 300);
++                    } else {
++                        const dashId = getDashboardForRole(currentUser.role);
++                        if (dashId) navigateTo(dashId); else navigateTo('home');
++                    }
++                } else if (pending.type === 'like') {
++                    setTimeout(() => likeContent(pending.cardType, pending.cardId), 300);
++                } else if (pending.type === 'likeAlumni') {
++                    setTimeout(() => likeAlumni(pending.cardId), 300);
++                } else if (pending.type === 'comment') {
++                    setTimeout(() => commentContent(pending.cardType, pending.cardId), 300);
++                } else if (pending.type === 'share') {
++                    setTimeout(() => shareContent(pending.cardType, pending.cardId, pending.title, pending.description), 300);
++                } else {
++                    const dashId = getDashboardForRole(currentUser.role);
++                    if (dashId) navigateTo(dashId); else navigateTo('home');
++                }
++            } else {
++                const dashId = getDashboardForRole(currentUser.role);
++                if (dashId) navigateTo(dashId); else navigateTo('home');
++            }
+         } else {
+             showToast(data.detail || 'Invalid credentials', 'error');
+         }
+@@ -7205,6 +7337,22 @@ function updateUIForUser() {
+         if (coUserNameEl) coUserNameEl.textContent = displayName;
+         const coRoleBadgeEl = document.getElementById('coRoleBadge');
+         if (coRoleBadgeEl) coRoleBadgeEl.textContent = role === 'coordinator' ? 'Coordinator' : '';
++        
++        // Update avatars across dashboards
++        document.querySelectorAll('.admin-avatar').forEach(avatar => {
++            if (currentUser.profile_picture) {
++                const picUrl = resolveMediaUrl(currentUser.profile_picture);
++                avatar.innerHTML = `<img src="${picUrl}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
++                avatar.style.padding = '0';
++                avatar.style.border = 'none';
++            } else {
++                avatar.innerHTML = `<i data-lucide="user"></i>`;
++                avatar.style.padding = '';
++                avatar.style.border = '1px solid #e2e8f0';
++                if (window.lucide) window.lucide.createIcons({ root: avatar });
++            }
++        });
++
+         refreshUnreadMessageBadges();
+         refreshNotifications({ silent: true });
+         startNotificationPolling();
+@@ -8462,8 +8610,13 @@ function showRoleTab(prefix, tabId, btn) {
+     if (prefix === 'ru' && tabId === 'profile') {
+         const nameInput = document.getElementById('ruProfileName');
+         const emailInput = document.getElementById('ruProfileEmail');
++        const picPreview = document.getElementById('ruProfilePicturePreview');
+         if (nameInput) nameInput.value = currentUser?.name || '';
+         if (emailInput) emailInput.value = currentUser?.email || '';
++        if (picPreview) {
++            picPreview.src = currentUser?.profile_picture ? resolveMediaUrl(currentUser.profile_picture) : 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E';
++            picPreview.style.padding = currentUser?.profile_picture ? '0' : '10px';
++        }
+     }
+     if (prefix === 'ru' && tabId === 'saved') {
+         loadRuSavedContent();
+@@ -8530,6 +8683,9 @@ function populateRoleDashboard(dashId) {
+         if (dashId === 'coordinator-dashboard') {
+             populateCoordinatorDashboard();
+         }
++        if (dashId === 'innovation-admin-dashboard') {
++            populateInnovationAdminDashboard();
++        }
+         refreshNotifications({ silent: true });
+     }
+     lucide.createIcons();
+@@ -8540,11 +8696,22 @@ function ensureRoleDashboardTabActive(dashId) {
+         'registered-user-dashboard': 'ru',
+         'donor-partner-dashboard': 'dp',
+         'coordinator-dashboard': 'co',
++        'innovation-admin-dashboard': 'ia',
+     };
+     const prefix = prefixMap[dashId];
+     if (!prefix) return;
+     const dash = document.getElementById(dashId);
+-    if (!dash || dash.querySelector('.admin-tab-content.active')) return;
++    if (!dash || dash.querySelector('.admin-tab-content.active, .ia-tab.active')) return;
++    if (prefix === 'ia') {
++        const overviewTab = document.getElementById('ia-tab-overview');
++        if (overviewTab) overviewTab.classList.add('active');
++        const btn = dash.querySelector('.ia-nav-btn[data-ia-tab="overview"]');
++        if (btn) {
++            dash.querySelectorAll('.ia-nav-btn').forEach(b => b.classList.remove('active'));
++            btn.classList.add('active');
++        }
++        return;
++    }
+     const btn = findRoleTabButton(prefix, 'overview');
+     if (btn) showRoleTab(prefix, 'overview', btn);
+ }
+@@ -9195,6 +9362,172 @@ async function populateCoordinatorDashboard() {
+     lucide.createIcons();
+ }
+ 
++/* =================== INNOVATION ADMIN DASHBOARD =================== */
++let iaActiveTab = 'overview';
++let iaUiInitialized = false;
++
++function showIaTab(tabId, btn) {
++    iaActiveTab = tabId;
++    const dash = document.getElementById('innovation-admin-dashboard');
++    if (!dash) return;
++    dash.querySelectorAll('.ia-nav-btn').forEach(b => b.classList.remove('active'));
++    dash.querySelectorAll('.ia-tab').forEach(t => t.classList.remove('active'));
++    if (btn) btn.classList.add('active');
++    const tab = document.getElementById(`ia-tab-${tabId}`);
++    if (tab) tab.classList.add('active');
++    if (tabId === 'innovations') iaLoadContent('innovations');
++    if (tabId === 'startups')    iaLoadContent('startups');
++    lucide.createIcons();
++}
++
++async function iaLoadStats() {
++    if (!authToken) return;
++    const res = await fetch(`${API_BASE_URL}/admin/innovation-admin/stats`, {
++        headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
++    });
++    if (!res.ok) return;
++    const data = await res.json();
++
++    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? '0'; };
++    setEl('ia-stat-inn-total',    data.innovations?.total    ?? 0);
++    setEl('ia-stat-inn-pending',  data.innovations?.pending  ?? 0);
++    setEl('ia-stat-inn-approved', data.innovations?.approved ?? 0);
++    setEl('ia-stat-st-total',     data.startups?.total       ?? 0);
++    setEl('ia-stat-st-pending',   data.startups?.pending     ?? 0);
++    setEl('ia-stat-st-approved',  data.startups?.approved    ?? 0);
++}
++
++async function iaLoadContent(contentType) {
++    const tableId   = `ia-table-${contentType}`;
++    const tbodyId   = `ia-tbody-${contentType}`;
++    const emptyId   = `ia-empty-${contentType}`;
++    const loadingId = `ia-loading-${contentType}`;
++    const filterId  = `ia-filter-${contentType}-status`;
++
++    const table   = document.getElementById(tableId);
++    const tbody   = document.getElementById(tbodyId);
++    const empty   = document.getElementById(emptyId);
++    const loading = document.getElementById(loadingId);
++    const filter  = document.getElementById(filterId);
++    const statusFilter = filter?.value || 'all';
++
++    if (!tbody) return;
++    if (loading) loading.hidden = false;
++    if (table)  table.hidden = true;
++    if (empty)  empty.hidden = true;
++
++    const res = await fetch(`${API_BASE_URL}/admin/innovation-admin/content/${contentType}`, {
++        headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
++    });
++
++    if (loading) loading.hidden = true;
++    if (!res.ok) { if (empty) empty.hidden = false; return; }
++    let items = await res.json();
++
++    if (statusFilter !== 'all') {
++        items = items.filter(i => i.status === statusFilter);
++    }
++
++    if (!items.length) {
++        if (empty) empty.hidden = false;
++        return;
++    }
++
++    tbody.innerHTML = items.map(item => {
++        const isInnovation = contentType === 'innovations';
++        const authorField = isInnovation ? (item.author_name || '—') : (item.founder_name || '—');
++        const img = resolveMediaUrl(item.image);
++        const thumb = img ? `<img src="${img}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:6px;margin-right:8px;" onerror="this.style.display='none'">` : '';
++        const statusCls = item.status === 'approved' ? 'approved' : item.status === 'rejected' ? 'rejected' : 'pending';
++        return `<tr>
++            <td><div style="display:flex;align-items:center">${thumb}<div><strong>${escapeHtml(item.title || 'Untitled')}</strong><br><small style="color:#64748b">${escapeHtml(truncateText(item.description || '', 60))}</small></div></div></td>
++            <td>${escapeHtml(authorField)}</td>
++            <td><span class="status-badge ${statusCls}">${item.status || 'pending'}</span></td>
++            <td>${formatShortDate(item.created_at)}</td>
++            <td>
++                <div class="admin-table-actions">
++                    ${item.status !== 'approved' ? `<button type="button" class="btn-approve" onclick="iaApprove('${contentType}', ${item.id})"><i data-lucide="check"></i> Approve</button>` : ''}
++                    ${item.status !== 'rejected' ? `<button type="button" class="btn-reject"  onclick="iaReject('${contentType}', ${item.id})"><i data-lucide="x"></i> Reject</button>` : ''}
++                    <button type="button" class="admin-table-action-btn btn-danger-sm" onclick="iaDelete('${contentType}', ${item.id})"><i data-lucide="trash-2"></i></button>
++                </div>
++            </td>
++        </tr>`;
++    }).join('');
++    if (table) table.hidden = false;
++    lucide.createIcons();
++}
++
++async function iaApprove(contentType, id) {
++    if (!confirm('Approve this item?')) return;
++    const res = await fetch(`${API_BASE_URL}/admin/innovation-admin/content/${contentType}/${id}/approve`, {
++        method: 'PUT',
++        headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
++    });
++    if (res.ok) { showToast('Approved!'); await iaLoadContent(contentType); await iaLoadStats(); }
++    else showToast('Failed to approve.', 'error');
++}
++
++async function iaReject(contentType, id) {
++    if (!confirm('Reject this item?')) return;
++    const res = await fetch(`${API_BASE_URL}/admin/innovation-admin/content/${contentType}/${id}/reject`, {
++        method: 'PUT',
++        headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
++    });
++    if (res.ok) { showToast('Rejected.'); await iaLoadContent(contentType); await iaLoadStats(); }
++    else showToast('Failed to reject.', 'error');
++}
++
++async function iaDelete(contentType, id) {
++    if (!confirm('Permanently delete this item? This cannot be undone.')) return;
++    const res = await fetch(`${API_BASE_URL}/admin/innovation-admin/content/${contentType}/${id}`, {
++        method: 'DELETE',
++        headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
++    });
++    if (res.ok) { showToast('Deleted.'); await iaLoadContent(contentType); await iaLoadStats(); }
++    else showToast('Failed to delete.', 'error');
++}
++
++function initInnovationAdminDashboardUi() {
++    if (iaUiInitialized) return;
++    iaUiInitialized = true;
++    const dash = document.getElementById('innovation-admin-dashboard');
++    if (!dash) return;
++    dash.querySelectorAll('.ia-nav-btn[data-ia-tab]').forEach(btn => {
++        btn.addEventListener('click', () => {
++            const tabId = btn.dataset.iaTab;
++            showIaTab(tabId, btn);
++        });
++    });
++    // Filter change listeners
++    ['innovations', 'startups'].forEach(type => {
++        const filterEl = document.getElementById(`ia-filter-${type}-status`);
++        if (filterEl) filterEl.addEventListener('change', () => iaLoadContent(type));
++    });
++}
++
++async function populateInnovationAdminDashboard() {
++    if (!currentUser || !['innovation_admin', 'super_admin', 'admin'].includes(currentUser.role)) return;
++
++    initInnovationAdminDashboardUi();
++
++    const displayName = getUserDisplayName(currentUser) || 'Innovation Admin';
++    const welcomeEl = document.getElementById('iaWelcomeTitle');
++    if (welcomeEl) welcomeEl.textContent = `Welcome back, ${displayName}`;
++
++    const dateEl = document.getElementById('iaDateDisplay');
++    if (dateEl) {
++        dateEl.textContent = new Date().toLocaleDateString('en-US', {
++            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
++        });
++    }
++
++    const nameEl = document.getElementById('iaUserName');
++    if (nameEl) nameEl.textContent = displayName;
++
++    await iaLoadStats();
++    lucide.createIcons();
++}
++
+ function ruStoryStatusClass(status) {
+     if (status === 'approved') return 'approved';
+     if (status === 'pending') return 'pending';
+@@ -9301,11 +9634,24 @@ async function makeDonation() {
+     }
+ }
+ 
++function previewProfilePicture(input) {
++    if (input.files && input.files[0]) {
++        const reader = new FileReader();
++        reader.onload = function(e) {
++            const preview = document.getElementById('ruProfilePicturePreview');
++            preview.src = e.target.result;
++            preview.style.padding = '0';
++        };
++        reader.readAsDataURL(input.files[0]);
++    }
++}
++
+ async function saveProfile() {
+     if (!currentUser) return;
+     const nameEl = document.getElementById('ruProfileName');
+     const emailEl = document.getElementById('ruProfileEmail');
+     const passEl = document.getElementById('ruProfilePassword');
++    const picInput = document.getElementById('ruProfilePictureInput');
+     
+     if (!nameEl || !emailEl || !passEl) return;
+     
+@@ -9318,6 +9664,30 @@ async function saveProfile() {
+         return;
+     }
+     
++    let profile_picture = currentUser.profile_picture;
++    if (picInput && picInput.files && picInput.files[0]) {
++        const formData = new FormData();
++        formData.append('file', picInput.files[0]);
++        try {
++            const uploadRes = await fetch(`${API_BASE_URL}/upload/image`, {
++                method: 'POST',
++                headers: { 'Authorization': `Bearer ${authToken}` },
++                body: formData
++            });
++            if (uploadRes.ok) {
++                const uploadData = await uploadRes.json();
++                profile_picture = uploadData.url;
++            } else {
++                showToast('Failed to upload profile picture.', 'error');
++                return;
++            }
++        } catch (e) {
++            console.error('Upload error:', e);
++            showToast('Upload error', 'error');
++            return;
++        }
++    }
++    
+     try {
+         const res = await fetch(`${API_BASE_URL}/auth/me`, {
+             method: 'PUT',
+@@ -9325,7 +9695,7 @@ async function saveProfile() {
+                 'Content-Type': 'application/json',
+                 'Authorization': `Bearer ${authToken}`
+             },
+-            body: JSON.stringify({ name, email, password })
++            body: JSON.stringify({ name, email, password, profile_picture })
+         });
+         
+         if (res.ok) {
+@@ -9334,6 +9704,7 @@ async function saveProfile() {
+             updateUIForUser();
+             showToast('Profile saved successfully!', 'success');
+             passEl.value = ''; // clear password field
++            if (picInput) picInput.value = '';
+         } else {
+             const data = await res.json();
+             showToast(data.detail || 'Failed to update profile.', 'error');
+@@ -10182,3 +10553,78 @@ function initNotificationsUI() {
+     startNotificationPolling();
+ }
+ 
++/* =================== PROFILE DROPDOWN =================== */
++let profileDropdownEl = null;
++
++document.addEventListener('click', (e) => {
++    const userMenu = e.target.closest('.admin-user-menu');
++    if (userMenu) {
++        e.preventDefault();
++        toggleProfileDropdown(e, userMenu);
++        return;
++    }
++    if (profileDropdownEl && profileDropdownEl.style.display === 'block') {
++        if (!profileDropdownEl.contains(e.target)) {
++            profileDropdownEl.style.display = 'none';
++        }
++    }
++});
++
++function toggleProfileDropdown(e, targetEl) {
++    if (!profileDropdownEl) {
++        profileDropdownEl = document.createElement('div');
++        profileDropdownEl.className = 'global-profile-dropdown';
++        profileDropdownEl.innerHTML = `
++            <div class="pd-header">
++                <div class="pd-avatar"></div>
++                <div class="pd-info">
++                    <h4 id="pdName">Name</h4>
++                    <p id="pdEmail">Email</p>
++                    <span id="pdRole" class="pd-role">Role</span>
++                </div>
++            </div>
++            <div class="pd-links">
++                <button onclick="profileDropdownEl.style.display='none'; logout();"><i data-lucide="log-out"></i> Sign Out</button>
++            </div>
++        `;
++        document.body.appendChild(profileDropdownEl);
++    }
++
++    if (profileDropdownEl.style.display === 'block') {
++        profileDropdownEl.style.display = 'none';
++        return;
++    }
++
++    if (!currentUser) return;
++
++    const name = getUserDisplayName(currentUser) || 'User';
++    const email = currentUser.email || '';
++    const role = formatRoleLabel(currentUser.role || 'public_visitor');
++    
++    document.getElementById('pdName').textContent = name;
++    document.getElementById('pdEmail').textContent = email;
++    document.getElementById('pdRole').textContent = role;
++    
++    const avatarContainer = profileDropdownEl.querySelector('.pd-avatar');
++    if (currentUser.profile_picture) {
++        const picUrl = resolveMediaUrl(currentUser.profile_picture);
++        avatarContainer.innerHTML = `<img src="${picUrl}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
++        avatarContainer.style.border = 'none';
++    } else {
++        avatarContainer.innerHTML = `<i data-lucide="user"></i>`;
++        avatarContainer.style.border = '1px solid #e2e8f0';
++        if (window.lucide) window.lucide.createIcons({ root: avatarContainer });
++    }
++
++    const rect = targetEl.getBoundingClientRect();
++    profileDropdownEl.style.top = (rect.bottom + 8) + 'px';
++    profileDropdownEl.style.left = (rect.right - 270) + 'px'; 
++    
++    if (rect.right + 270 > window.innerWidth) {
++        profileDropdownEl.style.left = (window.innerWidth - 280) + 'px';
++    }
++    
++    profileDropdownEl.style.display = 'block';
++    
++    if (window.lucide) window.lucide.createIcons({ root: profileDropdownEl });
++}
