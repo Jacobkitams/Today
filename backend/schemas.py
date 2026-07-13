@@ -300,6 +300,21 @@ class EndowmentCampaignResponse(EndowmentCampaignCreate):
     id: int
     status: str
     likes: int = 0
+    comments_count: int = 0
+    created_at: Optional[datetime] = None
+    class Config:
+        from_attributes = True
+
+class EndowmentCampaignCommentCreate(BaseModel):
+    message: str
+
+class EndowmentCampaignCommentResponse(BaseModel):
+    id: int
+    campaign_id: int
+    user_id: Optional[int] = None
+    author_name: Optional[str] = None
+    message: str
+    comments_count: int
     created_at: Optional[datetime] = None
     class Config:
         from_attributes = True

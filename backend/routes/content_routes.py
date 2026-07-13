@@ -469,6 +469,24 @@ def create_endowment_campaign(item: schemas.EndowmentCampaignCreate, db: Session
     db.add(db_item); db.commit(); db.refresh(db_item)
     return db_item
 
+@router.post("/endowment-campaigns/{item_id}/comment", response_model=schemas.EndowmentCampaignCommentResponse)
+def comment_endowment_campaign(
+    item_id: int,
+    data: schemas.EndowmentCampaignCommentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    message = (data.message or "").strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="Comment message is required")
+    item = _get_approved_item(db, models.EndowmentCampaign, item_id, "Campaign not found")
+    return _post_content_comment(db, current_user, item, models.EndowmentCampaignComment, "campaign_id", item_id, message, "endowment-campaigns")
+
+@router.get("/endowment-campaigns/{item_id}/comments", response_model=List[schemas.EndowmentCampaignCommentResponse])
+def get_endowment_campaign_comments(item_id: int, db: Session = Depends(get_db)):
+    item = _get_approved_item(db, models.EndowmentCampaign, item_id, "Campaign not found")
+    return _list_content_comments(db, item, models.EndowmentCampaignComment, "campaign_id", item_id)
+
 @router.post("/endowment-info", response_model=schemas.EndowmentInfoResponse)
 def create_endowment_info(item: schemas.EndowmentInfoCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     status = "approved" if current_user.role in ["super_admin", "content_editor", "admin"] else "pending"

@@ -16,93 +16,124 @@ router = APIRouter()
 
 # --- Role Guard ---
 def require_innovation_admin(current_user: User = Depends(get_current_user)):
-    if current_user.role not in ["super_admin", "innovation_admin"]:
+    if current_user.role not in ["super_admin", "innovation_admin", "admin"]:
         raise HTTPException(status_code=403, detail="Innovation Admin access required")
     return current_user
+
+INNOVATION_ADMIN_TYPES = [
+    ("innovations", models.Innovation),
+    ("startups", models.Startup)
+]
+
+def _activity_title(item, content_type: str) -> str:
+    if hasattr(item, "title") and item.title:
+        return item.title
+    if hasattr(item, "name") and item.name:
+        return item.name
+    return f"Untitled {content_type}"
 
 # --- STATS ---
 @router.get("/stats")
 def get_innovation_stats(db: Session = Depends(get_db), current_user: User = Depends(require_innovation_admin)):
-    total = db.query(models.Innovation).count()
-    pending = db.query(models.Innovation).filter(models.Innovation.status == "pending").count()
-    approved = db.query(models.Innovation).filter(models.Innovation.status == "approved").count()
-    rejected = db.query(models.Innovation).filter(models.Innovation.status == "rejected").count()
+    innovations = db.query(models.Innovation).count()
+    startups = db.query(models.Startup).count()
     
-    # Active users who submitted an innovation
-    active_users = db.query(models.Innovation.author_id).distinct().count()
+    pending_innovations = db.query(models.Innovation).filter(models.Innovation.status == "pending").count()
+    pending_startups = db.query(models.Startup).filter(models.Startup.status == "pending").count()
+    pending_requests = db.query(models.FormSubmission).filter(models.FormSubmission.form_type == "innovation_join", models.FormSubmission.status == "pending").count()
     
     return {
-        "total_innovations": total,
-        "pending_submissions": pending,
-        "approved_projects": approved,
-        "rejected_projects": rejected,
-        "active_users": active_users
+        "total_innovations": innovations,
+        "total_startups": startups,
+        "pending_items": pending_innovations + pending_startups + pending_requests
     }
 
-# --- PROJECTS ---
-@router.get("/projects", response_model=List[schemas.InnovationResponse])
-def list_innovation_projects(
-    status: Optional[str] = None,
-    db: Session = Depends(get_db), 
+# --- CONTENT ---
+@router.get("/content/{content_type}")
+def get_innovation_admin_items(
+    content_type: str,
+    db: Session = Depends(get_db),
     current_user: User = Depends(require_innovation_admin)
 ):
-    query = db.query(models.Innovation)
-    if status and status != "all":
-        query = query.filter(models.Innovation.status == status)
-    return query.order_by(models.Innovation.created_at.desc()).all()
+    if content_type == "requests":
+        items = db.query(models.FormSubmission).filter(models.FormSubmission.form_type == "innovation_join").order_by(models.FormSubmission.created_at.desc()).all()
+        return items
 
-@router.put("/projects/{project_id}/status")
-def update_project_status(
-    project_id: int, 
-    data: schemas.ContentStatusUpdate,
-    db: Session = Depends(get_db), 
-    current_user: User = Depends(require_innovation_admin)
-):
-    project = db.query(models.Innovation).filter(models.Innovation.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+    model_map = dict(INNOVATION_ADMIN_TYPES)
+    model = model_map.get(content_type)
+    if not model:
+        raise HTTPException(status_code=400, detail="Invalid content type.")
     
-    if data.status not in ["approved", "rejected", "pending"]:
-        raise HTTPException(status_code=400, detail="Invalid status")
-        
-    project.status = data.status
-    project.updated_at = datetime.now(timezone.utc)
-    db.commit()
-    
-    if project.author_id:
-        notifications_service.notify_content_status(
-            db, project.author_id, "innovations", project.title or "Untitled", data.status
-        )
-    db.commit()
-    return {"message": f"Project {data.status}", "id": project_id}
-
-@router.delete("/projects/{project_id}")
-def delete_project(project_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_innovation_admin)):
-    project = db.query(models.Innovation).filter(models.Innovation.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    db.delete(project)
-    db.commit()
-    return {"message": "Project deleted successfully"}
-
-# --- USERS ---
-@router.get("/users")
-def get_innovation_users(db: Session = Depends(get_db), current_user: User = Depends(require_innovation_admin)):
-    # Users who have submitted an innovation
-    user_ids = db.query(models.Innovation.author_id).filter(models.Innovation.author_id.isnot(None)).distinct().all()
-    user_ids = [uid[0] for uid in user_ids]
-    
-    users = db.query(models.User).filter(models.User.id.in_(user_ids)).all()
+    items = db.query(model).order_by(model.created_at.desc()).all()
+    # attach author if exists
     result = []
-    for u in users:
-        submissions = db.query(models.Innovation).filter(models.Innovation.author_id == u.id).count()
-        result.append({
-            "id": u.id,
-            "name": u.name,
-            "email": u.email,
-            "role": u.role,
-            "submissions": submissions,
-            "joined": str(u.created_at)
-        })
+    for item in items:
+        item_dict = {c.name: getattr(item, c.name) for c in item.__table__.columns}
+        if hasattr(item, "author_id") and item.author_id:
+            author = db.query(models.User).filter(models.User.id == item.author_id).first()
+            if author:
+                item_dict["author"] = {"name": author.name, "email": author.email}
+        result.append(item_dict)
     return result
+
+@router.delete("/content/{content_type}/{content_id}")
+def delete_innovation_admin_item(
+    content_type: str,
+    content_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_innovation_admin),
+):
+    if content_type == "requests":
+        item = db.query(models.FormSubmission).filter(models.FormSubmission.id == content_id).first()
+    else:
+        model_map = dict(INNOVATION_ADMIN_TYPES)
+        model = model_map.get(content_type)
+        if not model:
+            raise HTTPException(status_code=400, detail="Invalid content type.")
+        item = db.query(model).filter(model.id == content_id).first()
+        
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+        
+    db.delete(item)
+    db.commit()
+    return {"message": "Deleted"}
+
+@router.patch("/content/{content_type}/{content_id}/{action}")
+def update_innovation_admin_item_status(
+    content_type: str,
+    content_id: int,
+    action: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_innovation_admin),
+):
+    if action not in ["approve", "reject"]:
+        raise HTTPException(status_code=400, detail="Invalid action")
+        
+    status = "approved" if action == "approve" else "rejected"
+
+    if content_type == "requests":
+        item = db.query(models.FormSubmission).filter(models.FormSubmission.id == content_id).first()
+    else:
+        model_map = dict(INNOVATION_ADMIN_TYPES)
+        model = model_map.get(content_type)
+        if not model:
+            raise HTTPException(status_code=400, detail="Invalid content type.")
+        item = db.query(model).filter(model.id == content_id).first()
+        
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+        
+    item.status = status
+    if hasattr(item, "updated_at"):
+        item.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    
+    # Notifications
+    if content_type != "requests":
+        author_id = getattr(item, "author_id", None)
+        title = _activity_title(item, content_type)
+        notifications_service.notify_content_status(db, author_id, content_type, title, status)
+        db.commit()
+        
+    return {"message": f"Successfully {status}"}

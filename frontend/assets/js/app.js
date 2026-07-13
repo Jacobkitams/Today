@@ -29,6 +29,10 @@ const FRONTEND_BASE = (() => {
 let currentUser = null;
 let authToken = localStorage.getItem('jwt_token');
 
+/** Stores the card {type, id} that an unauthenticated user tried to open.
+ *  After successful login we replay the action automatically. */
+let pendingCardAction = null;
+
 const HOME_NEWS_LIMIT = 6;
 const INNOVATION_NEWS_LIMIT = 3;
 const STARTUP_NEWS_LIMIT = 3;
@@ -570,14 +574,14 @@ function jsStringLiteral(value) {
 }
 
 function authorChipHTML(authorId, authorName, contentType, contentId) {
-    if (!authorId) return '';
-    const name = (authorName || 'Community member').trim();
+    const aId = authorId || 1;
+    const name = (authorName || (authorId ? 'Community member' : 'IUEA Admin')).trim();
     const initial = msgInitials(name, '');
     const safeName = escapeHtml(name);
     const typeArg = contentType ? jsStringLiteral(contentType) : 'null';
     const idArg = contentId ? Number(contentId) : 'null';
     return `<button type="button" class="author-chip"
-        onclick="event.stopPropagation(); openAuthorProfileModal(${authorId}, ${jsStringLiteral(name)}, ${typeArg}, ${idArg})"
+        onclick="event.stopPropagation(); openAuthorProfileModal(${aId}, ${jsStringLiteral(name)}, ${typeArg}, ${idArg})"
         aria-label="View profile of ${safeName}">
         <span class="author-chip-avatar" aria-hidden="true">${initial}</span>
         <span class="author-chip-text">
@@ -676,6 +680,7 @@ const ROLE_DASHBOARD_MAP = {
     'registered_user':   'registered-user-dashboard',
     'donor_partner':     'donor-partner-dashboard',
     'coordinator':       'coordinator-dashboard',
+    'innovation_admin':  'innovation-admin-dashboard',
     'content_editor':    'admin-dashboard',
     'super_admin':       'admin-dashboard',
     'admin':             'admin-dashboard'
@@ -686,6 +691,7 @@ const ASSIGNABLE_USER_ROLES = [
     'registered_user',
     'donor_partner',
     'coordinator',
+    'innovation_admin',
     'content_editor',
     'super_admin',
 ];
@@ -1209,6 +1215,7 @@ async function loadSavedContentIds() {
 
 async function saveContent(type, id) {
     if (!currentUser || !authToken) {
+        pendingCardAction = { action: 'save', type, id };
         showAuthModal();
         return;
     }
@@ -1397,6 +1404,8 @@ function createEndowmentCampaignCard(item) {
     if (item.goal_amount) stats += statHTML('target', `Goal: ${item.goal_amount}`);
     if (item.raised_amount) stats += statHTML('trending-up', `Raised: ${item.raised_amount}`);
     if (item.likes !== undefined) stats += statHTML('heart', `${item.likes} likes`);
+    stats += cardCommentsStat(item);
+    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, contentType, item.id);
 
     return `
     <div class="modern-card" data-content-type="${contentType}" data-content-id="${item.id}">
@@ -1407,9 +1416,11 @@ function createEndowmentCampaignCard(item) {
         <div class="card-content">
             <h3>${title}</h3>
             <p>${truncateText(desc)}</p>
+            ${authorRow}
             <div class="card-stats-row">${stats}</div>
             <div class="card-actions">
                 <button onclick="likeContent('${contentType}', ${item.id})"><i data-lucide="heart"></i> Like</button>
+                ${cardCommentButton(contentType, item.id)}
                 ${cardShareButton(contentType, item.id, title, desc)}
             </div>
         </div>
@@ -5626,6 +5637,11 @@ function shareToPlatform(platformId) {
 }
 
 async function shareContent(type, id, title, description) {
+    if (!currentUser) {
+        pendingCardAction = { action: 'share', type, id, extra: { title, description } };
+        showAuthModal();
+        return;
+    }
     const shareUrl = buildShareUrl(type, id);
     const shareTitle = (title || getCardTitleFromDom(type, id) || 'IUEA Today').trim();
     const shareText = buildShareText(shareTitle, description);
@@ -5822,6 +5838,17 @@ function openCardDetailFromCard(card) {
     const detail = cardDetailFromCard(card);
     if (!detail || !detail.id) return;
 
+    // ── AUTH GUARD ────────────────────────────────────────────────────────────
+    // If the user is not signed in, save this card as a pending action and
+    // surface the login modal.  After a successful sign-in the action is
+    // replayed automatically (see signIn()).
+    if (!currentUser) {
+        pendingCardAction = { action: 'open_card', type: detail.type, id: detail.id };
+        showAuthModal();
+        return;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     const modal = document.getElementById('cardDetailModal');
     const media = document.getElementById('cardDetailMedia');
     const badge = document.getElementById('cardDetailBadge');
@@ -5911,7 +5938,12 @@ function handleShareDeepLink() {
 }
 
 async function likeAlumni(id) {
-    const res = await apiPost(`/content/alumni/${id}/like`, {}, false);
+    if (!currentUser) {
+        pendingCardAction = { action: 'like_alumni', type: 'alumni', id };
+        showAuthModal();
+        return;
+    }
+    const res = await apiPost(`/content/alumni/${id}/like`, {});
     if (res.ok && res.data?.likes !== undefined) {
         const liked = res.data.liked !== false;
         updateCardEngagementStat('alumni', id, 'heart', `${res.data.likes} likes`);
@@ -5926,8 +5958,13 @@ async function likeAlumni(id) {
 }
 
 async function likeContent(type, id) {
+    if (!currentUser) {
+        pendingCardAction = { action: 'like', type, id };
+        showAuthModal();
+        return;
+    }
     const apiType = commentApiPath(type);
-    const res = await apiPost(`/content/${apiType}/${id}/like`, {}, false);
+    const res = await apiPost(`/content/${apiType}/${id}/like`, {});
     if (res.ok && res.data?.likes !== undefined) {
         const liked = res.data.liked !== false;
         updateCardEngagementStat(type, id, 'heart', `${res.data.likes} likes`);
@@ -6231,6 +6268,11 @@ async function loadContentComments(type, id) {
 }
 
 async function commentContent(type, id) {
+    if (!currentUser) {
+        pendingCardAction = { action: 'comment', type, id };
+        showAuthModal();
+        return;
+    }
     commentModalState = { type, id, title: getCardTitleFromDom(type, id) };
 
     const contextEl = document.getElementById('contentCommentContext');
@@ -6318,7 +6360,12 @@ function showAuthModal() {
     document.getElementById('authModal').classList.add('show');
     if (document.getElementById('navLinks').classList.contains('open')) toggleMobileNav();
 }
-function closeAuthModal() { document.getElementById('authModal').classList.remove('show'); }
+function closeAuthModal() {
+    document.getElementById('authModal').classList.remove('show');
+    // Clear any pending card action so it doesn't replay unexpectedly
+    // on a future login that has no relation to the original card click.
+    pendingCardAction = null;
+}
 function closeDetailModal() { document.getElementById('detailModal').classList.remove('show'); }
 
 /* =================== AUTHOR PROFILE MODAL =================== */
@@ -7122,11 +7169,52 @@ async function signIn() {
             cacheUserSession(me);
             updateUIForUser();
             loadUserEngagementState();
-            closeAuthModal();
+
+            // Capture pending action BEFORE closeAuthModal() clears it.
+            const capturedPendingCard = pendingCardAction;
+
+            closeAuthModal();                         // clears pendingCardAction
             showToast(`Welcome back, ${currentUser.name}!`);
-            const dashId = getDashboardForRole(currentUser.role);
-            if (dashId) navigateTo(dashId);
-            else navigateTo('home');
+
+            // ── POST-LOGIN REDIRECT ──────────────────────────────────────────
+            // If the user was trying to open a specific feature card before
+            // they were asked to sign in, resume that action now.
+            if (capturedPendingCard) {
+                const { action, type: pendingType, id: pendingId, extra } = capturedPendingCard;
+
+                // Navigate to the user's dashboard (or home) first so the
+                // feature grid is rendered and the card element exists in DOM.
+                const dashId = getDashboardForRole(currentUser.role);
+                if (dashId) navigateTo(dashId);
+                else navigateTo('home');
+
+                // Give the page a moment to render before opening the modal.
+                setTimeout(() => {
+                    if (action === 'open_card') {
+                        const targetCard = document.querySelector(
+                            `.modern-card[data-content-type="${pendingType}"][data-content-id="${pendingId}"]`
+                        );
+                        if (targetCard) {
+                            openCardDetailFromCard(targetCard);
+                        }
+                    } else if (action === 'like') {
+                        likeContent(pendingType, pendingId);
+                    } else if (action === 'like_alumni') {
+                        likeAlumni(pendingId);
+                    } else if (action === 'comment') {
+                        commentContent(pendingType, pendingId);
+                    } else if (action === 'share') {
+                        shareContent(pendingType, pendingId, extra?.title, extra?.description);
+                    } else if (action === 'save') {
+                        saveContent(pendingType, pendingId);
+                    }
+                }, 400);
+            } else {
+                const dashId = getDashboardForRole(currentUser.role);
+                if (dashId) navigateTo(dashId);
+                else navigateTo('home');
+            }
+            // ────────────────────────────────────────────────────────────────
         } else {
             showToast(data.detail || 'Invalid credentials', 'error');
         }
@@ -8576,6 +8664,9 @@ function populateRoleDashboard(dashId) {
         if (dashId === 'coordinator-dashboard') {
             populateCoordinatorDashboard();
         }
+        if (dashId === 'innovation-admin-dashboard') {
+            populateInnovationAdminDashboard();
+        }
         refreshNotifications({ silent: true });
     }
     lucide.createIcons();
@@ -8586,11 +8677,20 @@ function ensureRoleDashboardTabActive(dashId) {
         'registered-user-dashboard': 'ru',
         'donor-partner-dashboard': 'dp',
         'coordinator-dashboard': 'co',
+        'innovation-admin-dashboard': 'ia',
     };
     const prefix = prefixMap[dashId];
     if (!prefix) return;
     const dash = document.getElementById(dashId);
-    if (!dash || dash.querySelector('.admin-tab-content.active')) return;
+    if (!dash || dash.querySelector('.admin-tab-content.active') || dash.querySelector('.ia-tab.active') || dash.querySelector('.co-tab.active')) return;
+    
+    // Default to 'overview' tab if none active
+    if (prefix === 'ia') {
+        const btn = dash.querySelector('.admin-sidebar-btn[data-ia-tab="overview"]');
+        if (btn) showIaTab('overview', btn);
+        return;
+    }
+
     const btn = findRoleTabButton(prefix, 'overview');
     if (btn) showRoleTab(prefix, 'overview', btn);
 }
@@ -9238,6 +9338,168 @@ async function populateCoordinatorDashboard() {
     if (coordinatorActiveTab && CO_TAB_FORM_TYPES[coordinatorActiveTab]) {
         await loadCoordinatorSubmissions(coordinatorActiveTab);
     }
+    lucide.createIcons();
+}
+
+/* =================== INNOVATION ADMIN DASHBOARD =================== */
+
+let iaActiveTab = 'overview';
+
+function showIaTab(tabId, btnContext) {
+    document.querySelectorAll('.ia-tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.ia-nav-btn[data-ia-tab]').forEach(btn => btn.classList.remove('active'));
+
+    const targetTab = document.getElementById(`ia-tab-${tabId}`);
+    if (targetTab) targetTab.classList.add('active');
+    if (btnContext) btnContext.classList.add('active');
+
+    iaActiveTab = tabId;
+
+    if (tabId === 'overview') {
+        iaLoadStats();
+    } else if (tabId === 'innovations' || tabId === 'startups' || tabId === 'requests') {
+        iaLoadContent(tabId);
+    }
+}
+
+async function iaLoadStats() {
+    try {
+        const stats = await apiGet('/innovation-admin/stats');
+        if (document.getElementById('ia-stat-innovations')) document.getElementById('ia-stat-innovations').textContent = stats.total_innovations || 0;
+        if (document.getElementById('ia-stat-startups')) document.getElementById('ia-stat-startups').textContent = stats.total_startups || 0;
+        if (document.getElementById('ia-stat-pending')) document.getElementById('ia-stat-pending').textContent = stats.pending_items || 0;
+    } catch (err) {
+        console.error('Failed to load IA stats', err);
+    }
+}
+
+async function iaLoadContent(contentType) {
+    const tbody = document.getElementById(`ia-tbody-${contentType}`);
+    if (!tbody) return;
+
+    const table = document.getElementById(`ia-table-${contentType}`);
+    const empty = document.getElementById(`ia-empty-${contentType}`);
+    const loading = document.getElementById(`ia-loading-${contentType}`);
+
+    // Show loading state
+    if (loading) loading.hidden = false;
+    if (empty) empty.hidden = true;
+    if (table) table.hidden = true;
+    tbody.innerHTML = '';
+
+    try {
+        const items = await apiGet(`/innovation-admin/content/${contentType}`);
+
+        if (loading) loading.hidden = true;
+
+        if (!Array.isArray(items) || !items.length) {
+            if (empty) empty.hidden = false;
+            return;
+        }
+
+        if (table) table.hidden = false;
+
+        tbody.innerHTML = items.map(item => {
+            let displayName, displaySub;
+            if (contentType === 'requests') {
+                const fn = item.first_name || '';
+                const ln = item.last_name || '';
+                displayName = (fn + ' ' + ln).trim() || item.email || 'Applicant';
+                displaySub  = item.email || '';
+            } else {
+                displayName = item.title || item.name || 'Untitled';
+                displaySub  = item.author ? item.author.name : 'Unknown';
+            }
+
+            return `
+            <tr>
+                <td>${escapeHtml(displayName)}</td>
+                <td>${escapeHtml(displaySub)}</td>
+                <td>${formatShortDate(item.created_at)}</td>
+                <td><span class="status-badge ${ruStoryStatusClass(item.status)}">${item.status}</span></td>
+                <td>
+                    <div class="admin-table-actions">
+                        ${item.status === 'pending' ? `
+                        <button type="button" class="btn-approve" onclick="iaUpdateStatus('${contentType}', ${item.id}, 'approve')"><i data-lucide="check"></i> Approve</button>
+                        <button type="button" class="btn-reject" onclick="iaUpdateStatus('${contentType}', ${item.id}, 'reject')"><i data-lucide="x"></i> Reject</button>
+                        ` : ''}
+                        <button type="button" class="btn-danger btn-danger-sm" onclick="iaDeleteContent('${contentType}', ${item.id})"><i data-lucide="trash-2"></i></button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+        lucide.createIcons();
+    } catch (err) {
+        console.error('iaLoadContent error:', err);
+        if (loading) loading.hidden = true;
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load data. Check console for details.</td></tr>';
+        if (table) table.hidden = false;
+    }
+}
+
+async function iaUpdateStatus(contentType, id, action) {
+    try {
+        const res = await apiPatch(`/innovation-admin/content/${contentType}/${id}/${action}`, {});
+        if (res && res.ok) {
+            showToast(`Item ${action}d successfully.`, 'success');
+            iaLoadContent(contentType);
+            iaLoadStats();
+        } else {
+            showToast('Failed to update status', 'error');
+        }
+    } catch (err) {
+        showToast('An error occurred', 'error');
+    }
+}
+
+async function iaDeleteContent(contentType, id) {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    try {
+        const res = await fetch(`${API_BASE_URL}/innovation-admin/content/${contentType}/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (res.ok) {
+            showToast('Item deleted.', 'success');
+            iaLoadContent(contentType);
+            iaLoadStats();
+        } else {
+            showToast('Failed to delete item', 'error');
+        }
+    } catch (err) {
+        showToast('Error deleting item', 'error');
+    }
+}
+
+async function populateInnovationAdminDashboard() {
+    if (!currentUser || currentUser.role !== 'innovation_admin') return;
+
+    const displayName = getUserDisplayName(currentUser) || 'Innovation Admin';
+    const welcome = document.getElementById('iaWelcomeTitle');
+    if (welcome) welcome.textContent = `Welcome back, ${displayName}`;
+
+    const dateEl = document.getElementById('iaDateDisplay');
+    if (dateEl) {
+        dateEl.textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        });
+    }
+
+    const nameEl = document.getElementById('iaUserName');
+    if (nameEl) nameEl.textContent = displayName;
+
+    // Attach click listeners to sidebar buttons
+    const sidebarBtns = document.querySelectorAll('.ia-nav-btn[data-ia-tab]');
+    sidebarBtns.forEach(btn => {
+        // Remove old listener if any by cloning
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        newBtn.addEventListener('click', () => {
+            showIaTab(newBtn.dataset.iaTab, newBtn);
+        });
+    });
+
+    iaLoadStats();
     lucide.createIcons();
 }
 

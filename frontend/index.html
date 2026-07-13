@@ -1882,6 +1882,7 @@
                     <nav class="admin-nav">
                         <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="innovations"><i data-lucide="lightbulb"></i> Innovations</button>
                         <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="startups"><i data-lucide="rocket"></i> Startups</button>
+                        <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="requests"><i data-lucide="users"></i> Join Requests</button>
                     </nav>
                 </div>
 
@@ -2010,7 +2011,7 @@
                             <i data-lucide="loader"></i>
                             <p>Loading innovations…</p>
                         </div>
-                        <div id="ia-empty-innovations" class="co-empty-state">
+                        <div id="ia-empty-innovations" class="co-empty-state" hidden>
                             <i data-lucide="inbox"></i>
                             <h3>No innovations found</h3>
                             <p>Submissions will appear here once filtered.</p>
@@ -2052,7 +2053,7 @@
                             <i data-lucide="loader"></i>
                             <p>Loading startups…</p>
                         </div>
-                        <div id="ia-empty-startups" class="co-empty-state">
+                        <div id="ia-empty-startups" class="co-empty-state" hidden>
                             <i data-lucide="inbox"></i>
                             <h3>No startups found</h3>
                             <p>Startup submissions will appear here once filtered.</p>
@@ -2070,6 +2071,37 @@
                             <tbody id="ia-tbody-startups"></tbody>
                         </table>
                     </div>
+
+                    <!-- Join Requests Tab -->
+                    <div class="ia-tab" id="ia-tab-requests">
+                        <div class="co-tab-header">
+                            <div class="co-tab-header-left">
+                                <h3 id="iaRequestsTitle">Join Requests</h3>
+                            </div>
+                        </div>
+                        <div id="ia-loading-requests" class="co-loading-state" hidden>
+                            <i class="lucide-spinner" data-lucide="loader"></i>
+                            <p>Loading requests...</p>
+                        </div>
+                        <div id="ia-empty-requests" class="co-empty-state" hidden>
+                            <i data-lucide="inbox"></i>
+                            <h3>No requests found</h3>
+                            <p>Innovation team join requests will appear here.</p>
+                        </div>
+                        <table class="admin-table-modern co-submissions-table" id="ia-table-requests" hidden>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ia-tbody-requests"></tbody>
+                        </table>
+                    </div>
+
                 </div>
 
             </main>
@@ -3713,7 +3745,7 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.js?v=15"></script>
+    <script src="assets/js/app.js?v=16"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
