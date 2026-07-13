@@ -1263,7 +1263,7 @@ function createAlumniCard(item) {
     return `
     <div class="modern-card" data-content-type="alumni" data-content-id="${item.id}">
         <div class="card-media">
-            <img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" onerror="this.src='https://picsum.photos/600/400?random=${item.id || 'alumni'}'">
+            <img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id || 'alumni'}';this.style.opacity='1'">
             <span class="card-badge gold">${badgeText}</span>
             ${cardSaveButton('alumni', item.id)}
         </div>
@@ -1296,8 +1296,8 @@ function createEventCard(item) {
     const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, 'events', item.id);
 
     const mediaHTML = videoUrl
-        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" controls style="object-fit:cover"></video>`
-        : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" onerror="this.src='https://picsum.photos/600/400?random=${item.id}'">`;
+        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
+        : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
 
     return `
     <div class="modern-card" data-content-type="events" data-content-id="${item.id}">
@@ -1370,8 +1370,8 @@ function createHomeNewsCard(item) {
     if (item.date) stats += statHTML('calendar', item.date);
     const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, contentType, item.id);
     const mediaHTML = videoUrl
-        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" controls style="object-fit:cover"></video>`
-        : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" onerror="this.src='https://picsum.photos/600/400?random=${item.id}'">`;
+        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
+        : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
     const badgeHTML = `<span class="card-badge ${meta.badgeClass}" role="link" tabindex="0" onclick="event.stopPropagation(); navigateToHomeNewsSection('${sectionKey}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigateToHomeNewsSection('${sectionKey}');}">${meta.label}</span>`;
 
     return `
@@ -1451,8 +1451,8 @@ function createCard(item, cardType) {
     const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, contentType, item.id);
 
     const mediaHTML = videoUrl
-        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" controls style="object-fit:cover"></video>`
-        : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" onerror="this.src='https://picsum.photos/600/400?random=${item.id}'">`;
+        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
+        : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
 
     const badgeHTML = badge
         ? `<span class="card-badge" style="text-transform:capitalize">${badge}</span>`
@@ -5793,10 +5793,10 @@ function renderCardDetailMedia(detail) {
     const { image, video, poster } = detail.media || {};
     const safeTitle = escapeHtml(detail.title);
     if (video) {
-        return `<video class="card-detail-media-el" src="${escapeHtml(video)}" poster="${escapeHtml(poster || image || '')}" controls playsinline></video>`;
+        return `<video class="card-detail-media-el" src="${escapeHtml(video)}" poster="${escapeHtml(poster || image || '')}" preload="none" controls playsinline></video>`;
     }
     if (image) {
-        return `<img class="card-detail-media-el" src="${escapeHtml(image)}" alt="${safeTitle}" loading="lazy" decoding="async">`;
+        return `<img class="card-detail-media-el" src="${escapeHtml(image)}" alt="${safeTitle}" loading="lazy" decoding="async" style="opacity:0;transition:opacity .4s" onload="this.style.opacity='1'">`;
     }
     return `<div class="card-detail-media-empty"><i data-lucide="image"></i><span>No media available</span></div>`;
 }

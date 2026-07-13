@@ -1290,6 +1290,22 @@ nav {
     position: relative;
     height: 220px;
     overflow: hidden;
+    /* Shimmer skeleton while image loads */
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: card-shimmer 1.4s infinite;
+}
+
+@keyframes card-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Stop shimmer once image has loaded (opacity set to 1 means image is ready) */
+.card-media:has(img[style*="opacity: 1"]),
+.card-media:has(video) {
+    background: none;
+    animation: none;
 }
 
 .card-image {

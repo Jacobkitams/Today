@@ -11,6 +11,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.requests import Request
+from starlette.responses import Response
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.formparsers import MultiPartParser
 from database import engine, Base
 from routes import auth_routes, content_routes, admin_routes, upload_routes, settings_routes, messages_routes, notifications_routes, form_submissions_routes, innovation_admin_routes
@@ -21,15 +23,50 @@ from routes.upload_routes import MAX_UPLOAD_BYTES
 MultiPartParser.max_file_size = MAX_UPLOAD_BYTES
 MultiPartParser.max_part_size = MAX_UPLOAD_BYTES
 
-# Removed monkey patch as it conflicts with newer python-multipart/starlette parsing
-# _orig_request_form = Request.form
-# def _request_form_with_upload_limit(...): ...
-# Request.form = _request_form_with_upload_limit
-
 # Auto-create all tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="IUEA Today API", description="Backend for IUEA Today portal", version="2.0.0")
+
+# ---------------------------------------------------------------------------
+# Media Cache Middleware
+# ---------------------------------------------------------------------------
+# Images and videos served from /uploads/* and /assets/* are immutable content
+# (a new file is uploaded under a new hashed name every time).  Tell the browser
+# to cache them aggressively so subsequent page loads and mobile revisits are
+# instant without any re-downloads.
+# ---------------------------------------------------------------------------
+_MEDIA_EXTENSIONS = {
+    ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".svg",
+    ".mp4", ".webm", ".ogg", ".mov",
+    ".woff", ".woff2", ".ttf", ".eot",
+    ".js", ".css",
+}
+
+class MediaCacheMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        path = request.url.path.lower()
+        ext = os.path.splitext(path)[1]
+
+        if path.startswith(("/uploads/", "/assets/")):
+            if ext in _MEDIA_EXTENSIONS:
+                # 7-day cache for user-uploaded media (images & videos)
+                if path.startswith("/uploads/"):
+                    response.headers["Cache-Control"] = "public, max-age=604800, immutable"
+                # 24-hour cache for frontend JS/CSS/images (can be refreshed on deploy)
+                else:
+                    if ext in {".js", ".css"}:
+                        response.headers["Cache-Control"] = "public, max-age=86400"
+                    else:
+                        response.headers["Cache-Control"] = "public, max-age=604800, immutable"
+                # Allow mobile browsers & CDNs to cache too
+                if "Vary" not in response.headers:
+                    response.headers["Vary"] = "Accept-Encoding"
+
+        return response
+
+app.add_middleware(MediaCacheMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,7 +76,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve uploaded media files
+# Serve frontend assets
 FRONTEND_ASSETS = os.path.join(os.path.dirname(__file__), "..", "frontend", "assets")
 app.mount("/assets", StaticFiles(directory=os.path.abspath(FRONTEND_ASSETS)), name="assets")
 
@@ -55,7 +92,7 @@ app.include_router(innovation_admin_routes.router, prefix="/innovation-admin", t
 
 from fastapi.responses import FileResponse
 
-# Serve uploaded video files
+# Serve uploaded media files (images, videos)
 BACKEND_UPLOADS = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(os.path.join(BACKEND_UPLOADS, "videos"), exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=os.path.abspath(BACKEND_UPLOADS)), name="uploads")
@@ -71,5 +108,5 @@ def serve_frontend_files(filename: str):
     file_path = os.path.join(FRONTEND_DIR, filename)
     if os.path.isfile(file_path):
         return FileResponse(file_path)
-    # If file not found, fall back to index.html (useful if you ever add HTML5 routing)
+    # Fall back to index.html for HTML5 routing
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
