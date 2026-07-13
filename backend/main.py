@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.requests import Request
 from starlette.formparsers import MultiPartParser
 from database import engine, Base
-from routes import auth_routes, content_routes, admin_routes, upload_routes, settings_routes, messages_routes, notifications_routes, form_submissions_routes
+from routes import auth_routes, content_routes, admin_routes, upload_routes, settings_routes, messages_routes, notifications_routes, form_submissions_routes, innovation_admin_routes
 from routes.upload_routes import MAX_UPLOAD_BYTES
 
 # Starlette defaults to 1 MB per multipart part; FastAPI calls request.form() with that default.
@@ -51,6 +51,7 @@ app.include_router(notifications_routes.router, tags=["Notifications"])
 app.include_router(upload_routes.router, prefix="/upload", tags=["Uploads"])
 app.include_router(settings_routes.router, prefix="/settings", tags=["Settings"])
 app.include_router(form_submissions_routes.router, prefix="/forms", tags=["Form Submissions"])
+app.include_router(innovation_admin_routes.router, prefix="/innovation-admin", tags=["Innovation Admin"])
 
 from fastapi.responses import FileResponse
 
