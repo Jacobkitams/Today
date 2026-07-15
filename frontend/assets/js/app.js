@@ -5928,9 +5928,10 @@ function openCardDetailFromCard(card) {
 
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
+    if (document.getElementById('navLinks')?.classList.contains('open')) toggleMobileNav();
+    // Hide the fixed apply button so it doesn't overlap modal content on mobile
     const applyBtn = document.getElementById('fixedApplyBtn');
     if (applyBtn) applyBtn.style.display = 'none';
-    if (document.getElementById('navLinks')?.classList.contains('open')) toggleMobileNav();
     refreshIconsIn(modal);
 }
 
@@ -5941,6 +5942,9 @@ function closeCardDetailModal() {
     modal.setAttribute('aria-hidden', 'true');
     modal.querySelectorAll('video').forEach(video => video.pause());
     cardDetailModalState = { type: null, id: null, title: '', description: '' };
+    // Restore the fixed apply button when modal closes
+    const applyBtn = document.getElementById('fixedApplyBtn');
+    if (applyBtn) applyBtn.style.removeProperty('display');
 }
 
 function handleCardDetailBackdrop(event) {
@@ -6271,8 +6275,6 @@ function updateCommentCharCount() {
 function closeCommentModal() {
     document.getElementById('contentCommentModal')?.classList.remove('show');
     commentModalState = { type: null, id: null, title: null };
-    const applyBtn = document.getElementById('fixedApplyBtn');
-    if (applyBtn) applyBtn.style.display = 'inline-flex';
 }
 
 function handleCommentModalBackdrop(event) {
@@ -6340,8 +6342,6 @@ async function commentContent(type, id) {
     updateCommentCharCount();
 
     document.getElementById('contentCommentModal')?.classList.add('show');
-    const applyBtn = document.getElementById('fixedApplyBtn');
-    if (applyBtn) applyBtn.style.display = 'none';
     if (document.getElementById('navLinks')?.classList.contains('open')) toggleMobileNav();
 
     await loadContentComments(type, id);
@@ -6408,14 +6408,10 @@ async function commentEvent(id) {
 /* =================== AUTH =================== */
 function showAuthModal() {
     document.getElementById('authModal').classList.add('show');
-    const applyBtn = document.getElementById('fixedApplyBtn');
-    if (applyBtn) applyBtn.style.display = 'none';
     if (document.getElementById('navLinks').classList.contains('open')) toggleMobileNav();
 }
 function closeAuthModal() {
     document.getElementById('authModal').classList.remove('show');
-    const applyBtn = document.getElementById('fixedApplyBtn');
-    if (applyBtn) applyBtn.style.display = 'inline-flex';
     // Clear any pending card action so it doesn't replay unexpectedly
     // on a future login that has no relation to the original card click.
     pendingCardAction = null;
@@ -10647,8 +10643,6 @@ async function registerForEvent(eventId, title, date) {
     
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
-    const applyBtn = document.getElementById('fixedApplyBtn');
-    if (applyBtn) applyBtn.style.display = 'none';
 }
 
 function closeEventRegistrationModal() {
@@ -10656,8 +10650,6 @@ function closeEventRegistrationModal() {
     if (modal) {
         modal.classList.remove('show');
         modal.setAttribute('aria-hidden', 'true');
-        const applyBtn = document.getElementById('fixedApplyBtn');
-        if (applyBtn) applyBtn.style.display = 'inline-flex';
     }
 }
 
