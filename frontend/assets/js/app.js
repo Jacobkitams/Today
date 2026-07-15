@@ -5928,6 +5928,8 @@ function openCardDetailFromCard(card) {
 
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
+    const applyBtn = document.getElementById('fixedApplyBtn');
+    if (applyBtn) applyBtn.style.display = 'none';
     if (document.getElementById('navLinks')?.classList.contains('open')) toggleMobileNav();
     refreshIconsIn(modal);
 }
@@ -6269,6 +6271,8 @@ function updateCommentCharCount() {
 function closeCommentModal() {
     document.getElementById('contentCommentModal')?.classList.remove('show');
     commentModalState = { type: null, id: null, title: null };
+    const applyBtn = document.getElementById('fixedApplyBtn');
+    if (applyBtn) applyBtn.style.display = 'inline-flex';
 }
 
 function handleCommentModalBackdrop(event) {
@@ -6336,6 +6340,8 @@ async function commentContent(type, id) {
     updateCommentCharCount();
 
     document.getElementById('contentCommentModal')?.classList.add('show');
+    const applyBtn = document.getElementById('fixedApplyBtn');
+    if (applyBtn) applyBtn.style.display = 'none';
     if (document.getElementById('navLinks')?.classList.contains('open')) toggleMobileNav();
 
     await loadContentComments(type, id);
@@ -6402,10 +6408,14 @@ async function commentEvent(id) {
 /* =================== AUTH =================== */
 function showAuthModal() {
     document.getElementById('authModal').classList.add('show');
+    const applyBtn = document.getElementById('fixedApplyBtn');
+    if (applyBtn) applyBtn.style.display = 'none';
     if (document.getElementById('navLinks').classList.contains('open')) toggleMobileNav();
 }
 function closeAuthModal() {
     document.getElementById('authModal').classList.remove('show');
+    const applyBtn = document.getElementById('fixedApplyBtn');
+    if (applyBtn) applyBtn.style.display = 'inline-flex';
     // Clear any pending card action so it doesn't replay unexpectedly
     // on a future login that has no relation to the original card click.
     pendingCardAction = null;
@@ -10637,6 +10647,8 @@ async function registerForEvent(eventId, title, date) {
     
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
+    const applyBtn = document.getElementById('fixedApplyBtn');
+    if (applyBtn) applyBtn.style.display = 'none';
 }
 
 function closeEventRegistrationModal() {
@@ -10644,6 +10656,8 @@ function closeEventRegistrationModal() {
     if (modal) {
         modal.classList.remove('show');
         modal.setAttribute('aria-hidden', 'true');
+        const applyBtn = document.getElementById('fixedApplyBtn');
+        if (applyBtn) applyBtn.style.display = 'inline-flex';
     }
 }
 
