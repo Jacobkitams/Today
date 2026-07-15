@@ -187,14 +187,10 @@ function ensureOfflineCacheIndicator() {
 
 function updateOfflineCacheIndicator() {
     const el = ensureOfflineCacheIndicator();
-    if (isOfflineMode() || (!offlineCacheServedCount && !offlineCacheLatestAt)) {
-        el.hidden = true;
-        return;
-    }
-    const age = formatRelativeCacheAge(offlineCacheLatestAt);
-    el.textContent = `Showing saved content${age ? ` · ${age}` : ''}`;
-    el.hidden = false;
+    // Offline cache indicator is hidden — user does not need to see this message.
+    el.hidden = true;
 }
+
 
 function persistPublicContentSnapshot() {
     if (publicContentCache.news == null) return;
@@ -683,6 +679,7 @@ const ROLE_DASHBOARD_MAP = {
     'innovation_admin':  'innovation-admin-dashboard',
     'content_editor':    'admin-dashboard',
     'super_admin':       'admin-dashboard',
+    'marketing_admin':   'admin-dashboard',
     'admin':             'admin-dashboard'
 };
 
@@ -694,6 +691,7 @@ const ASSIGNABLE_USER_ROLES = [
     'innovation_admin',
     'content_editor',
     'super_admin',
+    'marketing_admin',
 ];
 
 const REMOVED_ROLE_DASHBOARDS = ['student-innovator-dashboard', 'alumni-dashboard'];
@@ -758,7 +756,8 @@ function navigateTo(pageId) {
     const isRoleDash  = Object.values(ROLE_DASHBOARD_MAP).includes(pageId) && pageId !== 'admin-dashboard';
 
     // Guard: admin-dashboard requires admin role
-    if (isAdminDash && (!currentUser || !['super_admin', 'content_editor', 'admin'].includes(currentUser.role))) {
+    if (isAdminDash && (!currentUser || !['super_admin',
+    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role))) {
         showToast('Access denied.', 'error');
         showAuthModal();
         return;
@@ -811,12 +810,12 @@ function navigateTo(pageId) {
 
     if (isDash) {
         if (pubHeader) pubHeader.style.display = 'none';
-        if (pubSearch) pubSearch.style.display = 'none';
+        if (pubSearch) { pubSearch.style.display = 'none'; pubSearch.classList.remove('show-mobile'); }
         if (footer)    footer.style.display    = 'none';
         if (applyBtn)  applyBtn.style.display  = 'none';
     } else {
         if (pubHeader) pubHeader.style.display = 'block';
-        if (pubSearch) pubSearch.style.display = 'block';
+        if (pubSearch) { pubSearch.style.removeProperty('display'); pubSearch.classList.remove('show-mobile'); }
         if (footer)    footer.style.display    = 'block';
         if (applyBtn)  applyBtn.style.display  = 'inline-flex';
     }
@@ -851,7 +850,36 @@ function toggleMobileNav() {
         btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         btn.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
     }
+    // Hide the fixed "Apply to IUEA Now" button while the mobile nav is open
+    const applyBtn = document.getElementById('fixedApplyBtn');
+    if (applyBtn) applyBtn.style.display = isOpen ? 'none' : 'inline-flex';
+
+    // Close search if it's open
+    if (isOpen) {
+        const searchWrap = document.getElementById('publicSearch');
+        if (searchWrap && searchWrap.classList.contains('show-mobile')) {
+            searchWrap.classList.remove('show-mobile');
+        }
+    }
 }
+
+function toggleMobileSearch() {
+    const searchWrap = document.getElementById('publicSearch');
+    if (!searchWrap) return;
+    
+    // Close nav menu if it's open
+    const navLinks = document.getElementById('navLinks');
+    if (navLinks && navLinks.classList.contains('open')) {
+        toggleMobileNav();
+    }
+    
+    const isShowing = searchWrap.classList.toggle('show-mobile');
+    const input = document.getElementById('globalSearch');
+    if (isShowing && input) {
+        setTimeout(() => input.focus(), 50);
+    }
+}
+
 
 function switchTab(tabId, btn) {
     btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
@@ -1309,13 +1337,14 @@ function createEventCard(item) {
         <div class="card-content">
             <h3>${title}</h3>
             <p>${truncateText(desc)}</p>
-            ${authorRow}
+            ${authorRow ? authorRow.replace('class="card-author-row"', 'class="card-author-row" style="display:flex; justify-content:space-between; align-items:center;"').replace('</div>', `<button type="button" class="btn-primary event-register-btn-${item.id}" onclick="registerForEvent(${item.id})" style="border-radius:999px;padding:0.4rem 1rem;font-size:0.85rem;background-color:var(--iuea-maroon);color:white;border:none;flex-shrink:0;margin-top:0"><i data-lucide="user-plus"></i> Register</button></div>`) : `<div class="card-author-row" style="display:flex; justify-content:flex-end; align-items:center;"><button type="button" class="btn-primary event-register-btn-${item.id}" onclick="registerForEvent(${item.id})" style="border-radius:999px;padding:0.4rem 1rem;font-size:0.85rem;background-color:var(--iuea-maroon);color:white;border:none;margin-top:0"><i data-lucide="user-plus"></i> Register</button></div>`}
             <div class="card-stats-row">${stats}</div>
             <div class="card-actions">
                 <button onclick="likeContent('events', ${item.id})"><i data-lucide="heart"></i> Like</button>
                 ${cardCommentButton('events', item.id)}
                 ${cardShareButton('events', item.id, title, desc)}
             </div>
+            ${item.id ? `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload="checkEventRegistrationStatus(${item.id}, document.querySelector('.event-register-btn-${item.id}'))" style="display:none">` : ''}
         </div>
     </div>`;
 }
@@ -2426,7 +2455,8 @@ async function loadInitialData(options = {}) {
 
 /* =================== ADMIN DATA =================== */
 async function loadAdminDashboard() {
-    if (!currentUser || !['super_admin', 'content_editor', 'admin'].includes(currentUser.role)) return;
+    if (!currentUser || !['super_admin',
+    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role)) return;
     if (isOfflineMode()) {
         showToast('Admin dashboard is in offline view — server actions are disabled.', 'info');
     }
@@ -3955,7 +3985,8 @@ function adminContentListsEqual(a, b) {
 }
 
 function prefetchAdminContentModules() {
-    if (!currentUser || !['super_admin', 'content_editor', 'admin'].includes(currentUser.role)) {
+    if (!currentUser || !['super_admin',
+    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role)) {
         return Promise.resolve();
     }
     if (adminContentPrefetchPromise) return adminContentPrefetchPromise;
@@ -4706,6 +4737,7 @@ function buildAdminTableHTML(moduleName, items) {
                             <div class="admin-table-actions">
                                 <button type="button" class="admin-table-action-btn" onclick="viewAdminContent('${moduleName}', ${item.id})"><i data-lucide="eye"></i> View</button>
                                 <button type="button" class="admin-table-action-btn" onclick="editAdminContent('${moduleName}', ${item.id})"><i data-lucide="pencil"></i> Edit</button>
+                                ${moduleName === 'events' ? `<button type="button" class="admin-table-action-btn" onclick="manageEventParticipants(${item.id}, '${escapeJsString(title)}')"><i data-lucide="users"></i> Participants</button>` : ''}
                                 <button type="button" class="admin-table-action-btn" onclick="deleteAdminContent('${moduleName}', ${item.id})"><i data-lucide="trash-2"></i> Delete</button>
                             </div>
                         </td>
@@ -6542,7 +6574,8 @@ function handleAuthorProfileBackdrop(event) {
 function getMessagingContextForCurrentUser() {
     if (!currentUser) return null;
     const role = currentUser.role;
-    if (['super_admin', 'content_editor', 'admin'].includes(role)) return 'admin';
+    if (['super_admin',
+    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(role)) return 'admin';
     if (role === 'registered_user') return 'ru';
     if (role === 'donor_partner') return 'dp';
     return null;
@@ -6907,7 +6940,8 @@ async function addNewsPost() {
                 showToast('Update saved offline — it will sync when you\'re back online.', 'info');
                 clearNewsPostForm();
             } else {
-                const isAdmin = ['super_admin', 'content_editor', 'admin'].includes(currentUser.role);
+                const isAdmin = ['super_admin',
+    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role);
                 showToast(isAdmin ? 'Update posted successfully!' : 'Update submitted for review.');
                 clearNewsPostForm();
                 if (isAdmin) {
@@ -7357,7 +7391,8 @@ function updateUIForUser() {
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    if (currentUser && ['super_admin', 'content_editor', 'admin'].includes(currentUser.role)) {
+    if (currentUser && ['super_admin',
+    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role)) {
         prefetchAdminContentModules();
     }
 }
@@ -7597,9 +7632,25 @@ function handleSearchKeydown(event) {
     }
 }
 
-document.addEventListener('click', e => {
-    if (!e.target.closest('#publicSearch')) hideSearchResults();
-});
+function handleOutsideSearchClick(e) {
+    if (!e.target || typeof e.target.closest !== 'function') return;
+    const isSearchWrapClick = e.target.closest('#publicSearch');
+    const isSearchToggleBtnClick = e.target.closest('.mobile-search-btn');
+
+    if (!isSearchWrapClick) {
+        hideSearchResults();
+    }
+    
+    if (!isSearchWrapClick && !isSearchToggleBtnClick) {
+        const searchWrap = document.getElementById('publicSearch');
+        if (searchWrap && searchWrap.classList.contains('show-mobile')) {
+            searchWrap.classList.remove('show-mobile');
+        }
+    }
+}
+
+document.addEventListener('click', handleOutsideSearchClick);
+document.addEventListener('touchstart', handleOutsideSearchClick, { passive: true });
 
 /* =================== HERO VIDEOS =================== */
 const HERO_PAGES = [
@@ -8006,6 +8057,7 @@ function applyPublicPlatformSettings(settings) {
 function formatAdminRole(role) {
     const labels = {
         super_admin: 'Super Admin',
+        marketing_admin: 'Marketing Admin',
         content_editor: 'Content Editor',
         admin: 'Administrator',
     };
@@ -9921,6 +9973,7 @@ function formatMsgDateDivider(value) {
 function formatRoleShort(role) {
     const map = {
         super_admin: 'Super Admin',
+        marketing_admin: 'Marketing Admin',
         content_editor: 'Content Editor',
         admin: 'Admin',
         registered_user: 'Registered User',
@@ -9947,7 +10000,8 @@ async function refreshUnreadMessageBadges() {
     if (!authToken || !currentUser) return;
     const data = await apiGet('/admin/messages/unread-count');
     const count = data?.count || 0;
-    const isAdmin = ['super_admin', 'content_editor', 'admin'].includes(currentUser.role);
+    const isAdmin = ['super_admin',
+    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role);
     if (isAdmin) setMsgBadge('nav-messages-badge', count);
     if (currentUser.role === 'registered_user') setMsgBadge('ru-nav-messages-badge', count);
     if (currentUser.role === 'donor_partner') setMsgBadge('dp-nav-messages-badge', count);
@@ -10258,7 +10312,8 @@ const NOTIFY_DASHBOARD_MAP = {
 function getActiveNotifyContext() {
     if (!currentUser) return null;
     const role = currentUser.role;
-    if (['super_admin', 'content_editor', 'admin'].includes(role)) return 'admin';
+    if (['super_admin',
+    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(role)) return 'admin';
     if (role === 'registered_user') return 'ru';
     if (role === 'donor_partner') return 'dp';
     return null;
@@ -10526,5 +10581,240 @@ function initNotificationsUI() {
 
     notificationState.initialized = true;
     startNotificationPolling();
+}
+
+
+// --- EVENT REGISTRATION ---
+
+async function registerForEvent(eventId) {
+    if (!currentUser) { showAuthModal(); return; }
+    try {
+        const response = await fetch(`${API_BASE_URL}/events-reg/events/${eventId}/register`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ notes: '' })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            showToast(data.message || 'Registered successfully', 'success');
+            // update UI button
+            const btns = document.querySelectorAll(`.event-register-btn-${eventId}`);
+            btns.forEach(btn => {
+                btn.innerHTML = '<i data-lucide="check-circle"></i> Registered';
+                btn.classList.add('registered');
+                btn.onclick = () => cancelEventRegistration(eventId);
+            });
+            lucide.createIcons();
+            if(document.getElementById('ru-tab-events').classList.contains('active')) {
+                loadRuEvents();
+            }
+        } else {
+            showToast(data.detail || 'Failed to register', 'error');
+        }
+    } catch (e) {
+        showToast('Network error while registering', 'error');
+    }
+}
+
+async function cancelEventRegistration(eventId) {
+    if (!currentUser) { showAuthModal(); return; }
+    if (!confirm('Are you sure you want to cancel your registration?')) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/events-reg/events/${eventId}/register`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            showToast('Registration cancelled', 'success');
+            const btns = document.querySelectorAll(`.event-register-btn-${eventId}`);
+            btns.forEach(btn => {
+                btn.innerHTML = '<i data-lucide="user-plus"></i> Register';
+                btn.classList.remove('registered');
+                btn.onclick = () => registerForEvent(eventId);
+            });
+            lucide.createIcons();
+            if(document.getElementById('ru-tab-events').classList.contains('active')) {
+                loadRuEvents();
+            }
+        } else {
+            const data = await response.json();
+            showToast(data.detail || 'Failed to cancel', 'error');
+        }
+    } catch (e) {
+        showToast('Network error while cancelling', 'error');
+    }
+}
+
+async function loadRuEvents() {
+    const container = document.getElementById('ruEventsList');
+    if (!container) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/events-reg/events/my-registrations`, {
+            headers: getAuthHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to fetch events');
+        const data = await response.json();
+        
+        const badge = document.getElementById('ru-nav-events-badge');
+        if (badge) {
+            badge.textContent = data.length;
+            badge.style.display = data.length > 0 ? 'inline-block' : 'none';
+        }
+        
+        if (!data.length) {
+            container.innerHTML = `
+                <div class="admin-panel">
+                    <div class="ru-empty-state">
+                        <i data-lucide="calendar-x"></i>
+                        <h3>No events yet</h3>
+                        <p>You haven't registered for any events.</p>
+                        <button class="btn-primary" onclick="navigateTo('events-all'); returnToPublic();">Browse Events</button>
+                    </div>
+                </div>`;
+            lucide.createIcons();
+            return;
+        }
+
+        let html = '<div class="admin-panel"><div class="table-responsive"><table class="admin-table-modern">';
+        html += `<thead><tr><th>Event</th><th>Date & Location</th><th>Status</th><th>Registered On</th><th>Actions</th></tr></thead><tbody>`;
+        
+        data.forEach(reg => {
+            const statusClass = reg.status === 'confirmed' ? 'status-approved' : (reg.status === 'waitlisted' ? 'status-pending' : 'status-rejected');
+            const created = new Date(reg.created_at).toLocaleDateString();
+            const eventDate = reg.event_date || 'TBA';
+            const eventLoc = reg.event_location || 'TBA';
+            html += `<tr>
+                <td><strong>${reg.event_title || 'Unknown Event'}</strong></td>
+                <td><div style="font-size:0.85rem"><i data-lucide="calendar" style="width:14px;height:14px;margin-bottom:-2px"></i> ${eventDate}<br><i data-lucide="map-pin" style="width:14px;height:14px;margin-bottom:-2px"></i> ${eventLoc}</div></td>
+                <td><span class="status-badge ${statusClass}">${reg.status}</span></td>
+                <td>${created}</td>
+                <td>
+                    <button class="admin-table-action-btn" onclick="cancelEventRegistration(${reg.event_id})" style="color:var(--iuea-maroon)"><i data-lucide="x-circle"></i> Cancel</button>
+                </td>
+            </tr>`;
+        });
+        html += `</tbody></table></div></div>`;
+        container.innerHTML = html;
+        lucide.createIcons();
+    } catch (e) {
+        container.innerHTML = '<div class="admin-panel"><div class="ru-empty-state"><i data-lucide="alert-triangle"></i><h3>Error</h3><p>Could not load events.</p></div></div>';
+        lucide.createIcons();
+    }
+}
+
+// Hook into the ruRoleTab rendering to load events
+const originalShowRoleTabForEvents = window.showRoleTab;
+window.showRoleTab = function(role, tab, btn) {
+    originalShowRoleTabForEvents(role, tab, btn);
+    if (role === 'ru' && tab === 'events') {
+        loadRuEvents();
+    }
+};
+
+async function manageEventParticipants(eventId, title) {
+    const modalHtml = `
+        <div class="modal-overlay" id="participantsModal" style="display:flex;z-index:9999" onclick="if(event.target===this) this.remove()">
+            <div class="modal-content" style="max-width:800px;width:95%">
+                <div class="modal-header">
+                    <h2><i data-lucide="users"></i> Participants: ${title}</h2>
+                    <button type="button" class="modal-close" onclick="document.getElementById('participantsModal').remove()"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body" id="participantsModalBody" style="max-height:60vh;overflow-y:auto;padding:1.5rem">
+                    <p style="text-align:center"><i data-lucide="loader" class="spin"></i> Loading participants...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    lucide.createIcons();
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/${eventId}/participants`, {
+            headers: getAuthHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        
+        const body = document.getElementById('participantsModalBody');
+        if (!data.length) {
+            body.innerHTML = '<div class="admin-empty-state"><p>No participants registered yet.</p></div>';
+            return;
+        }
+        
+        let html = '<div class="table-responsive"><table class="admin-table-modern" style="width:100%">';
+        html += '<thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Registered On</th><th>Actions</th></tr></thead><tbody>';
+        
+        data.forEach(p => {
+            const statusClass = p.status === 'confirmed' ? 'status-approved' : (p.status === 'waitlisted' ? 'status-pending' : 'status-rejected');
+            html += `<tr>
+                <td><strong>${p.user_name || 'User ' + p.user_id}</strong></td>
+                <td>${p.user_email || '—'}</td>
+                <td>
+                    <select onchange="updateParticipantStatus(${eventId}, ${p.id}, this.value)" style="padding:0.25rem;border-radius:4px;border:1px solid #ddd">
+                        <option value="confirmed" ${p.status==='confirmed'?'selected':''}>Confirmed</option>
+                        <option value="waitlisted" ${p.status==='waitlisted'?'selected':''}>Waitlisted</option>
+                        <option value="cancelled" ${p.status==='cancelled'?'selected':''}>Cancelled</option>
+                    </select>
+                </td>
+                <td>${new Date(p.created_at).toLocaleDateString()}</td>
+                <td><button type="button" class="admin-table-action-btn" onclick="removeParticipant(${eventId}, ${p.id}, this)" style="color:var(--iuea-maroon)"><i data-lucide="trash-2"></i> Remove</button></td>
+            </tr>`;
+        });
+        html += '</tbody></table></div>';
+        body.innerHTML = html;
+        lucide.createIcons();
+    } catch (e) {
+        document.getElementById('participantsModalBody').innerHTML = '<p style="color:red">Error loading participants.</p>';
+    }
+}
+
+async function updateParticipantStatus(eventId, regId, status) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/${eventId}/participants/${regId}/status`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ status })
+        });
+        if (!response.ok) throw new Error();
+        showToast('Status updated', 'success');
+    } catch (e) {
+        showToast('Error updating status', 'error');
+    }
+}
+
+async function removeParticipant(eventId, regId, btnEl) {
+    if (!confirm('Are you sure you want to remove this participant completely?')) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/${eventId}/participants/${regId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (!response.ok) throw new Error();
+        showToast('Participant removed', 'success');
+        btnEl.closest('tr').remove();
+    } catch (e) {
+        showToast('Error removing participant', 'error');
+    }
+}
+
+// Add checkEventRegistrationStatus function to update button state
+async function checkEventRegistrationStatus(eventId, btn) {
+    if (!currentUser) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/events-reg/events/${eventId}/registration-status`, {
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            const data = await response.json();
+            if (data.registered) {
+                btn.innerHTML = '<i data-lucide="check-circle"></i> Registered';
+                btn.classList.add('registered');
+                btn.onclick = () => cancelEventRegistration(eventId);
+                lucide.createIcons();
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
 }
 

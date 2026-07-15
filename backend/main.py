@@ -15,7 +15,7 @@ from starlette.responses import Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.formparsers import MultiPartParser
 from database import engine, Base
-from routes import auth_routes, content_routes, admin_routes, upload_routes, settings_routes, messages_routes, notifications_routes, form_submissions_routes, innovation_admin_routes
+from routes import auth_routes, content_routes, admin_routes, upload_routes, settings_routes, messages_routes, notifications_routes, form_submissions_routes, innovation_admin_routes, event_registration_routes
 from routes.upload_routes import MAX_UPLOAD_BYTES
 
 # Starlette defaults to 1 MB per multipart part; FastAPI calls request.form() with that default.
@@ -49,17 +49,28 @@ class MediaCacheMiddleware(BaseHTTPMiddleware):
         path = request.url.path.lower()
         ext = os.path.splitext(path)[1]
 
-        if path.startswith(("/uploads/", "/assets/")):
+        # --- HTML / navigation pages: always re-validate ---
+        # index.html MUST never be stale-cached; the browser must check the
+        # server on every visit so that bumped ?v= query strings on JS/CSS
+        # are always picked up immediately (including on mobile).
+        if ext in (".html", "") or path in ("/", ""):
+            response.headers["Cache-Control"] = "no-cache, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+
+        # --- Service Worker: must never be cached by HTTP cache ---
+        elif "service-worker" in path:
+            response.headers["Cache-Control"] = "no-store"
+
+        elif path.startswith(("/uploads/", "/assets/")):
             if ext in _MEDIA_EXTENSIONS:
                 # 7-day cache for user-uploaded media (images & videos)
                 if path.startswith("/uploads/"):
                     response.headers["Cache-Control"] = "public, max-age=604800, immutable"
-                # 24-hour cache for frontend JS/CSS/images (can be refreshed on deploy)
+                # JS/CSS are versioned via ?v= query string — safe to cache long-term
+                elif ext in {".js", ".css"}:
+                    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
                 else:
-                    if ext in {".js", ".css"}:
-                        response.headers["Cache-Control"] = "public, max-age=86400"
-                    else:
-                        response.headers["Cache-Control"] = "public, max-age=604800, immutable"
+                    response.headers["Cache-Control"] = "public, max-age=604800, immutable"
                 # Allow mobile browsers & CDNs to cache too
                 if "Vary" not in response.headers:
                     response.headers["Vary"] = "Accept-Encoding"
@@ -89,6 +100,7 @@ app.include_router(upload_routes.router, prefix="/upload", tags=["Uploads"])
 app.include_router(settings_routes.router, prefix="/settings", tags=["Settings"])
 app.include_router(form_submissions_routes.router, prefix="/forms", tags=["Form Submissions"])
 app.include_router(innovation_admin_routes.router, prefix="/innovation-admin", tags=["Innovation Admin"])
+app.include_router(event_registration_routes.router, prefix="/events-reg", tags=["Event Registration"])
 
 from fastapi.responses import FileResponse
 
@@ -101,12 +113,23 @@ FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "fr
 
 @app.get("/")
 def serve_index():
-    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+    resp = FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+    resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    return resp
 
 @app.get("/{filename:path}")
 def serve_frontend_files(filename: str):
     file_path = os.path.join(FRONTEND_DIR, filename)
     if os.path.isfile(file_path):
-        return FileResponse(file_path)
+        resp = FileResponse(file_path)
+        # HTML and service worker must always be re-validated
+        if filename.endswith(".html") or "service-worker" in filename:
+            resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+            resp.headers["Pragma"] = "no-cache"
+        return resp
     # Fall back to index.html for HTML5 routing
-    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+    resp = FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+    resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    return resp

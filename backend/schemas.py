@@ -150,6 +150,39 @@ class EventCommentResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# ---------- EVENT REGISTRATION ----------
+class EventRegistrationCreate(BaseModel):
+    notes: Optional[str] = None
+
+class EventRegistrationResponse(BaseModel):
+    id: int
+    event_id: int
+    user_id: int
+    status: str
+    notes: Optional[str] = None
+    created_at: Optional[datetime] = None
+    event_title: Optional[str] = None
+    event_date: Optional[str] = None
+    event_location: Optional[str] = None
+    event_image: Optional[str] = None
+    class Config:
+        from_attributes = True
+
+class EventRegistrationAdminView(BaseModel):
+    id: int
+    event_id: int
+    user_id: int
+    user_name: Optional[str] = None
+    user_email: Optional[str] = None
+    status: str
+    notes: Optional[str] = None
+    created_at: Optional[datetime] = None
+    class Config:
+        from_attributes = True
+
+class EventRegistrationStatusUpdate(BaseModel):
+    status: str  # confirmed | cancelled | waitlisted
+
 # ---------- INNOVATION ----------
 class InnovationCreate(ContentBase):
     author_name: Optional[str] = None

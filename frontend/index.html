@@ -14,7 +14,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
-    <link rel="stylesheet" href="assets/css/style.css?v=5">
+    <link rel="stylesheet" href="assets/css/style.css?v=8">
 </head>
 
 <body>
@@ -31,7 +31,7 @@
         <i data-lucide="wifi-off"></i>
         <div>
             <strong>You're offline</strong>
-            <span>Showing saved content. Your posts, likes, and comments will sync when you're back online.</span>
+            <span></span>
         </div>
     </div>
 
@@ -40,9 +40,14 @@
             <div class="logo" onclick="navigateTo('home')">
                 <img id="publicHeaderLogo" src="assets/images/iuea-logo.png" alt="IUEA Logo">
             </div>
-            <button class="mobile-menu-btn" type="button" onclick="toggleMobileNav()" aria-label="Open menu">
-                <i data-lucide="menu"></i>
-            </button>
+            <div class="mobile-header-actions">
+                <button class="mobile-search-btn" type="button" onclick="toggleMobileSearch()" aria-label="Toggle search">
+                    <i data-lucide="search"></i>
+                </button>
+                <button class="mobile-menu-btn" type="button" onclick="toggleMobileNav()" aria-label="Open menu">
+                    <i data-lucide="menu"></i>
+                </button>
+            </div>
             <div class="nav-links" id="navLinks">
                 <a onclick="navigateTo('home')" class="active-nav"><i data-lucide="home"></i> Home</a>
                 <a onclick="navigateTo('innovation')"><i data-lucide="lightbulb"></i> Innovation</a>
@@ -823,6 +828,7 @@
                 <div class="admin-sidebar-section">
                     <div class="admin-sidebar-label">My Activity</div>
                     <nav class="admin-nav">
+                        <button class="admin-nav-btn rdash-nav-btn" data-ru-tab="events" onclick="showRoleTab('ru','events',this)"><i data-lucide="calendar-check"></i> My Events <span class="nav-badge nav-badge-unread" id="ru-nav-events-badge" style="display:none">0</span></button>
                         <button class="admin-nav-btn rdash-nav-btn" data-ru-tab="saved" onclick="showRoleTab('ru','saved',this)"><i data-lucide="bookmark"></i> Saved Content</button>
                         <button class="admin-nav-btn rdash-nav-btn" data-ru-tab="followed" onclick="showRoleTab('ru','followed',this)"><i data-lucide="heart"></i> Followed Items</button>
                         <button class="admin-nav-btn rdash-nav-btn" data-ru-tab="stories" onclick="showRoleTab('ru','stories',this)"><i data-lucide="file-text"></i> My Shared Stories</button>
@@ -890,6 +896,14 @@
                             <h3>Quick Actions</h3>
                         </div>
                         <div class="ru-quick-actions">
+                            <button type="button" class="ru-quick-action" onclick="ruGoToTab('events')">
+                                <div class="ru-quick-action-icon" style="background:linear-gradient(135deg,#800000,#a62121)"><i data-lucide="calendar-check"></i></div>
+                                <div>
+                                    <strong>My Events</strong>
+                                    <span>View events you've registered for</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="ru-quick-action-arrow"></i>
+                            </button>
                             <button type="button" class="ru-quick-action" onclick="ruGoToTab('saved')">
                                 <div class="ru-quick-action-icon bg-blue"><i data-lucide="bookmark"></i></div>
                                 <div>
@@ -922,6 +936,26 @@
                                 </div>
                                 <i data-lucide="chevron-right" class="ru-quick-action-arrow"></i>
                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MY EVENTS -->
+                <div id="ru-tab-events" class="role-tab">
+                    <div class="admin-panel-header">
+                        <div>
+                            <h3>My Events</h3>
+                            <p>Events you've registered for at IUEA.</p>
+                        </div>
+                        <button class="btn-primary" onclick="navigateTo('events-all'); returnToPublic();"><i data-lucide="calendar"></i> Browse Events</button>
+                    </div>
+                    <div id="ruEventsList">
+                        <div class="admin-panel">
+                            <div class="ru-empty-state">
+                                <i data-lucide="loader"></i>
+                                <h3>Loading events…</h3>
+                                <p>Fetching events you've registered for.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1051,6 +1085,10 @@
             <button class="ru-mob-nav-btn active" data-ru-tab="overview" onclick="ruMobileNav('overview', this)" aria-label="Overview">
                 <i data-lucide="layout-dashboard"></i>
                 <span>Overview</span>
+            </button>
+            <button class="ru-mob-nav-btn" data-ru-tab="events" onclick="ruMobileNav('events', this)" aria-label="Events">
+                <i data-lucide="calendar-check"></i>
+                <span>Events</span>
             </button>
             <button class="ru-mob-nav-btn" data-ru-tab="saved" onclick="ruMobileNav('saved', this)" aria-label="Saved">
                 <i data-lucide="bookmark"></i>
@@ -3745,11 +3783,11 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.js?v=16"></script>
+    <script src="assets/js/app.js?v=22"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js?v=3')
+                navigator.serviceWorker.register('service-worker.js?v=4')
                     .then(registration => {
                         console.log('ServiceWorker registration successful with scope: ', registration.scope);
                     })

@@ -245,6 +245,13 @@ nav {
     box-shadow: none;
 }
 
+.mobile-header-actions {
+    display: none;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.mobile-search-btn,
 .mobile-menu-btn {
     display: none;
     background: none;
@@ -263,6 +270,7 @@ nav {
     -webkit-tap-highlight-color: transparent;
 }
 
+.mobile-search-btn:focus-visible,
 .mobile-menu-btn:focus-visible {
     outline: 2px solid var(--iuea-maroon);
     outline-offset: 2px;
@@ -7954,10 +7962,23 @@ body.app-offline .offline-admin-notice {
         position: relative;
     }
 
-    #publicHeader .mobile-menu-btn {
-        display: inline-flex;
+    #publicHeader .mobile-header-actions {
+        display: flex;
         order: 2;
         margin-left: auto;
+    }
+
+    #publicHeader .mobile-search-btn,
+    #publicHeader .mobile-menu-btn {
+        display: inline-flex;
+    }
+    
+    .public-search-wrap {
+        display: none;
+    }
+    
+    .public-search-wrap.show-mobile {
+        display: block;
     }
 
     #publicHeader .nav-actions {

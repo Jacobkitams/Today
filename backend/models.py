@@ -63,6 +63,18 @@ class EventComment(Base):
     message = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+class EventRegistration(Base):
+    __tablename__ = "event_registrations"
+    id = Column(Integer, primary_key=True, index=True)
+    event_id = Column(Integer, ForeignKey("events.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    status = Column(String(20), default="confirmed")  # confirmed | cancelled | waitlisted
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    __table_args__ = (
+        UniqueConstraint("event_id", "user_id", name="uq_event_registration"),
+    )
+
 class Innovation(Base):
     __tablename__ = "innovations"
     id = Column(Integer, primary_key=True, index=True)
