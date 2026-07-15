@@ -70,6 +70,11 @@ class EventRegistration(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     status = Column(String(20), default="confirmed")  # confirmed | cancelled | waitlisted
     notes = Column(Text, nullable=True)
+    ticket_type = Column(String(50), nullable=True)
+    guests = Column(Integer, default=0)
+    payment_method = Column(String(50), nullable=True)
+    payment_phone = Column(String(20), nullable=True)
+    payment_status = Column(String(20), default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     __table_args__ = (
         UniqueConstraint("event_id", "user_id", name="uq_event_registration"),

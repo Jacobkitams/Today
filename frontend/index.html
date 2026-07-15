@@ -3593,6 +3593,58 @@
         </div>
     </div>
 
+    <!-- Event Registration Modal -->
+    <div id="eventRegistrationModal" class="detail-modal" onclick="if(event.target.id === 'eventRegistrationModal') closeEventRegistrationModal()" aria-hidden="true">
+        <div class="comment-modal-box" role="dialog" aria-labelledby="eventRegistrationTitle" aria-modal="true" style="max-width:500px">
+            <div class="comment-modal-header">
+                <div>
+                    <h2 id="eventRegistrationTitle"><i data-lucide="calendar"></i> Register for Event</h2>
+                    <p id="eventRegistrationSubtitle"></p>
+                </div>
+                <button type="button" class="close-modal" onclick="closeEventRegistrationModal()" aria-label="Close registration"><i data-lucide="x"></i></button>
+            </div>
+            <div class="comment-modal-body" style="padding: 1.5rem">
+                <form id="eventRegForm" onsubmit="submitEventRegistration(event)" style="display:flex;flex-direction:column;gap:1rem">
+                    <input type="hidden" id="regEventId">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                        <div>
+                            <label style="font-size:0.85rem;font-weight:600;display:block;margin-bottom:0.5rem">Ticket Type</label>
+                            <select id="regTicketType" required style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:8px">
+                                <option value="general">General (Free)</option>
+                                <option value="vip">VIP (Paid)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.85rem;font-weight:600;display:block;margin-bottom:0.5rem">Guests</label>
+                            <input type="number" id="regGuests" min="0" max="10" value="0" style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:8px">
+                        </div>
+                    </div>
+                    <div id="regPaymentMethodGroup" style="display:none">
+                        <div style="margin-bottom:1rem">
+                            <label style="font-size:0.85rem;font-weight:600;display:block;margin-bottom:0.5rem">Payment Method</label>
+                            <select id="regPaymentMethod" style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:8px">
+                                <option value="">Select payment method</option>
+                                <option value="mtn_momo">MTN Mobile Money</option>
+                                <option value="airtel_money">Airtel Money</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.85rem;font-weight:600;display:block;margin-bottom:0.5rem">Mobile Money Number</label>
+                            <input type="tel" id="regPaymentPhone" placeholder="e.g. 0771234567" style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:8px">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:0.85rem;font-weight:600;display:block;margin-bottom:0.5rem">Additional Notes (optional)</label>
+                        <textarea id="regNotes" rows="3" placeholder="Dietary requirements, accessibility needs…" style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:8px;resize:vertical"></textarea>
+                    </div>
+                    <button type="submit" id="regSubmitBtn" class="btn-primary" style="width:100%;justify-content:center;padding:0.8rem;margin-top:0.5rem">
+                        <i data-lucide="check"></i> Confirm Registration
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Content Comments Modal -->
     <div id="contentCommentModal" class="detail-modal" onclick="handleCommentModalBackdrop(event)">
         <div class="comment-modal-box" role="dialog" aria-labelledby="contentCommentTitle" aria-modal="true">

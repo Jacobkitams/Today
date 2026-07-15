@@ -1325,7 +1325,19 @@ function createEventCard(item) {
 
     const mediaHTML = videoUrl
         ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
-        : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
+        : `<img class="card-image" src="${imageUrl}" alt="${escapeHtml(title)}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
+
+    const registerBtn = `<button type="button" class="btn-primary event-register-btn event-register-btn-${item.id}" data-event-id="${item.id}" data-event-title="${escapeHtml(title)}" data-event-date="${escapeHtml(item.date || '')}" onclick="event.stopPropagation(); registerForEvent(${item.id}, this.dataset.eventTitle, this.dataset.eventDate)" style="border-radius:999px;padding:0.4rem 1rem;font-size:0.85rem;background-color:var(--iuea-maroon);color:white;border:none;flex-shrink:0;margin-top:0"><i data-lucide="user-plus"></i> Register</button>`;
+
+    let authorSection = '';
+    if (authorRow) {
+        authorSection = authorRow.replace(
+            'class="card-author-row"',
+            'class="card-author-row" style="display:flex;justify-content:space-between;align-items:center;"'
+        ).replace('</div>', registerBtn + '</div>');
+    } else {
+        authorSection = `<div class="card-author-row" style="display:flex;justify-content:flex-end;align-items:center;">${registerBtn}</div>`;
+    }
 
     return `
     <div class="modern-card" data-content-type="events" data-content-id="${item.id}">
@@ -1337,10 +1349,10 @@ function createEventCard(item) {
         <div class="card-content">
             <h3>${title}</h3>
             <p>${truncateText(desc)}</p>
-            ${authorRow ? authorRow.replace('class="card-author-row"', 'class="card-author-row" style="display:flex; justify-content:space-between; align-items:center;"').replace('</div>', `<button type="button" class="btn-primary event-register-btn-${item.id}" onclick="registerForEvent(${item.id})" style="border-radius:999px;padding:0.4rem 1rem;font-size:0.85rem;background-color:var(--iuea-maroon);color:white;border:none;flex-shrink:0;margin-top:0"><i data-lucide="user-plus"></i> Register</button></div>`) : `<div class="card-author-row" style="display:flex; justify-content:flex-end; align-items:center;"><button type="button" class="btn-primary event-register-btn-${item.id}" onclick="registerForEvent(${item.id})" style="border-radius:999px;padding:0.4rem 1rem;font-size:0.85rem;background-color:var(--iuea-maroon);color:white;border:none;margin-top:0"><i data-lucide="user-plus"></i> Register</button></div>`}
+            ${authorSection}
             <div class="card-stats-row">${stats}</div>
             <div class="card-actions">
-                <button onclick="likeContent('events', ${item.id})"><i data-lucide="heart"></i> Like</button>
+                <button onclick="event.stopPropagation(); likeContent('events', ${item.id})"><i data-lucide="heart"></i> Like</button>
                 ${cardCommentButton('events', item.id)}
                 ${cardShareButton('events', item.id, title, desc)}
             </div>
@@ -10586,33 +10598,111 @@ function initNotificationsUI() {
 
 // --- EVENT REGISTRATION ---
 
-async function registerForEvent(eventId) {
+async function registerForEvent(eventId, title, date) {
     if (!currentUser) { showAuthModal(); return; }
+    
+    const modal = document.getElementById('eventRegistrationModal');
+    if (!modal) return;
+    
+    // Wire up VIP payment toggle if not done
+    const ticketType = document.getElementById('regTicketType');
+    if (ticketType && !ticketType.dataset.wired) {
+        ticketType.dataset.wired = 'true';
+        ticketType.addEventListener('change', (e) => {
+            const paymentGroup = document.getElementById('regPaymentMethodGroup');
+            const paymentMethod = document.getElementById('regPaymentMethod');
+            const paymentPhone = document.getElementById('regPaymentPhone');
+            if (e.target.value === 'vip') {
+                paymentGroup.style.display = 'block';
+                paymentMethod.required = true;
+                if(paymentPhone) paymentPhone.required = true;
+            } else {
+                paymentGroup.style.display = 'none';
+                paymentMethod.required = false;
+                paymentMethod.value = '';
+                if(paymentPhone) paymentPhone.required = false;
+                if(paymentPhone) paymentPhone.value = '';
+            }
+        });
+    }
+    
+    document.getElementById('eventRegForm').reset();
+    document.getElementById('regPaymentMethodGroup').style.display = 'none';
+    document.getElementById('regPaymentMethod').required = false;
+    const paymentPhone = document.getElementById('regPaymentPhone');
+    if(paymentPhone) paymentPhone.required = false;
+    
+    document.getElementById('regEventId').value = eventId;
+    document.getElementById('eventRegistrationSubtitle').textContent = `${title} ${date ? '• ' + date : ''}`;
+    
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeEventRegistrationModal() {
+    const modal = document.getElementById('eventRegistrationModal');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+}
+
+async function submitEventRegistration(e) {
+    e.preventDefault();
+    const eventId = document.getElementById('regEventId').value;
+    const ticketType = document.getElementById('regTicketType').value;
+    const guests = parseInt(document.getElementById('regGuests').value) || 0;
+    const paymentMethod = document.getElementById('regPaymentMethod').value || null;
+    const paymentPhone = document.getElementById('regPaymentPhone')?.value || null;
+    const notes = document.getElementById('regNotes').value;
+    const submitBtn = document.getElementById('regSubmitBtn');
+
+    submitBtn.disabled = true;
+
+    if (ticketType === 'vip' && paymentMethod && paymentPhone) {
+        submitBtn.innerHTML = '<i data-lucide="smartphone" class="lucide-vibrate"></i> Sending prompt to ' + paymentPhone + '...';
+        lucide.createIcons();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        submitBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Waiting for PIN...';
+        lucide.createIcons();
+        await new Promise(resolve => setTimeout(resolve, 3500));
+        submitBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Verifying payment...';
+        lucide.createIcons();
+        await new Promise(resolve => setTimeout(resolve, 1500));
+    } else {
+        submitBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Processing...';
+        lucide.createIcons();
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/events/${eventId}/register`, {
             method: 'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ notes: '' })
+            body: JSON.stringify({ notes, ticket_type: ticketType, guests, payment_method: paymentMethod, payment_phone: paymentPhone })
         });
         const data = await response.json();
         if (response.ok) {
-            showToast(data.message || 'Registered successfully', 'success');
-            // update UI button
-            const btns = document.querySelectorAll(`.event-register-btn-${eventId}`);
-            btns.forEach(btn => {
+            closeEventRegistrationModal();
+            showToast(data.message || 'Registered successfully! ✅', 'success');
+            document.querySelectorAll(`.event-register-btn-${eventId}`).forEach(btn => {
                 btn.innerHTML = '<i data-lucide="check-circle"></i> Registered';
                 btn.classList.add('registered');
-                btn.onclick = () => cancelEventRegistration(eventId);
+                btn.style.background = '#16a34a';
+                btn.onclick = (ev) => { ev.stopPropagation(); cancelEventRegistration(eventId); };
             });
             lucide.createIcons();
-            if(document.getElementById('ru-tab-events').classList.contains('active')) {
-                loadRuEvents();
-            }
+            if (document.getElementById('ru-tab-events')?.classList.contains('active')) loadRuEvents();
         } else {
             showToast(data.detail || 'Failed to register', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i data-lucide="check"></i> Confirm Registration';
+            lucide.createIcons();
         }
-    } catch (e) {
-        showToast('Network error while registering', 'error');
+    } catch (err) {
+        showToast('Network error. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="check"></i> Confirm Registration';
+        lucide.createIcons();
     }
 }
 

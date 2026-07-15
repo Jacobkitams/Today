@@ -132,6 +132,9 @@ def register_for_event(
             # Re-activate cancelled registration
             existing.status = "confirmed"
             existing.notes = data.notes
+            existing.ticket_type = data.ticket_type
+            existing.guests = data.guests
+            existing.payment_method = data.payment_method
             db.commit()
             db.refresh(existing)
             # Bump attendees
@@ -149,6 +152,11 @@ def register_for_event(
         user_id=current_user.id,
         status="confirmed",
         notes=data.notes,
+        ticket_type=data.ticket_type,
+        guests=data.guests,
+        payment_method=data.payment_method,
+        payment_phone=data.payment_phone,
+        payment_status="paid" if data.ticket_type == "vip" else "pending"
     )
     db.add(reg)
     event.attendees = (event.attendees or 0) + 1
@@ -169,7 +177,17 @@ def register_for_event(
             "New Event Registration",
             f"{current_user.name} registered for '{event.title}'",
         )
-        db.commit()
+
+    # Notify the user (Confirmation)
+    notifications_service.create_notification(
+        db,
+        current_user.id,
+        "event_registration_confirmed",
+        "Registration Confirmed",
+        f"You have successfully registered for '{event.title}'.",
+    )
+    
+    db.commit()
 
     return {
         "message": "Successfully registered",

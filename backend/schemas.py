@@ -153,6 +153,10 @@ class EventCommentResponse(BaseModel):
 # ---------- EVENT REGISTRATION ----------
 class EventRegistrationCreate(BaseModel):
     notes: Optional[str] = None
+    ticket_type: Optional[str] = None
+    guests: Optional[int] = 0
+    payment_method: Optional[str] = None
+    payment_phone: Optional[str] = None
 
 class EventRegistrationResponse(BaseModel):
     id: int
@@ -160,6 +164,11 @@ class EventRegistrationResponse(BaseModel):
     user_id: int
     status: str
     notes: Optional[str] = None
+    ticket_type: Optional[str] = None
+    guests: Optional[int] = None
+    payment_method: Optional[str] = None
+    payment_phone: Optional[str] = None
+    payment_status: Optional[str] = None
     created_at: Optional[datetime] = None
     event_title: Optional[str] = None
     event_date: Optional[str] = None
@@ -176,6 +185,11 @@ class EventRegistrationAdminView(BaseModel):
     user_email: Optional[str] = None
     status: str
     notes: Optional[str] = None
+    ticket_type: Optional[str] = None
+    guests: Optional[int] = None
+    payment_method: Optional[str] = None
+    payment_phone: Optional[str] = None
+    payment_status: Optional[str] = None
     created_at: Optional[datetime] = None
     class Config:
         from_attributes = True
