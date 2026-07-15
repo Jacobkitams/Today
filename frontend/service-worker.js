@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const STATIC_CACHE = `iuea-today-static-${CACHE_VERSION}`;
 const API_CACHE = `iuea-today-api-${CACHE_VERSION}`;
 
