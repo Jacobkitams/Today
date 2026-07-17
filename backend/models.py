@@ -49,6 +49,7 @@ class Event(Base):
     comments_count = Column(Integer, default=0)
     date = Column(String(100))
     location = Column(String(255))
+    ticket_types = Column(String(100), default="general")
     attendees = Column(Integer, default=0)
     author_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     status = Column(String(20), default="approved")

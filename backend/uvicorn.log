@@ -1,0 +1,222 @@
+INFO:     Will watch for changes in these directories: ['/opt/lampp/htdocs/MyProject/today/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     Started reloader process [1271473] using StatReload
+INFO:     Started server process [1271573]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:51082 - "GET /service-worker.js?v=5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51190 - "GET /service-worker.js?v=5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51202 - "GET /uploads/videos/fabbcf3ee73444e8b268961e4c045967.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:51214 - "GET /uploads/videos/e02cb25d41a84281b9be9753244d0842.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:51216 - "GET /uploads/videos/c554570dede545acb4569c92c5d65754.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:51230 - "GET /uploads/videos/7e35c6779fe1452e8de83f874e3394c6.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:51234 - "GET /uploads/videos/27d5549c923949428385981b2da7e761.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:51240 - "GET /uploads/videos/e16e185d32504c17ad2b3b96fc5359b0.mp4 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51240 - "GET /uploads/videos/5766b6fa32434a41ad6cafcd11dae5dc.mp4 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51240 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51240 - "GET /uploads/videos/7e35c6779fe1452e8de83f874e3394c6.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:51250 - "GET /uploads/videos/27d5549c923949428385981b2da7e761.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:51266 - "GET /uploads/videos/7e35c6779fe1452e8de83f874e3394c6.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:51250 - "GET /admin/messages/unread-count HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /notifications?limit=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51250 - "GET /uploads/videos/27d5549c923949428385981b2da7e761.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:51244 - "GET /admin/content/news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/events HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/research-areas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/publications HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/research-labs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/innovation-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/innovations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/startup-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/startups HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/alumni-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/alumni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/community-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/community-committees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/community-initiatives HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/community-reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/tech-park HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/donations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/donation-tiers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/endowment-stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/endowment-campaigns HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /admin/content/endowment-info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /content/saved/ids HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /content/followed/ids HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45386 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56376 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56384 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56384 - "GET /assets/css/style.css?v=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56400 - "GET /assets/js/app.js?v=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56400 - "GET /assets/images/iuea-logo.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56400 - "GET /settings/hero-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56384 - "GET /content/feed?limit=7&include_community=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /content/news?type=innovation&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56420 - "GET /content/startups HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /content/innovations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56384 - "GET /content/news?type=alumni&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56414 - "GET /content/events?limit=7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56400 - "GET /content/news?type=startup&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /content/donations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56420 - "GET /content/donation-tiers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56414 - "GET /content/endowment-campaigns?limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56384 - "GET /content/endowment-info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /content/endowment-stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56400 - "GET /content/alumni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /content/community HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56420 - "GET /content/community?type=news&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56384 - "GET /content/publications HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56414 - "GET /content/research-areas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /content/research-labs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56400 - "GET /content/tech-park HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56420 - "GET /uploads/videos/7e35c6779fe1452e8de83f874e3394c6.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:56428 - "GET /settings/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56384 - "GET /uploads/videos/e16e185d32504c17ad2b3b96fc5359b0.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:56414 - "GET /uploads/videos/5766b6fa32434a41ad6cafcd11dae5dc.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:56400 - "GET /uploads/videos/27d5549c923949428385981b2da7e761.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:56428 - "GET /assets/images/1ac363f8ad334dc183addd5effeb1367.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /assets/images/92be45a4dd674f94832a21c61b39fe3c.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /assets/images/iuea-logo.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /assets/images/72d245a1f5d843e0a8993be2a5fbdbb1.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/messages/unread-count HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /notifications?limit=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/content/events HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/research-areas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/content/publications HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/research-labs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/content/innovation-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/innovations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/content/startup-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/startups HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/alumni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/content/alumni-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/community-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/content/community-committees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/community-initiatives HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/content/community-reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/tech-park HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/content/donations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/donation-tiers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/content/endowment-stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/content/endowment-campaigns HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/content/endowment-info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /content/saved/ids HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /content/followed/ids HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/messages/unread-count HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56436 - "GET /notifications?limit=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56450 - "GET /admin/pending-content HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /admin/rejected-content HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56464 - "GET /admin/approved-content HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56428 - "GET /admin/stats?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34398 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34398 - "GET /service-worker.js?v=5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34398 - "GET /settings/hero-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34398 - "GET /content/feed?limit=7&include_community=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38326 - "GET /content/innovations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38342 - "GET /content/events?limit=7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38354 - "GET /content/startups HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38364 - "GET /content/news?type=innovation&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38378 - "GET /content/news?type=startup&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34398 - "GET /content/news?type=alumni&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38342 - "GET /content/donations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38354 - "GET /content/donation-tiers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38326 - "GET /content/endowment-stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38378 - "GET /content/endowment-campaigns?limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38364 - "GET /content/endowment-info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34398 - "GET /content/alumni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38354 - "GET /content/community?type=news&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38342 - "GET /content/community HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38378 - "GET /content/research-labs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38364 - "GET /content/research-areas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38326 - "GET /content/publications HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34398 - "GET /content/tech-park HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38354 - "GET /settings/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34398 - "GET /uploads/videos/fabbcf3ee73444e8b268961e4c045967.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:38342 - "GET /uploads/videos/e02cb25d41a84281b9be9753244d0842.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:38354 - "GET /uploads/videos/c554570dede545acb4569c92c5d65754.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:38364 - "GET /uploads/videos/7e35c6779fe1452e8de83f874e3394c6.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:38326 - "GET /uploads/videos/27d5549c923949428385981b2da7e761.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:38378 - "GET /service-worker.js?v=5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38378 - "GET /uploads/videos/7e35c6779fe1452e8de83f874e3394c6.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:38392 - "GET /uploads/videos/27d5549c923949428385981b2da7e761.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:38392 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38392 - "GET /uploads/videos/7e35c6779fe1452e8de83f874e3394c6.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:38408 - "GET /uploads/videos/27d5549c923949428385981b2da7e761.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:38418 - "GET /admin/messages/unread-count HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /notifications?limit=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/events HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/research-areas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/publications HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/research-labs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/innovation-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/innovations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/startup-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/startups HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/alumni-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/alumni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/community-news HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/community-committees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/community-initiatives HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/community-reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/tech-park HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/donations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/donation-tiers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/endowment-stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/endowment-campaigns HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/content/endowment-info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /content/saved/ids HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /content/followed/ids HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/stats?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/pending-content HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/approved-content HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/rejected-content HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /admin/messages/unread-count HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /notifications?limit=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55668 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55668 - "GET /assets/css/style.css?v=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55682 - "GET /assets/js/app.js?v=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55668 - "GET /assets/images/iuea-logo.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55694 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55694 - "GET /assets/css/style.css?v=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55708 - "GET /assets/js/app.js?v=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55708 - "GET /assets/images/iuea-logo.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55708 - "GET /settings/hero-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55694 - "GET /content/events?limit=7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55716 - "GET /content/feed?limit=7&include_community=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54158 - "GET /content/startups HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54142 - "GET /content/innovations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54164 - "GET /content/news?type=innovation&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55708 - "GET /content/news?type=startup&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55716 - "GET /content/news?type=alumni&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55694 - "GET /content/donations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54158 - "GET /content/donation-tiers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54164 - "GET /content/endowment-campaigns?limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54142 - "GET /content/endowment-stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55708 - "GET /content/endowment-info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55716 - "GET /content/alumni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55694 - "GET /content/community HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54164 - "GET /content/research-areas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54158 - "GET /content/community?type=news&limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54142 - "GET /content/publications HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55716 - "GET /content/tech-park HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55708 - "GET /content/research-labs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54164 - "GET /uploads/videos/7e35c6779fe1452e8de83f874e3394c6.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:55694 - "GET /settings/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55716 - "GET /uploads/videos/e16e185d32504c17ad2b3b96fc5359b0.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:54142 - "GET /uploads/videos/c554570dede545acb4569c92c5d65754.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:54158 - "GET /uploads/videos/27d5549c923949428385981b2da7e761.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:55708 - "GET /uploads/videos/27d5549c923949428385981b2da7e761.mp4 HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:55694 - "GET /assets/images/1ac363f8ad334dc183addd5effeb1367.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54168 - "GET /assets/images/92be45a4dd674f94832a21c61b39fe3c.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54142 - "GET /assets/images/iuea-logo.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54142 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54168 - "GET /assets/images/72d245a1f5d843e0a8993be2a5fbdbb1.jpg HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1271573]
+INFO:     Stopping reloader process [1271473]

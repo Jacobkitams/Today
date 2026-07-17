@@ -1327,7 +1327,7 @@ function createEventCard(item) {
         ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
         : `<img class="card-image" src="${imageUrl}" alt="${escapeHtml(title)}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
 
-    const registerBtn = `<button type="button" class="btn-primary event-register-btn event-register-btn-${item.id}" data-event-id="${item.id}" data-event-title="${escapeHtml(title)}" data-event-date="${escapeHtml(item.date || '')}" onclick="event.stopPropagation(); registerForEvent(${item.id}, this.dataset.eventTitle, this.dataset.eventDate)" style="border-radius:999px;padding:0.4rem 1rem;font-size:0.85rem;background-color:var(--iuea-maroon);color:white;border:none;flex-shrink:0;margin-top:0"><i data-lucide="user-plus"></i> Register</button>`;
+    const registerBtn = `<button type="button" class="btn-primary event-register-btn event-register-btn-${item.id}" data-event-id="${item.id}" data-event-title="${escapeHtml(title)}" data-event-date="${escapeHtml(item.date || '')}" data-event-ticket-types="${escapeHtml(item.ticket_types || 'general')}" onclick="event.stopPropagation(); registerForEvent(${item.id}, this.dataset.eventTitle, this.dataset.eventDate, this.dataset.eventTicketTypes)" style="border-radius:999px;padding:0.4rem 1rem;font-size:0.85rem;background-color:var(--iuea-maroon);color:white;border:none;flex-shrink:0;margin-top:0"><i data-lucide="user-plus"></i> Register</button>`;
 
     let authorSection = '';
     if (authorRow) {
@@ -3441,7 +3441,8 @@ const CREATE_MODAL_CONFIG = {
         descPlaceholder: 'Describe date, location, and what attendees can expect…',
         submitLabel: 'Create Event',
         showMedia: true,
-        showVideo: true
+        showVideo: true,
+        extraFields: 'event'
     },
     innovation: {
         title: 'Add Innovation',
@@ -5190,10 +5191,12 @@ function configureAdminEditFields(moduleName) {
     const labExtras = document.getElementById('adminEditLabExtras');
     const tierExtras = document.getElementById('adminEditDonationTierExtras');
     const campaignExtras = document.getElementById('adminEditEndowmentCampaignExtras');
+    const eventExtras = document.getElementById('adminEditEventExtras');
     if (pubExtras) pubExtras.style.display = moduleName === 'publications' ? 'flex' : 'none';
     if (labExtras) labExtras.style.display = moduleName === 'research-labs' ? 'block' : 'none';
     if (tierExtras) tierExtras.style.display = moduleName === 'donation-tiers' ? 'flex' : 'none';
     if (campaignExtras) campaignExtras.style.display = moduleName === 'endowment-campaigns' ? 'flex' : 'none';
+    if (eventExtras) eventExtras.style.display = moduleName === 'events' ? 'flex' : 'none';
 
     const imageGroup = document.getElementById('adminEditImageGroup');
     if (imageGroup) imageGroup.style.display = adminEditModuleHasImage(moduleName) ? 'block' : 'none';
@@ -5252,6 +5255,11 @@ function populateAdminEditForm(moduleName, item) {
     } else if (moduleName === 'endowment-info') {
         titleEl.value = item.title || '';
         descEl.value = item.description || '';
+    } else if (moduleName === 'events') {
+        titleEl.value = item.title || '';
+        descEl.value = item.description || '';
+        const tTypesEl = document.getElementById('adminEditTicketTypes');
+        if (tTypesEl) tTypesEl.value = item.ticket_types || 'general';
     } else {
         titleEl.value = item.title || item.name || '';
         descEl.value = item.description || '';
@@ -5313,6 +5321,12 @@ function buildAdminEditBody(moduleName) {
         body.title = document.getElementById('adminEditTitle').value.trim();
         body.description = document.getElementById('adminEditDesc').value.trim();
         body.status = document.getElementById('adminEditStatus').value;
+    } else if (moduleName === 'events') {
+        body.title = document.getElementById('adminEditTitle').value.trim();
+        body.description = document.getElementById('adminEditDesc').value.trim();
+        body.status = document.getElementById('adminEditStatus').value;
+        const tTypesEl = document.getElementById('adminEditTicketTypes');
+        if (tTypesEl) body.ticket_types = tTypesEl.value;
     } else {
         body.title = document.getElementById('adminEditTitle').value.trim();
         body.description = document.getElementById('adminEditDesc').value.trim();
@@ -6654,10 +6668,12 @@ function applyCreateModalConfig(type, useGenericHeader) {
     const labExtras = document.getElementById('createLabExtras');
     const tierExtras = document.getElementById('createDonationTierExtras');
     const campaignExtras = document.getElementById('createEndowmentCampaignExtras');
+    const eventExtras = document.getElementById('createEventExtras');
     if (pubExtras) pubExtras.style.display = config.extraFields === 'publication' ? 'flex' : 'none';
     if (labExtras) labExtras.style.display = config.extraFields === 'lab' ? 'block' : 'none';
     if (tierExtras) tierExtras.style.display = config.extraFields === 'donation-tier' ? 'flex' : 'none';
     if (campaignExtras) campaignExtras.style.display = config.extraFields === 'endowment-campaign' ? 'flex' : 'none';
+    if (eventExtras) eventExtras.style.display = config.extraFields === 'event' ? 'flex' : 'none';
 
     const submitLabel = useGenericHeader ? CREATE_MODAL_GENERIC.submitLabel : config.submitLabel;
     if (submitBtn) submitBtn.innerHTML = `<i data-lucide="send"></i> ${submitLabel}`;
@@ -7121,6 +7137,14 @@ async function submitCreateForm() {
             };
         } else if (type === 'endowment-info') {
             body = { title, description: desc, image: imageUrl };
+        } else if (type === 'event') {
+            body = { 
+                title, 
+                description: desc, 
+                image: imageUrl, 
+                video: videoUrl,
+                ticket_types: document.getElementById('createTicketTypes')?.value || 'general'
+            };
         } else if (type === 'news') {
             body = { title, description: desc, image: imageUrl, video: videoUrl, type: 'news' };
         } else if (type === 'innovation-news') {
@@ -10604,7 +10628,7 @@ function initNotificationsUI() {
 
 // --- EVENT REGISTRATION ---
 
-async function registerForEvent(eventId, title, date) {
+async function registerForEvent(eventId, title, date, ticketTypes = 'general') {
     if (!currentUser) { showAuthModal(); return; }
     
     const modal = document.getElementById('eventRegistrationModal');
@@ -10618,7 +10642,7 @@ async function registerForEvent(eventId, title, date) {
             const paymentGroup = document.getElementById('regPaymentMethodGroup');
             const paymentMethod = document.getElementById('regPaymentMethod');
             const paymentPhone = document.getElementById('regPaymentPhone');
-            if (e.target.value === 'vip') {
+            if (e.target.value === 'vip' || e.target.value === 'ordinary') {
                 paymentGroup.style.display = 'block';
                 paymentMethod.required = true;
                 if(paymentPhone) paymentPhone.required = true;
@@ -10640,6 +10664,21 @@ async function registerForEvent(eventId, title, date) {
     
     document.getElementById('regEventId').value = eventId;
     document.getElementById('eventRegistrationSubtitle').textContent = `${title} ${date ? '• ' + date : ''}`;
+    
+    if (ticketType) {
+        ticketType.innerHTML = '';
+        if (ticketTypes.includes('general')) {
+            ticketType.innerHTML += '<option value="general">General (Free)</option>';
+        }
+        if (ticketTypes.includes('ordinary')) {
+            ticketType.innerHTML += '<option value="ordinary">Ordinary (Paid)</option>';
+        }
+        if (ticketTypes.includes('vip')) {
+            ticketType.innerHTML += '<option value="vip">VIP (Paid)</option>';
+        }
+        // Force trigger change event to show/hide payment if VIP/Ordinary is only option
+        ticketType.dispatchEvent(new Event('change'));
+    }
     
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
@@ -10726,7 +10765,7 @@ async function cancelEventRegistration(eventId) {
             btns.forEach(btn => {
                 btn.innerHTML = '<i data-lucide="user-plus"></i> Register';
                 btn.classList.remove('registered');
-                btn.onclick = () => registerForEvent(eventId);
+                btn.onclick = () => registerForEvent(eventId, btn.dataset.eventTitle, btn.dataset.eventDate, btn.dataset.eventTicketTypes);
             });
             lucide.createIcons();
             if(document.getElementById('ru-tab-events').classList.contains('active')) {
@@ -10914,3 +10953,69 @@ async function checkEventRegistrationStatus(eventId, btn) {
     }
 }
 
+async function loadEventRegistrationsAdmin(btn, options = {}) {
+    const area = document.getElementById('adminEventRegistrationsArea');
+    if (!area) return;
+    
+    currentAdminModule = 'event-registrations';
+    showAdminTab('event-registrations', btn || document.querySelector('.admin-nav-btn[data-module="event-registrations"]'));
+    
+    if (options.forceRefresh) {
+        area.innerHTML = '<div class="admin-empty-state"><p>Loading events...</p></div>';
+    } else if (area.innerHTML.trim() !== '') {
+        return;
+    } else {
+        area.innerHTML = '<div class="admin-empty-state"><p>Loading events...</p></div>';
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/participants/all`, {
+            headers: getAuthHeaders()
+        });
+        if (!response.ok) {
+            if (response.status === 401) logout();
+            throw new Error('Failed to fetch registrations');
+        }
+        
+        const participants = await response.json();
+        
+        if (!participants.length) {
+            area.innerHTML = '<div class="admin-empty-state"><p>No registrations found.</p></div>';
+            return;
+        }
+
+        let html = '<div class="table-responsive"><table class="admin-table-modern" style="width:100%">';
+        html += '<thead><tr><th>Event Title</th><th>Name</th><th>Email</th><th>Ticket Type</th><th>Guests</th><th>Status</th><th>Registered On</th><th>Actions</th></tr></thead><tbody>';
+        
+        participants.forEach(p => {
+            html += `<tr>
+                <td><strong>${escapeHtml(p.event_title || 'Untitled Event')}</strong></td>
+                <td><strong>${escapeHtml(p.user_name || 'User ' + p.user_id)}</strong></td>
+                <td>${escapeHtml(p.user_email || '—')}</td>
+                <td>${escapeHtml(p.ticket_type || 'General')}</td>
+                <td>${p.guests || 0}</td>
+                <td>
+                    <select onchange="updateParticipantStatus(${p.event_id}, ${p.id}, this.value)" style="padding:0.25rem;border-radius:4px;border:1px solid #ddd">
+                        <option value="confirmed" ${p.status==='confirmed'?'selected':''}>Confirmed</option>
+                        <option value="waitlisted" ${p.status==='waitlisted'?'selected':''}>Waitlisted</option>
+                        <option value="cancelled" ${p.status==='cancelled'?'selected':''}>Cancelled</option>
+                    </select>
+                </td>
+                <td>${new Date(p.created_at).toLocaleDateString()}</td>
+                <td>
+                    <button type="button" class="admin-table-action-btn" onclick="removeParticipant(${p.event_id}, ${p.id}, this)" style="color:var(--iuea-maroon)">
+                        <i data-lucide="trash-2"></i> Remove
+                    </button>
+                </td>
+            </tr>`;
+        });
+        
+        html += '</tbody></table></div>';
+        area.innerHTML = html;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        
+    } catch (e) {
+        area.innerHTML = '<div class="admin-empty-state"><p style="color:red">Failed to load events.</p></div>';
+        console.error(e);
+    }
+}

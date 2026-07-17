@@ -120,6 +120,7 @@ class EventCreate(ContentBase):
     date: Optional[str] = None
     location: Optional[str] = None
     video: Optional[str] = None
+    ticket_types: Optional[str] = "general"
 
 class EventResponse(ContentBase):
     id: int
@@ -132,6 +133,7 @@ class EventResponse(ContentBase):
     attendees: int
     status: str
     video: Optional[str] = None
+    ticket_types: Optional[str] = "general"
     created_at: Optional[datetime] = None
     class Config:
         from_attributes = True
@@ -180,6 +182,7 @@ class EventRegistrationResponse(BaseModel):
 class EventRegistrationAdminView(BaseModel):
     id: int
     event_id: int
+    event_title: Optional[str] = None
     user_id: int
     user_name: Optional[str] = None
     user_email: Optional[str] = None
@@ -585,6 +588,7 @@ class AdminContentUpdate(BaseModel):
     status: Optional[str] = None
     date: Optional[str] = None
     location: Optional[str] = None
+    ticket_types: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     year: Optional[str] = None

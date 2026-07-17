@@ -85,14 +85,21 @@ def _enrich_registration(db: Session, reg: models.EventRegistration) -> dict:
 
 def _enrich_participant(db: Session, reg: models.EventRegistration) -> dict:
     user = db.query(User).filter(User.id == reg.user_id).first()
+    event = db.query(models.Event).filter(models.Event.id == reg.event_id).first()
     return {
         "id": reg.id,
         "event_id": reg.event_id,
+        "event_title": event.title if event else None,
         "user_id": reg.user_id,
         "user_name": user.name if user else None,
         "user_email": user.email if user else None,
         "status": reg.status,
         "notes": reg.notes,
+        "ticket_type": reg.ticket_type,
+        "guests": reg.guests,
+        "payment_method": reg.payment_method,
+        "payment_phone": reg.payment_phone,
+        "payment_status": reg.payment_status,
         "created_at": reg.created_at,
     }
 
@@ -321,6 +328,14 @@ def delete_admin_event(
 # ---------------------------------------------------------------------------
 # Marketing Admin: Participant Management
 # ---------------------------------------------------------------------------
+
+@router.get("/admin/events/participants/all", response_model=List[schemas.EventRegistrationAdminView])
+def list_all_participants(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_marketing_admin),
+):
+    regs = db.query(models.EventRegistration).order_by(models.EventRegistration.created_at.desc()).all()
+    return [_enrich_participant(db, r) for r in regs]
 
 @router.get("/admin/events/{event_id}/participants", response_model=List[schemas.EventRegistrationAdminView])
 def list_participants(

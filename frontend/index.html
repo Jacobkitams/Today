@@ -2224,6 +2224,8 @@
                         <button class="admin-nav-btn" onclick="showAdminTab('messages', this)"><i
                                 data-lucide="message-circle"></i> Messages <span class="nav-badge nav-badge-unread"
                                 id="nav-messages-badge" style="display:none">0</span></button>
+                        <button class="admin-nav-btn" data-module="event-registrations" onclick="loadEventRegistrationsAdmin(this)"><i
+                                data-lucide="ticket"></i> Registrations</button>
                     </nav>
                 </div>
 
@@ -2738,6 +2740,22 @@
                             <p>Select a specific content module from the sidebar to manage items.</p>
                         </div>
                     </div>
+                </div>
+
+                <!-- EVENT REGISTRATIONS TAB -->
+                <div id="admin-tab-event-registrations" class="admin-tab-content">
+                    <div class="admin-panel-header">
+                        <div class="admin-panel-header-text">
+                            <h3>Event Registrations</h3>
+                            <p>Manage participants and event registrations.</p>
+                        </div>
+                        <div class="admin-panel-header-actions">
+                            <button type="button" class="btn-secondary" onclick="loadEventRegistrationsAdmin(null, { forceRefresh: true })">
+                                <i data-lucide="refresh-cw"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div id="adminEventRegistrationsArea" class="admin-panel p-0"></div>
                 </div>
 
                 <!-- DONATIONS TAB -->
@@ -3322,6 +3340,17 @@
                             <input type="text" id="adminEditRaisedAmount" placeholder="e.g. $3.2M">
                         </div>
                     </div>
+                    <div id="adminEditEventExtras" class="form-row" style="display:none;">
+                        <div class="form-group">
+                            <label>Ticket Types</label>
+                            <select id="adminEditTicketTypes">
+                                <option value="general">General (Free) Only</option>
+                                <option value="ordinary">Ordinary (Paid) Only</option>
+                                <option value="vip">VIP (Paid) Only</option>
+                                <option value="ordinary,vip">Both Ordinary & VIP</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label id="adminEditDescLabel">Description</label>
                         <textarea id="adminEditDesc" rows="4" placeholder="Description"></textarea>
@@ -3484,6 +3513,17 @@
                     <div class="form-group">
                         <label id="createDescLabel">Description <span style="color:var(--iuea-maroon)">*</span></label>
                         <textarea id="createDesc" rows="5" placeholder="Describe this content in detail..."></textarea>
+                    </div>
+                    <div id="createEventExtras" class="form-row" style="display:none;">
+                        <div class="form-group">
+                            <label>Ticket Types</label>
+                            <select id="createTicketTypes">
+                                <option value="general">General (Free) Only</option>
+                                <option value="ordinary">Ordinary (Paid) Only</option>
+                                <option value="vip">VIP (Paid) Only</option>
+                                <option value="ordinary,vip">Both Ordinary & VIP</option>
+                            </select>
+                        </div>
                     </div>
                     <div id="createPubExtras" class="form-row" style="display:none;">
                         <div class="form-group">
@@ -3835,7 +3875,7 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.js?v=24"></script>
+    <script src="assets/js/app.js?v=25"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
