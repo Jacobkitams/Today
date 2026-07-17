@@ -7218,6 +7218,30 @@ async function submitCreateForm() {
 }
 
 
+function toggleLoginPassword() {
+    const input = document.getElementById('loginPassword');
+    const icon  = document.getElementById('loginPasswordEyeIcon');
+    if (!input) return;
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    if (icon) {
+        icon.setAttribute('data-lucide', isHidden ? 'eye-off' : 'eye');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+}
+
+function toggleSignupPassword() {
+    const input = document.getElementById('signupPassword');
+    const icon  = document.getElementById('signupPasswordEyeIcon');
+    if (!input) return;
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    if (icon) {
+        icon.setAttribute('data-lucide', isHidden ? 'eye-off' : 'eye');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+}
+
 async function signIn() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
@@ -7306,7 +7330,15 @@ function showSignUp() {
         <div class="auth-modal-body">
             <div class="form-group"><label for="signupName">Full Name</label><input type="text" id="signupName" placeholder="Your full name" autocomplete="name"></div>
             <div class="form-group"><label for="signupEmail">Email</label><input type="email" id="signupEmail" placeholder="you@iuea.ac.ug" autocomplete="email"></div>
-            <div class="form-group"><label for="signupPassword">Password</label><input type="password" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password"></div>
+            <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <div class="pw-toggle-wrap">
+                    <input type="password" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password">
+                    <button type="button" class="pw-toggle-btn" onclick="toggleSignupPassword()" aria-label="Toggle password visibility" id="signupPasswordToggle">
+                        <i data-lucide="eye" id="signupPasswordEyeIcon"></i>
+                    </button>
+                </div>
+            </div>
             <button type="button" class="btn-primary auth-submit-btn" onclick="signUp()"><i data-lucide="user-plus"></i> Create Account</button>
         </div>
         <div class="auth-modal-footer">
@@ -7324,7 +7356,15 @@ function restoreSignIn() {
         </div>
         <div class="auth-modal-body">
             <div class="form-group"><label for="loginEmail">Email</label><input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"></div>
-            <div class="form-group"><label for="loginPassword">Password</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <div class="pw-toggle-wrap">
+                    <input type="password" id="loginPassword" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" autocomplete="current-password">
+                    <button type="button" class="pw-toggle-btn" onclick="toggleLoginPassword()" aria-label="Toggle password visibility" id="loginPasswordToggle">
+                        <i data-lucide="eye" id="loginPasswordEyeIcon"></i>
+                    </button>
+                </div>
+            </div>
             <button type="button" class="btn-primary auth-submit-btn" onclick="signIn()">Sign In</button>
         </div>
         <div class="auth-modal-footer">

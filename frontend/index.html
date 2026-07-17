@@ -3265,7 +3265,12 @@
                     </div>
                     <div class="form-group">
                         <label for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+                        <div class="pw-toggle-wrap">
+                            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+                            <button type="button" class="pw-toggle-btn" onclick="toggleLoginPassword()" aria-label="Toggle password visibility" id="loginPasswordToggle">
+                                <i data-lucide="eye" id="loginPasswordEyeIcon"></i>
+                            </button>
+                        </div>
                     </div>
                     <button type="button" class="btn-primary auth-submit-btn" onclick="signIn()">Sign In</button>
                 </div>
