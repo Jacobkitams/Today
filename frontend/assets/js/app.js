@@ -11021,8 +11021,13 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
             headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
         if (!response.ok) {
-            if (response.status === 401) logout();
-            throw new Error('Failed to fetch registrations');
+            if (response.status === 401) { logout(); return; }
+            if (response.status === 403) {
+                area.innerHTML = '<div class="admin-empty-state"><p style="color:#ca8a04">⚠️ Access denied. Your account does not have permission to view registrations.</p></div>';
+                return;
+            }
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(`HTTP ${response.status}: ${errData.detail || 'Failed to fetch registrations'}`);
         }
         
         const participants = await response.json();
