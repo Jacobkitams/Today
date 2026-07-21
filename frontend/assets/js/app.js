@@ -9548,9 +9548,12 @@ async function iaLoadContent(contentType) {
             return `
             <tr>
                 <td>${escapeHtml(displayName)}</td>
-                <td>${escapeHtml(displaySub)}</td>
+                <td>
+                    ${escapeHtml(displaySub)}
+                    ${item.phone ? `<br><span style="font-size:0.8rem;color:#666">${escapeHtml(item.phone)}</span>` : ''}
+                </td>
+                <td><span class="status-badge ${ruStoryStatusClass(item.status)}">${item.status || 'pending'}</span></td>
                 <td>${formatShortDate(item.created_at)}</td>
-                <td><span class="status-badge ${ruStoryStatusClass(item.status)}">${item.status}</span></td>
                 <td>
                     <div class="admin-table-actions">
                         ${item.status === 'pending' ? `
@@ -9558,6 +9561,7 @@ async function iaLoadContent(contentType) {
                         <button type="button" class="btn-reject" onclick="iaUpdateStatus('${contentType}', ${item.id}, 'reject')"><i data-lucide="x"></i> Reject</button>
                         ` : ''}
                         <button type="button" class="btn-danger btn-danger-sm" onclick="iaDeleteContent('${contentType}', ${item.id})"><i data-lucide="trash-2"></i></button>
+                        ${contentType === 'requests' && item.details ? `<button type="button" class="btn-secondary" style="padding:0.35rem 0.65rem;font-size:0.85rem;" onclick="alert('Message:\\n' + decodeURIComponent('${encodeURIComponent(item.details)}'))"><i data-lucide="message-square" style="width:14px;height:14px;"></i> Details</button>` : ''}
                     </div>
                 </td>
             </tr>`;
@@ -9566,7 +9570,7 @@ async function iaLoadContent(contentType) {
     } catch (err) {
         console.error('iaLoadContent error:', err);
         if (loading) loading.hidden = true;
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load data. Check console for details.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load data: ${err.message || err}</td></tr>`;
         if (table) table.hidden = false;
     }
 }
