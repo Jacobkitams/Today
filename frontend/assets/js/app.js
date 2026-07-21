@@ -9508,7 +9508,103 @@ async function iaLoadStats() {
     }
 }
 
+async function iaLoadRequests() {
+    const tableInno = document.getElementById('ia-table-innovation-requests');
+    const emptyInno = document.getElementById('ia-empty-innovation-requests');
+    const loadingInno = document.getElementById('ia-loading-innovation-requests');
+    const tbodyInno = document.getElementById('ia-tbody-innovation-requests');
+
+    const tableStart = document.getElementById('ia-table-startup-requests');
+    const emptyStart = document.getElementById('ia-empty-startup-requests');
+    const loadingStart = document.getElementById('ia-loading-startup-requests');
+    const tbodyStart = document.getElementById('ia-tbody-startup-requests');
+
+    if (!tbodyInno || !tbodyStart) return;
+
+    if (loadingInno) loadingInno.hidden = false;
+    if (emptyInno) emptyInno.hidden = true;
+    if (tableInno) tableInno.hidden = true;
+    tbodyInno.innerHTML = '';
+
+    if (loadingStart) loadingStart.hidden = false;
+    if (emptyStart) emptyStart.hidden = true;
+    if (tableStart) tableStart.hidden = true;
+    tbodyStart.innerHTML = '';
+
+    try {
+        const items = await apiGet('/innovation-admin/content/requests');
+
+        if (loadingInno) loadingInno.hidden = true;
+        if (loadingStart) loadingStart.hidden = true;
+
+        if (!Array.isArray(items)) {
+            if (emptyInno) emptyInno.hidden = false;
+            if (emptyStart) emptyStart.hidden = false;
+            return;
+        }
+
+        const innovations = items.filter(i => i.form_type === 'innovation_join');
+        const startups = items.filter(i => i.form_type === 'startup_join');
+
+        const renderRow = (item) => {
+            const fn = item.first_name || '';
+            const ln = item.last_name || '';
+            const displayName = (fn + ' ' + ln).trim() || item.email || 'Applicant';
+            const displaySub = item.email || '';
+
+            return `
+            <tr>
+                <td>${escapeHtml(displayName)}</td>
+                <td>
+                    ${escapeHtml(displaySub)}
+                    ${item.phone ? `<br><span style="font-size:0.8rem;color:#666">${escapeHtml(item.phone)}</span>` : ''}
+                </td>
+                <td><span class="status-badge ${ruStoryStatusClass(item.status)}">${item.status || 'pending'}</span></td>
+                <td>${formatShortDate(item.created_at)}</td>
+                <td>
+                    <div class="admin-table-actions">
+                        ${item.status === 'pending' ? `
+                        <button type="button" class="btn-approve" onclick="iaUpdateStatus('requests', ${item.id}, 'approve')"><i data-lucide="check"></i> Approve</button>
+                        <button type="button" class="btn-reject" onclick="iaUpdateStatus('requests', ${item.id}, 'reject')"><i data-lucide="x"></i> Reject</button>
+                        ` : ''}
+                        <button type="button" class="btn-danger btn-danger-sm" onclick="iaDeleteContent('requests', ${item.id})"><i data-lucide="trash-2"></i></button>
+                        ${item.details ? `<button type="button" class="btn-secondary" style="padding:0.35rem 0.65rem;font-size:0.85rem;" onclick="alert('Message:\\n' + decodeURIComponent('${encodeURIComponent(item.details)}'))"><i data-lucide="message-square" style="width:14px;height:14px;"></i> Details</button>` : ''}
+                    </div>
+                </td>
+            </tr>`;
+        };
+
+        if (innovations.length > 0) {
+            if (tableInno) tableInno.hidden = false;
+            tbodyInno.innerHTML = innovations.map(renderRow).join('');
+        } else {
+            if (emptyInno) emptyInno.hidden = false;
+        }
+
+        if (startups.length > 0) {
+            if (tableStart) tableStart.hidden = false;
+            tbodyStart.innerHTML = startups.map(renderRow).join('');
+        } else {
+            if (emptyStart) emptyStart.hidden = false;
+        }
+
+        lucide.createIcons();
+    } catch (err) {
+        console.error('iaLoadRequests error:', err);
+        if (loadingInno) loadingInno.hidden = true;
+        if (loadingStart) loadingStart.hidden = true;
+        tbodyInno.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load data</td></tr>`;
+        tbodyStart.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load data</td></tr>`;
+        if (tableInno) tableInno.hidden = false;
+        if (tableStart) tableStart.hidden = false;
+    }
+}
+
 async function iaLoadContent(contentType) {
+    if (contentType === 'requests') {
+        return iaLoadRequests();
+    }
+
     const tbody = document.getElementById(`ia-tbody-${contentType}`);
     if (!tbody) return;
 
@@ -9535,24 +9631,13 @@ async function iaLoadContent(contentType) {
         if (table) table.hidden = false;
 
         tbody.innerHTML = items.map(item => {
-            let displayName, displaySub;
-            if (contentType === 'requests') {
-                const fn = item.first_name || '';
-                const ln = item.last_name || '';
-                displayName = (fn + ' ' + ln).trim() || item.email || 'Applicant';
-                displaySub  = item.email || '';
-            } else {
-                displayName = item.title || item.name || 'Untitled';
-                displaySub  = item.author ? item.author.name : 'Unknown';
-            }
+            const displayName = item.title || item.name || 'Untitled';
+            const displaySub  = item.author ? item.author.name : 'Unknown';
 
             return `
             <tr>
                 <td>${escapeHtml(displayName)}</td>
-                <td>
-                    ${escapeHtml(displaySub)}
-                    ${item.phone ? `<br><span style="font-size:0.8rem;color:#666">${escapeHtml(item.phone)}</span>` : ''}
-                </td>
+                <td>${escapeHtml(displaySub)}</td>
                 <td><span class="status-badge ${ruStoryStatusClass(item.status)}">${item.status || 'pending'}</span></td>
                 <td>${formatShortDate(item.created_at)}</td>
                 <td>
@@ -9562,7 +9647,6 @@ async function iaLoadContent(contentType) {
                         <button type="button" class="btn-reject" onclick="iaUpdateStatus('${contentType}', ${item.id}, 'reject')"><i data-lucide="x"></i> Reject</button>
                         ` : ''}
                         <button type="button" class="btn-danger btn-danger-sm" onclick="iaDeleteContent('${contentType}', ${item.id})"><i data-lucide="trash-2"></i></button>
-                        ${contentType === 'requests' && item.details ? `<button type="button" class="btn-secondary" style="padding:0.35rem 0.65rem;font-size:0.85rem;" onclick="alert('Message:\\n' + decodeURIComponent('${encodeURIComponent(item.details)}'))"><i data-lucide="message-square" style="width:14px;height:14px;"></i> Details</button>` : ''}
                     </div>
                 </td>
             </tr>`;

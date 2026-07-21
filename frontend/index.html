@@ -2137,28 +2137,62 @@
                             </button>
                         </div>
                     </div>
-                    <div class="ia-table-wrap">
-                        <div id="ia-loading-requests" class="ia-loading-state" hidden>
-                            <i data-lucide="loader-2"></i>
-                            <p>Loading requests…</p>
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        <!-- Innovation Requests -->
+                        <div>
+                            <h3 style="margin-bottom: 0.75rem; font-size: 1.1rem; color: #334155;">Innovation Team Applications</h3>
+                            <div class="ia-table-wrap">
+                                <div id="ia-loading-innovation-requests" class="ia-loading-state" hidden>
+                                    <i data-lucide="loader-2"></i>
+                                    <p>Loading requests…</p>
+                                </div>
+                                <div id="ia-empty-innovation-requests" class="ia-empty-state" hidden>
+                                    <div class="ia-empty-icon"><i data-lucide="inbox"></i></div>
+                                    <h3>No requests found</h3>
+                                    <p>Innovation team applications will appear here.</p>
+                                </div>
+                                <table class="ia-table" id="ia-table-innovation-requests" hidden>
+                                    <thead>
+                                        <tr>
+                                            <th>Applicant</th>
+                                            <th>Contact</th>
+                                            <th>Status</th>
+                                            <th>Submitted</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ia-tbody-innovation-requests"></tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div id="ia-empty-requests" class="ia-empty-state" hidden>
-                            <div class="ia-empty-icon"><i data-lucide="inbox"></i></div>
-                            <h3>No requests found</h3>
-                            <p>Innovation team join requests will appear here.</p>
+                        
+                        <!-- Startup Requests -->
+                        <div>
+                            <h3 style="margin-bottom: 0.75rem; font-size: 1.1rem; color: #334155;">Startup Launch Requests</h3>
+                            <div class="ia-table-wrap">
+                                <div id="ia-loading-startup-requests" class="ia-loading-state" hidden>
+                                    <i data-lucide="loader-2"></i>
+                                    <p>Loading requests…</p>
+                                </div>
+                                <div id="ia-empty-startup-requests" class="ia-empty-state" hidden>
+                                    <div class="ia-empty-icon"><i data-lucide="inbox"></i></div>
+                                    <h3>No requests found</h3>
+                                    <p>Startup launch requests will appear here.</p>
+                                </div>
+                                <table class="ia-table" id="ia-table-startup-requests" hidden>
+                                    <thead>
+                                        <tr>
+                                            <th>Applicant</th>
+                                            <th>Contact</th>
+                                            <th>Status</th>
+                                            <th>Submitted</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ia-tbody-startup-requests"></tbody>
+                                </table>
+                            </div>
                         </div>
-                        <table class="ia-table" id="ia-table-requests" hidden>
-                            <thead>
-                                <tr>
-                                    <th>Applicant</th>
-                                    <th>Contact</th>
-                                    <th>Status</th>
-                                    <th>Submitted</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ia-tbody-requests"></tbody>
-                        </table>
                     </div>
 
             </main>
@@ -3901,7 +3935,7 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.js?v=36"></script>
+    <script src="assets/js/app.js?v=37"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

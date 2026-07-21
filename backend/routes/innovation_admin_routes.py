@@ -40,7 +40,10 @@ def get_innovation_stats(db: Session = Depends(get_db), current_user: User = Dep
     
     pending_innovations = db.query(models.Innovation).filter(models.Innovation.status == "pending").count()
     pending_startups = db.query(models.Startup).filter(models.Startup.status == "pending").count()
-    pending_requests = db.query(models.FormSubmission).filter(models.FormSubmission.form_type == "innovation_join", models.FormSubmission.status == "pending").count()
+    pending_requests = db.query(models.FormSubmission).filter(
+        models.FormSubmission.form_type.in_(["innovation_join", "startup_join"]), 
+        models.FormSubmission.status == "pending"
+    ).count()
     
     return {
         "total_innovations": innovations,
@@ -56,7 +59,9 @@ def get_innovation_admin_items(
     current_user: User = Depends(require_innovation_admin)
 ):
     if content_type == "requests":
-        items = db.query(models.FormSubmission).filter(models.FormSubmission.form_type == "innovation_join").order_by(models.FormSubmission.created_at.desc()).all()
+        items = db.query(models.FormSubmission).filter(
+            models.FormSubmission.form_type.in_(["innovation_join", "startup_join"])
+        ).order_by(models.FormSubmission.created_at.desc()).all()
         return items
 
     model_map = dict(INNOVATION_ADMIN_TYPES)
