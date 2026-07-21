@@ -5312,6 +5312,7 @@ nav {
     padding: 4rem 1rem;
     color: #94a3b8;
 }
+.ia-loading-state[hidden] { display: none !important; }
 
 .ia-loading-state i {
     width: 36px;
@@ -5340,6 +5341,8 @@ nav {
     padding: 4rem 1.5rem;
     text-align: center;
 }
+.ia-empty-state[hidden] { display: none !important; }
+.ia-table[hidden]        { display: none !important; }
 
 .ia-empty-icon {
     width: 64px;
