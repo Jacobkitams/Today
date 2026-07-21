@@ -11016,12 +11016,18 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
     area.innerHTML = '<div class="admin-empty-state"><p>Loading registrations...</p></div>';
 
     try {
+        console.log('[Registrations] authToken present:', !!authToken, '| first 20 chars:', authToken ? authToken.substring(0, 20) : 'null');
+        console.log('[Registrations] API URL:', `${API_BASE_URL}/events-reg/admin/events/participants/all`);
         const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/participants/all`, {
             headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
+        console.log('[Registrations] Response status:', response.status);
         if (!response.ok) {
+            const errBody = await response.text();
+            console.error('[Registrations] Error body:', errBody);
+            area.innerHTML = `<div class="admin-empty-state"><p style="color:red">Error ${response.status}: ${errBody}</p></div>`;
             if (response.status === 401) logout();
-            throw new Error('Failed to fetch registrations');
+            return;
         }
         
         const participants = await response.json();
