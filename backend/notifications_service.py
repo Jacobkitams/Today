@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 import models
 from models import User
 
-ADMIN_ROLES = ["super_admin", "content_editor", "admin"]
+ADMIN_ROLES = ["super_admin", "content_editor", "admin", "marketing_admin"]
 
 CONTENT_TYPE_LABELS = {
     "news": "News",
@@ -225,3 +225,46 @@ def notify_role_updated(db: Session, user: User, new_role: str) -> None:
         f"Your role is now {role_label}. Sign out and back in if your dashboard does not update.",
         link,
     )
+
+
+def notify_event_registration(
+    db: Session,
+    registrant: User,
+    event_title: str,
+    event_id: int,
+    event_author_id: Optional[int] = None,
+) -> None:
+    """Notify all marketing admins (and the event author) about a new registration."""
+    registrant_name = registrant.name or registrant.email
+    body = f"{registrant_name} registered for '{event_title}'."
+    link = "admin:registrations"
+
+    # Notify all admin / marketing-admin users
+    MARKETING_ADMIN_ROLES = ["super_admin", "admin", "marketing_admin", "content_editor"]
+    query = db.query(User).filter(
+        User.role.in_(MARKETING_ADMIN_ROLES),
+        User.is_active == True,
+        User.id != registrant.id,
+    )
+    for admin in query.all():
+        create_notification(
+            db,
+            admin.id,
+            "event_registration",
+            "New Event Registration",
+            body,
+            link,
+        )
+
+    # Also notify the event author if they're not already an admin (e.g. a content_editor)
+    if event_author_id and event_author_id != registrant.id:
+        author = db.query(User).filter(User.id == event_author_id).first()
+        if author and author.role not in MARKETING_ADMIN_ROLES:
+            create_notification(
+                db,
+                author.id,
+                "event_registration",
+                "New Event Registration",
+                body,
+                link,
+            )

@@ -10383,6 +10383,8 @@ const NOTIFY_TYPE_LABELS = {
     story_comment: 'Comment',
     comment_reply: 'Reply',
     role_updated: 'Account',
+    event_registration: 'Registration',
+    event_registration_confirmed: 'Registered',
 };
 
 const NOTIFY_DASHBOARD_MAP = {
@@ -10582,11 +10584,17 @@ async function navigateFromNotificationLink(link) {
 
     setTimeout(async () => {
         if (ctx === 'admin') {
-            const btn = findAdminTabButton(tab);
-            showAdminTab(tab, btn);
-            if (tab === 'messages' && extra) {
-                initMessaging('admin');
-                await selectConversation('admin', parseInt(extra, 10));
+            // Special case: Registrations uses its own module loader
+            if (tab === 'registrations') {
+                const regBtn = document.querySelector('.admin-nav-btn[data-module="event-registrations"]');
+                if (typeof loadEventRegistrationsAdmin === 'function') loadEventRegistrationsAdmin(regBtn);
+            } else {
+                const btn = findAdminTabButton(tab);
+                showAdminTab(tab, btn);
+                if (tab === 'messages' && extra) {
+                    initMessaging('admin');
+                    await selectConversation('admin', parseInt(extra, 10));
+                }
             }
         } else {
             const btn = findRoleTabButton(ctx, tab);
@@ -10762,7 +10770,7 @@ async function submitEventRegistration(e) {
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/events/${eventId}/register`, {
             method: 'POST',
-            headers: getAuthHeaders(),
+            headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true', 'Content-Type': 'application/json' },
             body: JSON.stringify({ notes, ticket_type: ticketType, guests, payment_method: paymentMethod, payment_phone: paymentPhone })
         });
         const data = await response.json();
@@ -10797,7 +10805,7 @@ async function cancelEventRegistration(eventId) {
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/events/${eventId}/register`, {
             method: 'DELETE',
-            headers: getAuthHeaders()
+            headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
         if (response.ok) {
             showToast('Registration cancelled', 'success');
@@ -10825,7 +10833,7 @@ async function loadRuEvents() {
     if (!container) return;
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/events/my-registrations`, {
-            headers: getAuthHeaders()
+            headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
@@ -10905,7 +10913,7 @@ async function manageEventParticipants(eventId, title) {
     
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/${eventId}/participants`, {
-            headers: getAuthHeaders()
+            headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
@@ -10947,7 +10955,7 @@ async function updateParticipantStatus(eventId, regId, status) {
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/${eventId}/participants/${regId}/status`, {
             method: 'PUT',
-            headers: getAuthHeaders(),
+            headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true', 'Content-Type': 'application/json' },
             body: JSON.stringify({ status })
         });
         if (!response.ok) throw new Error();
@@ -10962,7 +10970,7 @@ async function removeParticipant(eventId, regId, btnEl) {
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/${eventId}/participants/${regId}`, {
             method: 'DELETE',
-            headers: getAuthHeaders()
+            headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
         if (!response.ok) throw new Error();
         showToast('Participant removed', 'success');
@@ -10977,7 +10985,7 @@ async function checkEventRegistrationStatus(eventId, btn) {
     if (!currentUser) return;
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/events/${eventId}/registration-status`, {
-            headers: getAuthHeaders()
+            headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
         if (response.ok) {
             const data = await response.json();
@@ -11010,7 +11018,7 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
 
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/participants/all`, {
-            headers: getAuthHeaders()
+            headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
         if (!response.ok) {
             if (response.status === 401) logout();
@@ -11024,27 +11032,44 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
             return;
         }
 
-        let html = '<div class="table-responsive"><table class="admin-table-modern" style="width:100%">';
-        html += '<thead><tr><th>Event Title</th><th>Name</th><th>Email</th><th>Ticket Type</th><th>Guests</th><th>Status</th><th>Registered On</th><th>Actions</th></tr></thead><tbody>';
+        let html = '<div class="table-responsive"><table class="admin-table-modern" style="width:100%; white-space:nowrap;">';
+        html += '<thead><tr><th>Participant</th><th>Event</th><th>Ticket & Payment</th><th>Status</th><th>Registered On</th><th>Actions</th></tr></thead><tbody>';
         
         participants.forEach(p => {
+            const ticketText = (p.ticket_type || 'General').toUpperCase();
+            const payText = p.payment_method ? (p.payment_method === 'mobile_money' ? 'Mobile Money' : 'Card') : 'None';
+            const payPhone = p.payment_phone ? `<br><small style="color:#666">${p.payment_phone}</small>` : '';
+            const guestsText = p.guests > 0 ? ` <span style="font-size:0.8rem;color:#666">(+${p.guests} guest${p.guests>1?'s':''})</span>` : '';
+
             html += `<tr>
-                <td><strong>${escapeHtml(p.event_title || 'Untitled Event')}</strong></td>
-                <td><strong>${escapeHtml(p.user_name || 'User ' + p.user_id)}</strong></td>
-                <td>${escapeHtml(p.user_email || '—')}</td>
-                <td>${escapeHtml(p.ticket_type || 'General')}</td>
-                <td>${p.guests || 0}</td>
                 <td>
-                    <select onchange="updateParticipantStatus(${p.event_id}, ${p.id}, this.value)" style="padding:0.25rem;border-radius:4px;border:1px solid #ddd">
+                    <div style="font-weight:600">${escapeHtml(p.user_name || 'User ' + p.user_id)}</div>
+                    <div style="font-size:0.85rem;color:var(--iuea-gray-light)">${escapeHtml(p.user_email || '—')}</div>
+                </td>
+                <td>
+                    <div style="font-weight:500;white-space:normal;max-width:250px">${escapeHtml(p.event_title || 'Untitled Event')}</div>
+                </td>
+                <td>
+                    <div style="font-size:0.9rem">
+                        <span style="font-weight:600;color:var(--iuea-maroon)">${ticketText}</span>${guestsText}
+                    </div>
+                    <div style="font-size:0.8rem;color:#555">
+                        ${payText} 
+                        ${p.payment_status === 'paid' ? '<span style="color:green;font-weight:500">(Paid)</span>' : (p.payment_status === 'pending' ? '<span style="color:orange;font-weight:500">(Pending)</span>' : '')}
+                        ${payPhone}
+                    </div>
+                </td>
+                <td>
+                    <select onchange="updateParticipantStatus(${p.event_id}, ${p.id}, this.value)" style="padding:0.25rem 0.5rem;border-radius:4px;border:1px solid #ddd;background:#f9fafb">
                         <option value="confirmed" ${p.status==='confirmed'?'selected':''}>Confirmed</option>
                         <option value="waitlisted" ${p.status==='waitlisted'?'selected':''}>Waitlisted</option>
                         <option value="cancelled" ${p.status==='cancelled'?'selected':''}>Cancelled</option>
                     </select>
                 </td>
-                <td>${new Date(p.created_at).toLocaleDateString()}</td>
+                <td><span style="font-size:0.9rem">${new Date(p.created_at).toLocaleDateString(undefined, {year:'numeric',month:'short',day:'numeric'})}</span></td>
                 <td>
-                    <button type="button" class="admin-table-action-btn" onclick="removeParticipant(${p.event_id}, ${p.id}, this)" style="color:var(--iuea-maroon)">
-                        <i data-lucide="trash-2"></i> Remove
+                    <button type="button" class="admin-table-action-btn" onclick="removeParticipant(${p.event_id}, ${p.id}, this)" style="color:#ef4444;background:rgba(239, 68, 68, 0.1);padding:0.35rem 0.65rem;border-radius:4px;font-size:0.85rem;border:none;">
+                        <i data-lucide="trash-2" style="width:16px;height:16px"></i> Remove
                     </button>
                 </td>
             </tr>`;

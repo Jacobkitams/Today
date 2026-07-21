@@ -147,6 +147,22 @@ def register_for_event(
             # Bump attendees
             event.attendees = (event.attendees or 0) + 1
             db.commit()
+
+            # Notify marketing admins of re-registration
+            notifications_service.notify_event_registration(
+                db, current_user, event.title, event.id, event.author_id
+            )
+
+            # Notify the user (Confirmation)
+            notifications_service.create_notification(
+                db,
+                current_user.id,
+                "event_registration_confirmed",
+                "Registration Confirmed",
+                f"You have successfully registered for '{event.title}'.",
+            )
+            db.commit()
+
             return {
                 "message": "Registration confirmed",
                 "registration": _enrich_registration(db, existing),
@@ -175,17 +191,12 @@ def register_for_event(
     db.refresh(reg)
     db.refresh(event)
 
-    # Notify event author
-    if event.author_id and event.author_id != current_user.id:
-        notifications_service.create_notification(
-            db,
-            event.author_id,
-            "event_registration",
-            "New Event Registration",
-            f"{current_user.name} registered for '{event.title}'",
-        )
+    # Notify all marketing admins about the new registration
+    notifications_service.notify_event_registration(
+        db, current_user, event.title, event.id, event.author_id
+    )
 
-    # Notify the user (Confirmation)
+    # Notify the registrant with a confirmation
     notifications_service.create_notification(
         db,
         current_user.id,
@@ -193,7 +204,7 @@ def register_for_event(
         "Registration Confirmed",
         f"You have successfully registered for '{event.title}'.",
     )
-    
+
     db.commit()
 
     return {
