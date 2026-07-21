@@ -11008,13 +11008,12 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
     currentAdminModule = 'event-registrations';
     showAdminTab('event-registrations', btn || document.querySelector('.admin-nav-btn[data-module="event-registrations"]'));
     
-    if (options.forceRefresh) {
-        area.innerHTML = '<div class="admin-empty-state"><p>Loading events...</p></div>';
-    } else if (area.innerHTML.trim() !== '') {
+    // Only skip re-fetch if a real table is already rendered (not a loading/error state)
+    if (!options.forceRefresh && area.querySelector('table')) {
         return;
-    } else {
-        area.innerHTML = '<div class="admin-empty-state"><p>Loading events...</p></div>';
     }
+
+    area.innerHTML = '<div class="admin-empty-state"><p>Loading registrations...</p></div>';
 
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/participants/all`, {
