@@ -11080,7 +11080,7 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         
     } catch (e) {
-        area.innerHTML = '<div class="admin-empty-state"><p style="color:red">Failed to load events.</p></div>';
+        area.innerHTML = `<div class="admin-empty-state"><p style="color:red">Failed to load events: ${e.message || e}</p></div>`;
         console.error(e);
     }
 }
