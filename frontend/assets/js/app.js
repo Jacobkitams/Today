@@ -5443,6 +5443,7 @@ const PUBLIC_JOIN_FORM_ENDPOINTS = {
     alumni: '/forms/alumni-join',
     community: '/forms/community-join',
     research: '/forms/research-join',
+    startup: '/forms/startup-join',
 };
 
 function isValidEmail(value) {

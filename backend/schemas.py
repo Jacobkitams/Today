@@ -771,6 +771,7 @@ FORM_SUBMISSION_TYPES = [
     "donation_pledge",
     "community_join",
     "research_join",
+    "startup_join",
 ]
 
 FORM_SUBMISSION_STATUSES = ["pending", "reviewed", "approved", "rejected"]
