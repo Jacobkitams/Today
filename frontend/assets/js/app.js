@@ -11021,13 +11021,8 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
             headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
         if (!response.ok) {
-            if (response.status === 401) { logout(); return; }
-            if (response.status === 403) {
-                area.innerHTML = '<div class="admin-empty-state"><p style="color:#ca8a04">⚠️ Access denied. Your account does not have permission to view registrations.</p></div>';
-                return;
-            }
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(`HTTP ${response.status}: ${errData.detail || 'Failed to fetch registrations'}`);
+            if (response.status === 401) logout();
+            throw new Error('Failed to fetch registrations');
         }
         
         const participants = await response.json();
@@ -11064,14 +11059,18 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
                         ${payPhone}
                     </div>
                 </td>
-                <td>${regStatusBadge(p.status)}</td>
+                <td>
+                    <select onchange="updateParticipantStatus(${p.event_id}, ${p.id}, this.value)" style="padding:0.25rem 0.5rem;border-radius:4px;border:1px solid #ddd;background:#f9fafb">
+                        <option value="confirmed" ${p.status==='confirmed'?'selected':''}>Confirmed</option>
+                        <option value="waitlisted" ${p.status==='waitlisted'?'selected':''}>Waitlisted</option>
+                        <option value="cancelled" ${p.status==='cancelled'?'selected':''}>Cancelled</option>
+                    </select>
+                </td>
                 <td><span style="font-size:0.9rem">${new Date(p.created_at).toLocaleDateString(undefined, {year:'numeric',month:'short',day:'numeric'})}</span></td>
                 <td>
-                    <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:nowrap">
-                        ${p.status !== 'confirmed' ? `<button type="button" title="Confirm" onclick="updateParticipantStatus(${p.event_id},${p.id},'confirmed',this)" style="background:rgba(22,163,74,0.12);color:#16a34a;border:none;padding:0.35rem 0.55rem;border-radius:6px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;gap:3px"><i data-lucide="check-circle" style="width:14px;height:14px"></i> Confirm</button>` : ''}
-                        ${p.status !== 'waitlisted' ? `<button type="button" title="Waitlist" onclick="updateParticipantStatus(${p.event_id},${p.id},'waitlisted',this)" style="background:rgba(234,179,8,0.12);color:#ca8a04;border:none;padding:0.35rem 0.55rem;border-radius:6px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;gap:3px"><i data-lucide="clock" style="width:14px;height:14px"></i> Waitlist</button>` : ''}
-                        <button type="button" title="Remove" onclick="removeParticipant(${p.event_id},${p.id},this)" style="background:rgba(239,68,68,0.1);color:#ef4444;border:none;padding:0.35rem 0.55rem;border-radius:6px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;gap:3px"><i data-lucide="trash-2" style="width:14px;height:14px"></i> Remove</button>
-                    </div>
+                    <button type="button" class="admin-table-action-btn" onclick="removeParticipant(${p.event_id}, ${p.id}, this)" style="color:#ef4444;background:rgba(239, 68, 68, 0.1);padding:0.35rem 0.65rem;border-radius:4px;font-size:0.85rem;border:none;">
+                        <i data-lucide="trash-2" style="width:16px;height:16px"></i> Remove
+                    </button>
                 </td>
             </tr>`;
         });

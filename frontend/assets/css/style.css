@@ -4403,6 +4403,12 @@ nav {
     gap: 1.5rem;
 }
 
+@media (max-width: 991px) {
+    .kanban-board {
+        grid-template-columns: 1fr;
+    }
+}
+
 .kanban-column {
     background: #f1f5f9;
     border-radius: 12px;
