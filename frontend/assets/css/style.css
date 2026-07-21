@@ -5111,7 +5111,390 @@ nav {
     .ru-story-title-row { flex-direction: column; align-items: flex-start; }
 }
 
+/* ===================== INNOVATION ADMIN — PREMIUM SECTION STYLES ===================== */
+
+/* Section Hero (top banner for each tab) */
+.ia-section-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.75rem 2rem;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    flex-wrap: wrap;
+}
+
+.ia-section-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    opacity: 0.06;
+    border-radius: 16px;
+}
+
+.ia-section-hero--innovations {
+    background: linear-gradient(135deg, #800000 0%, #b91c1c 100%);
+}
+
+.ia-section-hero--startups {
+    background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+}
+
+.ia-section-hero--requests {
+    background: linear-gradient(135deg, #0e7490 0%, #0284c7 100%);
+}
+
+.ia-section-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.ia-section-hero-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+.ia-section-hero-icon i {
+    width: 26px;
+    height: 26px;
+    color: #fff;
+}
+
+.ia-section-hero-title {
+    margin: 0 0 0.2rem;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.02em;
+}
+
+.ia-section-hero-sub {
+    margin: 0;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.78);
+    line-height: 1.4;
+}
+
+.ia-section-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Filter select */
+.ia-filter-select {
+    padding: 0.55rem 1rem;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    backdrop-filter: blur(6px);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.8)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    padding-right: 2.2rem;
+    transition: border-color 0.2s, background 0.2s;
+}
+.ia-filter-select option {
+    background: #1e293b;
+    color: #fff;
+}
+.ia-filter-select:focus {
+    border-color: rgba(255,255,255,0.65);
+    background-color: rgba(255,255,255,0.2);
+}
+
+/* Refresh button */
+.ia-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1.2rem;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(6px);
+    white-space: nowrap;
+}
+.ia-refresh-btn:hover {
+    background: rgba(255,255,255,0.28);
+    border-color: rgba(255,255,255,0.55);
+    transform: translateY(-1px);
+}
+.ia-refresh-btn i {
+    width: 15px;
+    height: 15px;
+}
+
+/* Table wrapper */
+.ia-table-wrap {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03);
+}
+
+/* Premium table */
+.ia-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ia-table thead tr {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.ia-table th {
+    padding: 0.9rem 1.25rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.ia-table td {
+    padding: 1rem 1.25rem;
+    font-size: 0.88rem;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.ia-table tbody tr {
+    transition: background 0.15s;
+}
+
+.ia-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.ia-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+/* Loading state */
+.ia-loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 4rem 1rem;
+    color: #94a3b8;
+}
+
+.ia-loading-state i {
+    width: 36px;
+    height: 36px;
+    color: #800000;
+    animation: ia-spin 1s linear infinite;
+}
+
+.ia-loading-state p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+@keyframes ia-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.ia-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 4rem 1.5rem;
+    text-align: center;
+}
+
+.ia-empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.ia-empty-icon i {
+    width: 28px;
+    height: 28px;
+    color: #94a3b8;
+}
+
+.ia-empty-state h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+.ia-empty-state p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+/* Action buttons inside .ia-table */
+.ia-table .admin-table-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.ia-table .btn-approve {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.75rem;
+    background: #d1fae5;
+    color: #059669;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.ia-table .btn-approve:hover {
+    background: #10b981;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(16,185,129,0.3);
+}
+
+.ia-table .btn-reject {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.75rem;
+    background: #fee2e2;
+    color: #e11d48;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.ia-table .btn-reject:hover {
+    background: #ef4444;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(239,68,68,0.3);
+}
+
+.ia-table .btn-danger-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    background: #fff0f0;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.ia-table .btn-danger-sm:hover {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+    transform: scale(1.08);
+}
+.ia-table .btn-danger-sm i {
+    width: 13px;
+    height: 13px;
+}
+
+.ia-table .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.65rem;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.ia-table .btn-secondary:hover {
+    background: #334155;
+    color: #fff;
+    border-color: #334155;
+}
+
+/* Row animation when loaded */
+.ia-table tbody tr {
+    animation: ia-row-in 0.25s ease both;
+}
+
+@keyframes ia-row-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ia-section-hero {
+        padding: 1.25rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .ia-section-hero-title { font-size: 1.15rem; }
+    .ia-table th, .ia-table td { padding: 0.75rem; }
+    .ia-section-hero-actions { width: 100%; }
+    .ia-filter-select { flex: 1; }
+    .ia-refresh-btn { flex: 1; justify-content: center; }
+}
+
 /* ===================== REGISTERED USER DASHBOARD (admin layout) ===================== */
+
 .ru-dashboard {
     font-family: 'Inter', sans-serif;
 }

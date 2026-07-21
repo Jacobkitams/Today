@@ -2029,32 +2029,37 @@
 
                 <!-- INNOVATIONS TAB -->
                 <div id="ia-tab-innovations" class="ia-tab">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Innovations</h3>
-                            <p>All innovation project submissions. Approve to make them visible on the public site.</p>
+                    <div class="ia-section-hero ia-section-hero--innovations">
+                        <div class="ia-section-hero-left">
+                            <div class="ia-section-hero-icon"><i data-lucide="lightbulb"></i></div>
+                            <div>
+                                <h2 class="ia-section-hero-title">Innovations</h2>
+                                <p class="ia-section-hero-sub">Review and moderate innovation project submissions.</p>
+                            </div>
                         </div>
-                        <div class="admin-panel-header-actions co-filter-bar">
-                            <select id="ia-filter-innovations-status" class="co-filter-select" aria-label="Filter innovations by status">
-                                <option value="all">All statuses</option>
+                        <div class="ia-section-hero-actions">
+                            <select id="ia-filter-innovations-status" class="ia-filter-select" onchange="iaLoadContent('innovations')" aria-label="Filter innovations by status">
+                                <option value="all">All Statuses</option>
                                 <option value="pending" selected>Pending</option>
                                 <option value="approved">Approved</option>
                                 <option value="rejected">Rejected</option>
                             </select>
-                            <button class="btn-primary" style="font-size:.8rem;padding:.45rem .9rem" onclick="iaLoadContent('innovations')"><i data-lucide="refresh-cw" style="width:14px;height:14px;margin-right:4px"></i>Refresh</button>
+                            <button class="ia-refresh-btn" onclick="iaLoadContent('innovations')">
+                                <i data-lucide="refresh-cw"></i> Refresh
+                            </button>
                         </div>
                     </div>
-                    <div class="admin-panel p-0 co-submissions-panel">
-                        <div id="ia-loading-innovations" class="co-loading-state" hidden>
-                            <i data-lucide="loader"></i>
+                    <div class="ia-table-wrap">
+                        <div id="ia-loading-innovations" class="ia-loading-state" hidden>
+                            <i data-lucide="loader-2"></i>
                             <p>Loading innovations…</p>
                         </div>
-                        <div id="ia-empty-innovations" class="co-empty-state" hidden>
-                            <i data-lucide="inbox"></i>
+                        <div id="ia-empty-innovations" class="ia-empty-state" hidden>
+                            <div class="ia-empty-icon"><i data-lucide="inbox"></i></div>
                             <h3>No innovations found</h3>
-                            <p>Submissions will appear here once filtered.</p>
+                            <p>Innovation submissions will appear here once available.</p>
                         </div>
-                        <table class="admin-table-modern co-submissions-table" id="ia-table-innovations" hidden>
+                        <table class="ia-table" id="ia-table-innovations" hidden>
                             <thead>
                                 <tr>
                                     <th>Title</th>
@@ -2071,32 +2076,37 @@
 
                 <!-- STARTUPS TAB -->
                 <div id="ia-tab-startups" class="ia-tab">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Startups</h3>
-                            <p>Startup showcase submissions from student and staff founders.</p>
+                    <div class="ia-section-hero ia-section-hero--startups">
+                        <div class="ia-section-hero-left">
+                            <div class="ia-section-hero-icon"><i data-lucide="rocket"></i></div>
+                            <div>
+                                <h2 class="ia-section-hero-title">Startups</h2>
+                                <p class="ia-section-hero-sub">Manage startup showcase submissions from student and staff founders.</p>
+                            </div>
                         </div>
-                        <div class="admin-panel-header-actions co-filter-bar">
-                            <select id="ia-filter-startups-status" class="co-filter-select" aria-label="Filter startups by status">
-                                <option value="all">All statuses</option>
+                        <div class="ia-section-hero-actions">
+                            <select id="ia-filter-startups-status" class="ia-filter-select" onchange="iaLoadContent('startups')" aria-label="Filter startups by status">
+                                <option value="all">All Statuses</option>
                                 <option value="pending" selected>Pending</option>
                                 <option value="approved">Approved</option>
                                 <option value="rejected">Rejected</option>
                             </select>
-                            <button class="btn-primary" style="font-size:.8rem;padding:.45rem .9rem" onclick="iaLoadContent('startups')"><i data-lucide="refresh-cw" style="width:14px;height:14px;margin-right:4px"></i>Refresh</button>
+                            <button class="ia-refresh-btn" onclick="iaLoadContent('startups')">
+                                <i data-lucide="refresh-cw"></i> Refresh
+                            </button>
                         </div>
                     </div>
-                    <div class="admin-panel p-0 co-submissions-panel">
-                        <div id="ia-loading-startups" class="co-loading-state" hidden>
-                            <i data-lucide="loader"></i>
+                    <div class="ia-table-wrap">
+                        <div id="ia-loading-startups" class="ia-loading-state" hidden>
+                            <i data-lucide="loader-2"></i>
                             <p>Loading startups…</p>
                         </div>
-                        <div id="ia-empty-startups" class="co-empty-state" hidden>
-                            <i data-lucide="inbox"></i>
+                        <div id="ia-empty-startups" class="ia-empty-state" hidden>
+                            <div class="ia-empty-icon"><i data-lucide="inbox"></i></div>
                             <h3>No startups found</h3>
-                            <p>Startup submissions will appear here once filtered.</p>
+                            <p>Startup submissions will appear here once available.</p>
                         </div>
-                        <table class="admin-table-modern co-submissions-table" id="ia-table-startups" hidden>
+                        <table class="ia-table" id="ia-table-startups" hidden>
                             <thead>
                                 <tr>
                                     <th>Title</th>
@@ -2111,27 +2121,37 @@
                     </div>
                 </div>
 
-                <!-- Join Requests Tab -->
-                    <div class="ia-tab" id="ia-tab-requests">
-                        <div class="co-tab-header">
-                            <div class="co-tab-header-left">
-                                <h3 id="iaRequestsTitle">Join Requests</h3>
+                <!-- JOIN REQUESTS TAB -->
+                <div class="ia-tab" id="ia-tab-requests">
+                    <div class="ia-section-hero ia-section-hero--requests">
+                        <div class="ia-section-hero-left">
+                            <div class="ia-section-hero-icon"><i data-lucide="users"></i></div>
+                            <div>
+                                <h2 class="ia-section-hero-title">Join Requests</h2>
+                                <p class="ia-section-hero-sub">Review applications from students wanting to join the Innovation Team.</p>
                             </div>
                         </div>
-                        <div id="ia-loading-requests" class="co-loading-state" hidden>
-                            <i class="lucide-spinner" data-lucide="loader"></i>
-                            <p>Loading requests...</p>
+                        <div class="ia-section-hero-actions">
+                            <button class="ia-refresh-btn" onclick="iaLoadContent('requests')">
+                                <i data-lucide="refresh-cw"></i> Refresh
+                            </button>
                         </div>
-                        <div id="ia-empty-requests" class="co-empty-state" hidden>
-                            <i data-lucide="inbox"></i>
+                    </div>
+                    <div class="ia-table-wrap">
+                        <div id="ia-loading-requests" class="ia-loading-state" hidden>
+                            <i data-lucide="loader-2"></i>
+                            <p>Loading requests…</p>
+                        </div>
+                        <div id="ia-empty-requests" class="ia-empty-state" hidden>
+                            <div class="ia-empty-icon"><i data-lucide="inbox"></i></div>
                             <h3>No requests found</h3>
                             <p>Innovation team join requests will appear here.</p>
                         </div>
-                        <table class="admin-table-modern co-submissions-table" id="ia-table-requests" hidden>
+                        <table class="ia-table" id="ia-table-requests" hidden>
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
+                                    <th>Applicant</th>
+                                    <th>Contact</th>
                                     <th>Status</th>
                                     <th>Submitted</th>
                                     <th>Actions</th>
@@ -2141,11 +2161,11 @@
                         </table>
                     </div>
 
-                </div>
-
             </main>
         </div>
     </div>
+
+
 
     <!-- ADMIN DASHBOARD PAGE -->
     <div id="admin-dashboard" class="page-section admin-page-wrapper">
@@ -3881,7 +3901,7 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.js?v=34"></script>
+    <script src="assets/js/app.js?v=35"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
