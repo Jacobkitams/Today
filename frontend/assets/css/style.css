@@ -5133,6 +5133,7 @@ nav {
     inset: 0;
     background: inherit;
     opacity: 0.06;
+    pointer-events: none;
     border-radius: 16px;
 }
 
