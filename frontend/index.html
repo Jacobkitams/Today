@@ -1918,8 +1918,7 @@
                 <div class="admin-sidebar-section">
                     <div class="admin-sidebar-label">Content</div>
                     <nav class="admin-nav">
-                        <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="innovations"><i data-lucide="lightbulb"></i> Innovations</button>
-                        <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="startups"><i data-lucide="rocket"></i> Startups</button>
+                        <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="content"><i data-lucide="layers"></i> Manage Content</button>
                         <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="requests"><i data-lucide="users"></i> Join Requests</button>
                     </nav>
                 </div>
@@ -1943,10 +1942,7 @@
                         <div class="admin-welcome-content">
                             <h2 id="iaWelcomeTitle">Innovation Admin Dashboard</h2>
                             <p>Manage innovation submissions and startup showcases — approve, reject, or remove content across the IUEA innovation ecosystem.</p>
-                            <div class="admin-welcome-actions">
-                                <button class="btn-primary" style="background:#fff;color:#800000;" onclick="showIaTab('innovations', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=innovations]')); iaLoadContent('innovations')"><i data-lucide="lightbulb" style="width:16px;height:16px;margin-right:6px"></i> View Innovations</button>
-                                <button class="btn-secondary" style="color:#fff;border-color:rgba(255,255,255,0.5)" onclick="showIaTab('startups', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=startups]')); iaLoadContent('startups')">View Startups</button>
-                            </div>
+                                <button class="btn-primary" style="background:#fff;color:#800000;" onclick="showIaTab('content', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=content]')); iaLoadContent('content')"><i data-lucide="layers" style="width:16px;height:16px;margin-right:6px"></i> Manage Content</button>
                         </div>
                         <div class="admin-welcome-status">
                             <div class="date-display" id="iaDateDisplay">Loading date…</div>
@@ -2013,59 +2009,38 @@
                         <div class="admin-panel">
                             <div class="panel-header">
                                 <h3><i data-lucide="lightbulb" style="width:18px;height:18px;margin-right:6px;vertical-align:middle;color:#800000"></i>Innovations</h3>
-                                <button class="btn-primary" style="font-size:.8rem;padding:.4rem .9rem" onclick="showIaTab('innovations', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=innovations]')); iaLoadContent('innovations')">Manage →</button>
+                                <button class="btn-primary" style="font-size:.8rem;padding:.4rem .9rem" onclick="showIaTab('content', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=content]')); iaLoadContent('content')">Manage →</button>
                             </div>
                             <p style="color:#64748b;font-size:.875rem;margin:0">Review, approve, and reject innovation project submissions from students and staff.</p>
                         </div>
                         <div class="admin-panel">
                             <div class="panel-header">
                                 <h3><i data-lucide="rocket" style="width:18px;height:18px;margin-right:6px;vertical-align:middle;color:#7c3aed"></i>Startups</h3>
-                                <button class="btn-primary" style="font-size:.8rem;padding:.4rem .9rem;background:#7c3aed" onclick="showIaTab('startups', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=startups]')); iaLoadContent('startups')">Manage →</button>
+                                <button class="btn-primary" style="font-size:.8rem;padding:.4rem .9rem;background:#7c3aed" onclick="showIaTab('content', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=content]')); iaLoadContent('content')">Manage →</button>
                             </div>
                             <p style="color:#64748b;font-size:.875rem;margin:0">Review startup pitches and showcase profiles. Approve top ventures for the public listing.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- INNOVATIONS TAB -->
-                <div id="ia-tab-innovations" class="ia-tab">
+                <!-- CONTENT TAB -->
+                <div id="ia-tab-content" class="ia-tab">
                     <div class="ia-section-hero ia-section-hero--innovations">
                         <div class="ia-section-hero-left">
-                            <div class="ia-section-hero-icon"><i data-lucide="lightbulb"></i></div>
+                            <div class="ia-section-hero-icon"><i data-lucide="layers"></i></div>
                             <div>
-                                <h2 class="ia-section-hero-title">Innovations</h2>
-                                <p class="ia-section-hero-sub">Review and moderate innovation project submissions.</p>
+                                <h2 class="ia-section-hero-title">Manage Content</h2>
+                                <p class="ia-section-hero-sub">Manage innovations, startups, and related news.</p>
                             </div>
                         </div>
                         <div class="ia-section-hero-actions">
-                            <button class="ia-refresh-btn" onclick="iaLoadContent('innovations')">
+                            <button class="ia-refresh-btn" onclick="iaLoadContent('content')">
                                 <i data-lucide="refresh-cw"></i> Refresh
                             </button>
                         </div>
                     </div>
-                    <div id="ia-innovations-module-area">
-                        <!-- Module UI injected via JS -->
-                    </div>
-                </div>
-
-                <!-- STARTUPS TAB -->
-                <div id="ia-tab-startups" class="ia-tab">
-                    <div class="ia-section-hero ia-section-hero--startups">
-                        <div class="ia-section-hero-left">
-                            <div class="ia-section-hero-icon"><i data-lucide="rocket"></i></div>
-                            <div>
-                                <h2 class="ia-section-hero-title">Startups</h2>
-                                <p class="ia-section-hero-sub">Manage startup showcase submissions from student and staff founders.</p>
-                            </div>
-                        </div>
-                        <div class="ia-section-hero-actions">
-                            <button class="ia-refresh-btn" onclick="iaLoadContent('startups')">
-                                <i data-lucide="refresh-cw"></i> Refresh
-                            </button>
-                        </div>
-                    </div>
-                    <div id="ia-startups-module-area">
-                        <!-- Module UI injected via JS -->
+                    <div class="ia-table-wrap" style="background:transparent; padding:0; box-shadow:none;">
+                        <div id="iaContentArea"></div>
                     </div>
                 </div>
 
