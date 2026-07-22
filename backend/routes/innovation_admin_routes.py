@@ -134,6 +134,36 @@ def update_innovation_admin_item_status(
         item.updated_at = datetime.now(timezone.utc)
     db.commit()
     
+    # Handle user creation and welcome message for approved requests
+    if content_type == "requests" and action == "approve":
+        email = getattr(item, "email", None)
+        if email:
+            user = db.query(models.User).filter(models.User.email == email).first()
+            if not user:
+                from auth import get_password_hash
+                import secrets
+                temp_password = secrets.token_urlsafe(12)
+                user = models.User(
+                    email=email,
+                    first_name=getattr(item, "first_name", "Student"),
+                    last_name=getattr(item, "last_name", ""),
+                    hashed_password=get_password_hash(temp_password),
+                    role="student"
+                )
+                db.add(user)
+                db.commit()
+                db.refresh(user)
+            
+            # Send welcome message from Admin
+            msg_body = f"Hello {user.first_name}! Your request to join has been approved. Welcome to the platform!"
+            message = models.Message(
+                sender_id=current_user.id,
+                recipient_id=user.id,
+                body=msg_body
+            )
+            db.add(message)
+            db.commit()
+
     # Notifications
     if content_type != "requests":
         author_id = getattr(item, "author_id", None)
