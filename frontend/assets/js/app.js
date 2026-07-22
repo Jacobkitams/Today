@@ -9507,7 +9507,7 @@ function showIaTab(tabId, btnContext) {
 
     if (tabId === 'overview') {
         iaLoadStats();
-    } else if (tabId === 'content' || tabId === 'requests') {
+    } else if (tabId === 'content' || tabId === 'requests' || tabId === 'messages') {
         iaLoadContent(tabId);
     }
 }
