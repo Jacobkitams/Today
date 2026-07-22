@@ -143,19 +143,22 @@ def update_innovation_admin_item_status(
                 from auth import get_password_hash
                 import secrets
                 temp_password = secrets.token_urlsafe(12)
+                first = getattr(item, "first_name", "") or ""
+                last = getattr(item, "last_name", "") or ""
+                full_name = (first + " " + last).strip() or email.split("@")[0]
                 user = models.User(
                     email=email,
-                    first_name=getattr(item, "first_name", "Student"),
-                    last_name=getattr(item, "last_name", ""),
+                    name=full_name,
                     hashed_password=get_password_hash(temp_password),
                     role="student"
                 )
                 db.add(user)
                 db.commit()
                 db.refresh(user)
-            
+
             # Send welcome message from Admin
-            msg_body = f"Hello {user.first_name}! Your request to join has been approved. Welcome to the platform!"
+            display_name = (user.name or email.split("@")[0]).split()[0]
+            msg_body = f"Hello {display_name}! Your request to join has been approved. Welcome to the platform!"
             message = models.Message(
                 sender_id=current_user.id,
                 recipient_id=user.id,
