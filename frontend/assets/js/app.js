@@ -9610,6 +9610,19 @@ async function iaLoadContent(contentType) {
     }
 
     if (contentType === 'content') {
+        const actionsEl = document.getElementById('ia-content-actions');
+        if (actionsEl && actionsEl.dataset.initialized !== 'true') {
+            const btnHtml = INNOVATIONS_SUBMODULES.map(sub => 
+                `<button type="button" class="btn-primary" style="margin-left:8px;" onclick="showCreateModal('${sub.createType}')"><i data-lucide="${sub.icon}"></i> ${sub.createLabel}</button>`
+            ).join('');
+            actionsEl.innerHTML = `
+                ${btnHtml}
+                <button class="ia-refresh-btn" style="margin-left:8px;" onclick="iaLoadContent('content')">
+                    <i data-lucide="refresh-cw"></i> Refresh
+                </button>`;
+            actionsEl.dataset.initialized = 'true';
+            lucide.createIcons();
+        }
         return loadInnovationsAdminModule(null, { targetId: 'iaContentArea', skipHeaderUpdate: true });
     }
 
