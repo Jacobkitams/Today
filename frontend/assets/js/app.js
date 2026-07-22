@@ -10132,12 +10132,14 @@ const messagingState = {
     admin: { selectedUserId: null, selectedUser: null, pollTimer: null, searchTimer: null, initialized: false },
     ru: { selectedUserId: null, selectedUser: null, pollTimer: null, searchTimer: null, initialized: false },
     dp: { selectedUserId: null, selectedUser: null, pollTimer: null, searchTimer: null, initialized: false },
+    ia: { selectedUserId: null, selectedUser: null, pollTimer: null, searchTimer: null, initialized: false },
 };
 
 const MSG_CONTEXT_CONFIG = {
     admin: { prefix: 'admin', badgeId: 'nav-messages-badge' },
     ru: { prefix: 'ru', badgeId: 'ru-nav-messages-badge' },
     dp: { prefix: 'dp', badgeId: 'dp-nav-messages-badge' },
+    ia: { prefix: 'ia', badgeId: 'ia-nav-messages-badge' },
 };
 
 function msgEl(context, suffix) {
