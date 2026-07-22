@@ -8839,15 +8839,9 @@ function ensureRoleDashboardTabActive(dashId) {
     const prefix = prefixMap[dashId];
     if (!prefix) return;
     const dash = document.getElementById(dashId);
-    if (!dash || dash.querySelector('.admin-tab-content.active') || dash.querySelector('.ia-tab.active') || dash.querySelector('.co-tab.active')) return;
+    if (!dash || dash.querySelector('.role-tab.active') || dash.querySelector('.co-tab.active')) return;
     
     // Default to 'overview' tab if none active
-    if (prefix === 'ia') {
-        const btn = dash.querySelector('.admin-sidebar-btn[data-ia-tab="overview"]');
-        if (btn) showIaTab('overview', btn);
-        return;
-    }
-
     const btn = findRoleTabButton(prefix, 'overview');
     if (btn) showRoleTab(prefix, 'overview', btn);
 }
@@ -9739,16 +9733,7 @@ async function populateInnovationAdminDashboard() {
     const nameEl = document.getElementById('iaUserName');
     if (nameEl) nameEl.textContent = displayName;
 
-    // Attach click listeners to sidebar buttons
-    const sidebarBtns = document.querySelectorAll('.ia-nav-btn[data-ia-tab]');
-    sidebarBtns.forEach(btn => {
-        // Remove old listener if any by cloning
-        const newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
-        newBtn.addEventListener('click', () => {
-            showIaTab(newBtn.dataset.iaTab, newBtn);
-        });
-    });
+    // Sidebar buttons already use showRoleTab('ia', ...) inline onclick — no extra listener needed
 
     iaLoadStats();
     lucide.createIcons();
