@@ -4969,7 +4969,13 @@ function reloadAdminModuleAfterCrud(moduleName, options = {}) {
         : isTechParkSubModule(moduleName) ? 'techpark'
         : isDonationsSubModule(moduleName) ? 'donations'
         : moduleName;
-    loadAdminModule(parentModule, null, options);
+    
+    const isIa = document.getElementById('innovation-admin-dashboard')?.style.display === 'block';
+    if (isIa && parentModule === 'innovations') {
+        loadInnovationsAdminModule(null, { ...options, targetId: 'iaContentArea', skipHeaderUpdate: true });
+    } else {
+        loadAdminModule(parentModule, null, options);
+    }
 }
 
 function renderAdminContentTable(moduleName, items, options = {}) {
@@ -7204,7 +7210,12 @@ async function submitCreateForm() {
                 if (mod) {
                     currentAdminModule = mod;
                     if (!typedInvalidation) invalidateAdminModuleCache(mod);
-                    loadAdminModule(mod, null, { forceRefresh: true });
+                    const isIa = document.getElementById('innovation-admin-dashboard')?.style.display === 'block';
+                    if (isIa && mod === 'innovations') {
+                        loadInnovationsAdminModule(null, { forceRefresh: true, targetId: 'iaContentArea', skipHeaderUpdate: true });
+                    } else {
+                        loadAdminModule(mod, null, { forceRefresh: true });
+                    }
                 } else {
                     refreshCurrentAdminModule();
                 }
