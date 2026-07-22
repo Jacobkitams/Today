@@ -1910,7 +1910,7 @@
             </div>
         </header>
 
-        <div class="admin-body">
+        <div class="admin-layout">
             <aside class="admin-sidebar">
                 <div class="admin-sidebar-section">
                     <div class="admin-sidebar-label">Main Menu</div>
@@ -1924,7 +1924,7 @@
                 <div class="admin-sidebar-section">
                     <div class="admin-sidebar-label">Modules</div>
                     <nav class="admin-nav">
-                        <button class="admin-nav-btn ia-nav-btn" data-module="innovations" onclick="loadInnovationsAdminModule(this, { targetId: 'iaContentArea', skipHeaderUpdate: true }); showRoleTab('ia', 'content', this)"><i data-lucide="lightbulb"></i> Innovations</button>
+                        <button class="admin-nav-btn ia-nav-btn" onclick="showRoleTab('ia', 'content', this)"><i data-lucide="lightbulb"></i> Innovations</button>
                     </nav>
                 </div>
 
@@ -1938,9 +1938,9 @@
                 </div>
             </aside>
 
-            <main class="admin-content">
+            <main class="admin-main">
                 <!-- OVERVIEW TAB -->
-                <div class="admin-tab-content ia-tab active" id="ia-tab-overview" data-ia-tab="overview">
+                <div id="ia-tab-overview" class="role-tab active">
                     <div class="admin-panel-header">
                         <div class="admin-panel-header-text">
                             <h3>Dashboard Overview</h3>
@@ -2006,7 +2006,7 @@
                 </div>
 
                 <!-- CONTENT TAB -->
-                <div class="admin-tab-content ia-tab" id="ia-tab-content" data-ia-tab="content">
+                <div id="ia-tab-content" class="role-tab">
                     <div class="admin-panel-header">
                         <div class="admin-panel-header-text">
                             <h3>Manage Innovations</h3>
@@ -2019,7 +2019,7 @@
                 </div>
 
                 <!-- JOIN REQUESTS TAB -->
-                <div class="admin-tab-content ia-tab" id="ia-tab-requests" data-ia-tab="requests">
+                <div id="ia-tab-requests" class="role-tab">
                     <div class="admin-panel-header">
                         <div class="admin-panel-header-text">
                             <h3>Join Requests</h3>
@@ -2087,7 +2087,7 @@
                 </div>
 
                 <!-- MESSAGES TAB -->
-                <div class="admin-tab-content ia-tab" id="ia-tab-messages" data-ia-tab="messages">
+                <div id="ia-tab-messages" class="role-tab">
                     <div class="msg-layout">
                         <!-- Conversations List -->
                         <div class="msg-sidebar">

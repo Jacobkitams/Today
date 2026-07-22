@@ -8693,7 +8693,7 @@ function usesAdminRoleLayout(prefix) {
 }
 
 function usesAdminRoleNav(prefix) {
-    return prefix === 'dp' || prefix === 'ru';
+    return prefix === 'dp' || prefix === 'ru' || prefix === 'ia';
 }
 
 function getRoleTabSelector(prefix) {
@@ -8714,6 +8714,7 @@ function showRoleTab(prefix, tabId, btn) {
         ru: 'registered-user-dashboard',
         dp: 'donor-partner-dashboard',
         co: 'coordinator-dashboard',
+        ia: 'innovation-admin-dashboard',
     }[prefix];
     if (!dashId) return;
     const dash = document.getElementById(dashId);
@@ -8764,6 +8765,12 @@ function showRoleTab(prefix, tabId, btn) {
     if (prefix === 'co' && CO_TAB_FORM_TYPES[tabId]) {
         coordinatorActiveTab = tabId;
         loadCoordinatorSubmissions(tabId);
+    }
+    if (prefix === 'ia' && tabId === 'overview') {
+        iaLoadStats();
+    }
+    if (prefix === 'ia' && (tabId === 'content' || tabId === 'requests')) {
+        iaLoadContent(tabId);
     }
     if (tabId === 'messages') {
         initMessaging(prefix);
@@ -9495,22 +9502,7 @@ async function populateCoordinatorDashboard() {
 
 let iaActiveTab = 'overview';
 
-function showIaTab(tabId, btnContext) {
-    document.querySelectorAll('.ia-tab').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.ia-nav-btn[data-ia-tab]').forEach(btn => btn.classList.remove('active'));
 
-    const targetTab = document.getElementById(`ia-tab-${tabId}`);
-    if (targetTab) targetTab.classList.add('active');
-    if (btnContext) btnContext.classList.add('active');
-
-    iaActiveTab = tabId;
-
-    if (tabId === 'overview') {
-        iaLoadStats();
-    } else if (tabId === 'content' || tabId === 'requests' || tabId === 'messages') {
-        iaLoadContent(tabId);
-    }
-}
 
 async function iaLoadStats() {
     try {
@@ -10518,6 +10510,7 @@ const NOTIFY_DASHBOARD_MAP = {
     admin: 'admin-dashboard',
     ru: 'registered-user-dashboard',
     dp: 'donor-partner-dashboard',
+    ia: 'innovation-admin-dashboard',
 };
 
 function getActiveNotifyContext() {
