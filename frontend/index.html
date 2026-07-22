@@ -1851,13 +1851,13 @@
     <!-- ===== CONTENT EDITOR DASHBOARD — handled by existing admin-dashboard ===== -->
 
     <!-- ===== INNOVATION ADMIN DASHBOARD ===== -->
-    <div id="innovation-admin-dashboard" class="page-section admin-page-wrapper coordinator-dash" style="--co-accent:#800000;--co-accent-light:#fef2f2;--co-accent-mid:#fee2e2;">
+        <div id="innovation-admin-dashboard" class="page-section admin-page-wrapper">
         <header class="admin-topbar">
             <div class="admin-topbar-left">
                 <button type="button" class="admin-mobile-menu-toggle" aria-label="Toggle Menu" onclick="this.closest('.admin-page-wrapper').querySelector('.admin-sidebar').classList.toggle('open'); lucide.createIcons();">
                     <i data-lucide="menu"></i>
                 </button>
-                <div class="admin-logo" onclick="returnToPublic()" title="Back to IUEA Today">
+                <div class="admin-logo" onclick="navigateTo('home')" title="Back to IUEA Today">
                     <img src="assets/images/iuea-logo.png" alt="IUEA Logo">
                 </div>
             </div>
@@ -1871,6 +1871,10 @@
             </div>
 
             <div class="admin-topbar-right">
+                <button type="button" class="admin-btn-create" onclick="showCreateModal()">
+                    <i data-lucide="plus"></i>
+                    <span>Create</span>
+                </button>
                 <div class="admin-topbar-actions">
                     <div class="notify-wrap" data-notify-context="ia">
                         <button type="button" class="admin-icon-btn admin-icon-btn--notify notify-btn" aria-label="Notifications" aria-expanded="false">
@@ -1889,7 +1893,7 @@
                             </div>
                         </div>
                     </div>
-                    <button type="button" onclick="returnToPublic()" class="admin-icon-btn" title="View Public Site" aria-label="View public site">
+                    <button type="button" onclick="navigateTo('home')" class="admin-icon-btn" title="View Public Site" aria-label="View public site">
                         <i data-lucide="external-link"></i>
                     </button>
                 </div>
@@ -1906,53 +1910,48 @@
             </div>
         </header>
 
-        <div class="admin-layout">
+        <div class="admin-body">
             <aside class="admin-sidebar">
                 <div class="admin-sidebar-section">
                     <div class="admin-sidebar-label">Main Menu</div>
                     <nav class="admin-nav">
-                        <button type="button" class="admin-nav-btn ia-nav-btn active" data-ia-tab="overview"><i data-lucide="layout-dashboard"></i> Overview</button>
-                        <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="messages"><i data-lucide="message-circle"></i> Messages <span class="nav-badge nav-badge-unread" id="ia-nav-messages-badge" style="display:none">0</span></button>
+                        <button class="admin-nav-btn ia-nav-btn active" onclick="showRoleTab('ia', 'overview', this)"><i data-lucide="layout-dashboard"></i> Overview</button>
+                        <button class="admin-nav-btn ia-nav-btn" onclick="showRoleTab('ia', 'requests', this)"><i data-lucide="users"></i> Join Requests</button>
+                        <button class="admin-nav-btn ia-nav-btn" onclick="showRoleTab('ia', 'messages', this)"><i data-lucide="message-circle"></i> Messages <span class="nav-badge nav-badge-unread" id="ia-nav-messages-badge" style="display:none">0</span></button>
                     </nav>
                 </div>
 
                 <div class="admin-sidebar-section">
-                    <div class="admin-sidebar-label">Content</div>
+                    <div class="admin-sidebar-label">Modules</div>
                     <nav class="admin-nav">
-                        <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="content"><i data-lucide="layers"></i> Manage Content</button>
-                        <button type="button" class="admin-nav-btn ia-nav-btn" data-ia-tab="requests"><i data-lucide="users"></i> Join Requests</button>
+                        <button class="admin-nav-btn ia-nav-btn" data-module="innovations" onclick="showRoleTab('ia', 'content', this); iaLoadContent('content')"><i data-lucide="lightbulb"></i> Innovations</button>
                     </nav>
                 </div>
 
                 <div class="admin-sidebar-section admin-sidebar-footer">
                     <div class="admin-sidebar-label">Account</div>
                     <nav class="admin-nav">
-                        <button type="button" class="admin-nav-btn ia-nav-btn" onclick="returnToPublic()"><i data-lucide="globe"></i> Public Site</button>
-                        <button type="button" class="admin-nav-btn ia-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
+                        <button type="button" class="admin-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
                             <i data-lucide="log-out"></i> Sign Out
                         </button>
                     </nav>
                 </div>
             </aside>
 
-            <main class="admin-main">
-
+            <main class="admin-content">
                 <!-- OVERVIEW TAB -->
-                <div id="ia-tab-overview" class="ia-tab active">
-                    <div class="admin-welcome-banner co-welcome-banner" style="background:linear-gradient(135deg,#800000 0%,#b91c1c 60%,#991b1b 100%);">
-                        <div class="admin-welcome-content">
-                            <h2 id="iaWelcomeTitle">Innovation Admin Dashboard</h2>
-                            <p>Manage innovation submissions and startup showcases — approve, reject, or remove content across the IUEA innovation ecosystem.</p>
-                                <button class="btn-primary" style="background:#fff;color:#800000;" onclick="showIaTab('content', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=content]')); iaLoadContent('content')"><i data-lucide="layers" style="width:16px;height:16px;margin-right:6px"></i> Manage Content</button>
+                <div class="admin-tab-content ia-tab active" id="ia-tab-overview" data-ia-tab="overview">
+                    <div class="admin-panel-header">
+                        <div class="admin-panel-header-text">
+                            <h3 id="iaWelcomeTitle">Dashboard Overview</h3>
+                            <p id="iaDateDisplay">Welcome back! Here's what's happening with innovations and startups.</p>
                         </div>
-                        <div class="admin-welcome-status">
-                            <div class="date-display" id="iaDateDisplay">Loading date…</div>
-                            <div class="platform-status"><span class="status-dot co-status-dot" style="background:#4ade80"></span> Innovation Portal Active</div>
+                        <div class="admin-panel-header-actions">
+                            <button class="btn-primary" onclick="showCreateModal()"><i data-lucide="plus"></i> New Project</button>
                         </div>
                     </div>
-
-                    <!-- Stats Grid -->
-                    <div class="admin-stats-grid co-stats-grid" style="--cols:3">
+                    
+                    <div class="admin-stats-grid">
                         <!-- Innovations block -->
                         <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #800000">
                             <div class="stat-header">
@@ -2004,64 +2003,36 @@
                             <div class="stat-trend"><i data-lucide="check"></i> Live on platform</div>
                         </div>
                     </div>
-
-                    <!-- Quick actions -->
-                    <div class="admin-dashboard-grid">
-                        <div class="admin-panel">
-                            <div class="panel-header">
-                                <h3><i data-lucide="lightbulb" style="width:18px;height:18px;margin-right:6px;vertical-align:middle;color:#800000"></i>Innovations</h3>
-                                <button class="btn-primary" style="font-size:.8rem;padding:.4rem .9rem" onclick="showIaTab('content', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=content]')); iaLoadContent('content')">Manage →</button>
-                            </div>
-                            <p style="color:#64748b;font-size:.875rem;margin:0">Review, approve, and reject innovation project submissions from students and staff.</p>
-                        </div>
-                        <div class="admin-panel">
-                            <div class="panel-header">
-                                <h3><i data-lucide="rocket" style="width:18px;height:18px;margin-right:6px;vertical-align:middle;color:#7c3aed"></i>Startups</h3>
-                                <button class="btn-primary" style="font-size:.8rem;padding:.4rem .9rem;background:#7c3aed" onclick="showIaTab('content', document.querySelector('#innovation-admin-dashboard .ia-nav-btn[data-ia-tab=content]')); iaLoadContent('content')">Manage →</button>
-                            </div>
-                            <p style="color:#64748b;font-size:.875rem;margin:0">Review startup pitches and showcase profiles. Approve top ventures for the public listing.</p>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- CONTENT TAB -->
-                <div id="ia-tab-content" class="ia-tab">
-                    <div class="ia-section-hero ia-section-hero--innovations">
-                        <div class="ia-section-hero-left">
-                            <div class="ia-section-hero-icon"><i data-lucide="layers"></i></div>
-                            <div>
-                                <h2 class="ia-section-hero-title">Manage Content</h2>
-                                <p class="ia-section-hero-sub">Manage innovations, startups, and related news.</p>
-                            </div>
+                <div class="admin-tab-content ia-tab" id="ia-tab-content" data-ia-tab="content">
+                    <div class="admin-panel-header">
+                        <div class="admin-panel-header-text">
+                            <h3>Manage Innovations</h3>
+                            <p>Manage innovations, startups, and related news.</p>
                         </div>
-                        <div class="ia-section-hero-actions" id="ia-content-actions">
-                            <button class="ia-refresh-btn" onclick="iaLoadContent('content')">
-                                <i data-lucide="refresh-cw"></i> Refresh
-                            </button>
+                        <div class="admin-panel-header-actions" id="ia-content-actions">
                         </div>
                     </div>
-                    <div class="ia-table-wrap" style="background:transparent; padding:0; box-shadow:none;">
-                        <div id="iaContentArea"></div>
-                    </div>
+                    <div id="iaContentArea"></div>
                 </div>
 
                 <!-- JOIN REQUESTS TAB -->
-                <div class="ia-tab" id="ia-tab-requests">
-                    <div class="ia-section-hero ia-section-hero--requests">
-                        <div class="ia-section-hero-left">
-                            <div class="ia-section-hero-icon"><i data-lucide="users"></i></div>
-                            <div>
-                                <h2 class="ia-section-hero-title">Join Requests</h2>
-                                <p class="ia-section-hero-sub">Review applications from students wanting to join the Innovation Team.</p>
-                            </div>
+                <div class="admin-tab-content ia-tab" id="ia-tab-requests" data-ia-tab="requests">
+                    <div class="admin-panel-header">
+                        <div class="admin-panel-header-text">
+                            <h3>Join Requests</h3>
+                            <p>Review applications from students wanting to join the Innovation Team.</p>
                         </div>
-                        <div class="ia-section-hero-actions">
-                            <button class="ia-refresh-btn" onclick="iaLoadContent('requests')">
+                        <div class="admin-panel-header-actions">
+                            <button class="btn-primary" onclick="iaLoadContent('requests')">
                                 <i data-lucide="refresh-cw"></i> Refresh
                             </button>
                         </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                    
+                    <div style="display: flex; flex-direction: column; gap: 2rem; padding: 1.5rem;">
                         <!-- Innovation Requests -->
                         <div>
                             <h3 style="margin-bottom: 0.75rem; font-size: 1.1rem; color: #334155;">Innovation Team Applications</h3>
@@ -2072,27 +2043,24 @@
                                 </div>
                                 <div id="ia-empty-innovation-requests" class="ia-empty-state" hidden>
                                     <div class="ia-empty-icon"><i data-lucide="inbox"></i></div>
-                                    <h3>No requests found</h3>
-                                    <p>Innovation team applications will appear here.</p>
+                                    <p>No pending innovation team requests.</p>
                                 </div>
-                                <table class="ia-table" id="ia-table-innovation-requests" hidden>
+                                <table class="ia-table" id="ia-table-innovation-requests">
                                     <thead>
                                         <tr>
                                             <th>Applicant</th>
                                             <th>Contact</th>
-                                            <th>Status</th>
-                                            <th>Submitted</th>
-                                            <th>Actions</th>
+                                            <th>Date</th>
+                                            <th class="ia-text-right">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="ia-tbody-innovation-requests"></tbody>
                                 </table>
                             </div>
                         </div>
-                        
                         <!-- Startup Requests -->
                         <div>
-                            <h3 style="margin-bottom: 0.75rem; font-size: 1.1rem; color: #334155;">Startup Launch Requests</h3>
+                            <h3 style="margin-bottom: 0.75rem; font-size: 1.1rem; color: #334155;">Startup Incubation Applications</h3>
                             <div class="ia-table-wrap">
                                 <div id="ia-loading-startup-requests" class="ia-loading-state" hidden>
                                     <i data-lucide="loader-2"></i>
@@ -2100,17 +2068,15 @@
                                 </div>
                                 <div id="ia-empty-startup-requests" class="ia-empty-state" hidden>
                                     <div class="ia-empty-icon"><i data-lucide="inbox"></i></div>
-                                    <h3>No requests found</h3>
-                                    <p>Startup launch requests will appear here.</p>
+                                    <p>No pending startup incubation requests.</p>
                                 </div>
-                                <table class="ia-table" id="ia-table-startup-requests" hidden>
+                                <table class="ia-table" id="ia-table-startup-requests">
                                     <thead>
                                         <tr>
                                             <th>Applicant</th>
                                             <th>Contact</th>
-                                            <th>Status</th>
-                                            <th>Submitted</th>
-                                            <th>Actions</th>
+                                            <th>Date</th>
+                                            <th class="ia-text-right">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="ia-tbody-startup-requests"></tbody>
@@ -2121,1182 +2087,56 @@
                 </div>
 
                 <!-- MESSAGES TAB -->
-                <div class="ia-tab" id="ia-tab-messages">
-                    <div class="ia-section-hero ia-section-hero--messages" style="background: linear-gradient(135deg, #1f2937 0%, #374151 100%); position: relative; overflow: hidden; border-radius: 16px; margin-bottom: 1.5rem; padding: 1.75rem 2rem; display: flex; align-items: center; justify-content: space-between;">
-                        <div class="ia-section-hero-left" style="display: flex; align-items: center; gap: 1.25rem;">
-                            <div class="ia-section-hero-icon" style="width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;"><i data-lucide="message-circle" style="color: #fff; width: 26px; height: 26px;"></i></div>
-                            <div>
-                                <h2 class="ia-section-hero-title" style="margin: 0 0 0.2rem; font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;">Messages</h2>
-                                <p class="ia-section-hero-sub" style="margin: 0; font-size: 0.88rem; color: rgba(255,255,255,0.78); line-height: 1.4;">Communicate with innovators, startup founders, and students.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="msg-layout msg-layout-ia" style="height:calc(100vh - 280px); min-height:400px; display:flex; gap:1rem;">
-                        <div class="msg-sidebar" style="width:300px; background:#fff; border-radius:14px; display:flex; flex-direction:column; overflow:hidden;">
-                            <div class="msg-search-wrap" style="padding:1rem; border-bottom:1px solid #f1f5f9; display:flex; gap:0.5rem; align-items:center;">
-                                <i data-lucide="search" style="color:#64748b; width:18px; height:18px;"></i>
-                                <input type="text" id="ia-msg-search" placeholder="Search contacts..." autocomplete="off" style="border:none; outline:none; width:100%;">
-                            </div>
-                            <div class="msg-conversation-list" id="ia-msg-conversations" style="flex:1; overflow-y:auto;"></div>
-                        </div>
-                        <div class="msg-main" id="ia-msg-main" style="flex:1; background:#fff; border-radius:14px; display:flex; flex-direction:column; overflow:hidden;">
-                            <div class="msg-empty-state" id="ia-msg-empty" style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; color:#64748b; gap:1rem;">
-                                <i data-lucide="message-circle" style="width:48px; height:48px; opacity:0.5;"></i>
-                                <div>
-                                    <h3 style="margin:0 0 0.25rem; color:#0f172a;">Select a conversation</h3>
-                                    <p style="margin:0; font-size:0.9rem;">Choose a contact to start chatting.</p>
-                                </div>
-                            </div>
-                            <div class="msg-thread" id="ia-msg-thread" hidden style="display:none; flex-direction:column; flex:1;">
-                                <div class="msg-thread-header" id="ia-msg-thread-header" style="padding:1rem 1.5rem; border-bottom:1px solid #f1f5f9; font-weight:600; display:flex; align-items:center; gap:1rem;"></div>
-                                <div class="msg-messages" id="ia-msg-messages" style="flex:1; overflow-y:auto; padding:1.5rem; display:flex; flex-direction:column; gap:1rem;"></div>
-                                <div class="msg-compose" style="padding:1rem 1.5rem; border-top:1px solid #f1f5f9; display:flex; gap:1rem; align-items:flex-end;">
-                                    <textarea id="ia-msg-input" rows="1" placeholder="Type a message…" maxlength="5000" style="flex:1; border:1px solid #e2e8f0; border-radius:12px; padding:0.75rem 1rem; resize:none; max-height:120px; font-family:inherit; outline:none;"></textarea>
-                                    <button type="button" class="msg-send-btn" id="ia-msg-send" title="Send" style="background:var(--iuea-maroon); color:#fff; border:none; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i data-lucide="send" style="width:20px; height:20px;"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </main>
-        </div>
-    </div>
-
-
-
-    <!-- ADMIN DASHBOARD PAGE -->
-    <div id="admin-dashboard" class="page-section admin-page-wrapper">
-        <header class="admin-topbar">
-            <div class="admin-topbar-left">
-                <button type="button" class="admin-mobile-menu-toggle" aria-label="Toggle Menu" onclick="this.closest('.admin-page-wrapper').querySelector('.admin-sidebar').classList.toggle('open'); lucide.createIcons();">
-                    <i data-lucide="menu"></i>
-                </button>
-                <div class="admin-logo" onclick="navigateTo('home')" title="Back to IUEA Today">
-                    <img src="assets/images/iuea-logo.png" alt="IUEA Logo">
-                </div>
-            </div>
-
-            <div class="admin-topbar-center">
-                <div class="admin-search-wrap">
-                    <i data-lucide="search"></i>
-                    <input type="text" placeholder="Search users, content, or settings..." aria-label="Search admin dashboard">
-                    <span class="admin-search-shortcut" aria-hidden="true">⌘K</span>
-                </div>
-            </div>
-
-            <div class="admin-topbar-right">
-                <button type="button" class="admin-btn-create" onclick="showCreateModal()">
-                    <i data-lucide="plus"></i>
-                    <span>Create</span>
-                </button>
-                <div class="admin-topbar-actions">
-                    <div class="notify-wrap" data-notify-context="admin">
-                        <button type="button" class="admin-icon-btn admin-icon-btn--notify notify-btn" aria-label="Notifications" aria-expanded="false">
-                            <i data-lucide="bell"></i>
-                            <span class="admin-notification-badge notify-badge" style="display:none">0</span>
-                        </button>
-                        <div class="notify-dropdown" hidden>
-                            <div class="notify-dropdown-header">
-                                <h3>Notifications</h3>
-                                <button type="button" class="notify-mark-all">Mark all read</button>
-                            </div>
-                            <div class="notify-dropdown-list"></div>
-                            <div class="notify-dropdown-empty" hidden>
-                                <i data-lucide="bell-off"></i>
-                                <p>No notifications yet</p>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" onclick="navigateTo('home')" class="admin-icon-btn" title="View Public Site" aria-label="View public site">
-                        <i data-lucide="external-link"></i>
-                    </button>
-                </div>
-                <div class="admin-topbar-divider" aria-hidden="true"></div>
-                <div class="admin-user-area">
-                    <div class="admin-user-menu" id="adminUserProfile" aria-label="Signed in user profile">
-                        <div class="admin-avatar" aria-hidden="true"><i data-lucide="user"></i></div>
-                        <div class="admin-user-info">
-                            <span id="adminUserName" class="admin-user-name">Admin</span>
-                            <span id="adminRoleBadge" class="admin-role-badge"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <div class="admin-layout">
-            <!-- Sidebar -->
-            <aside class="admin-sidebar">
-                <div class="admin-sidebar-section">
-                    <div class="admin-sidebar-label">Main Menu</div>
-                    <nav class="admin-nav">
-                        <button class="admin-nav-btn active" onclick="showAdminTab('overview', this)"><i
-                                data-lucide="layout-dashboard"></i> Dashboard</button>
-                        <button class="admin-nav-btn" onclick="showAdminTab('approvals', this)"><i
-                                data-lucide="check-square"></i> Approvals <span class="nav-badge"
-                                id="nav-pending-badge">0</span></button>
-                        <button class="admin-nav-btn" onclick="showAdminTab('users', this)" id="sidebarUsersBtn"><i
-                                data-lucide="users"></i> Users</button>
-                        <button class="admin-nav-btn" onclick="showAdminTab('analytics', this)"><i
-                                data-lucide="bar-chart-2"></i> Analytics</button>
-                        <button class="admin-nav-btn" onclick="showAdminTab('messages', this)"><i
-                                data-lucide="message-circle"></i> Messages <span class="nav-badge nav-badge-unread"
-                                id="nav-messages-badge" style="display:none">0</span></button>
-                        <button class="admin-nav-btn" data-module="event-registrations" onclick="loadEventRegistrationsAdmin(this)"><i
-                                data-lucide="ticket"></i> Registrations</button>
-                    </nav>
-                </div>
-
-                <div class="admin-sidebar-section">
-                    <div class="admin-sidebar-label">Modules</div>
-                    <nav class="admin-nav">
-                        <button class="admin-nav-btn" data-module="news" onclick="loadAdminModule('news', this)"><i
-                                data-lucide="file-text"></i> News</button>
-                        <button class="admin-nav-btn" data-module="events" onclick="loadAdminModule('events', this)"><i
-                                data-lucide="calendar"></i> Events</button>
-
-                        <button class="admin-nav-btn" data-module="alumni" onclick="loadAdminModule('alumni', this)"><i
-                                data-lucide="graduation-cap"></i> Alumni</button>
-                        <button class="admin-nav-btn" data-module="research" onclick="loadAdminModule('research', this)"><i
-                                data-lucide="microscope"></i> Research</button>
-                        <button class="admin-nav-btn" data-module="community" onclick="loadAdminModule('community', this)"><i
-                                data-lucide="landmark"></i> Community</button>
-                        <button class="admin-nav-btn" data-module="techpark" onclick="loadAdminModule('techpark', this)"><i
-                                data-lucide="building-2"></i> Tech Park</button>
-                        <button class="admin-nav-btn" data-module="donations" onclick="loadAdminModule('donations', this)"><i
-                                data-lucide="heart"></i> Donations</button>
-                        <button class="admin-nav-btn" onclick="showAdminTab('hero-videos', this)"><i
-                                data-lucide="video"></i> Hero Videos</button>
-                    </nav>
-                </div>
-
-                <div class="admin-sidebar-section admin-sidebar-footer">
-                    <div class="admin-sidebar-label">Account</div>
-                    <nav class="admin-nav">
-                        <button class="admin-nav-btn" onclick="showAdminTab('settings', this)"><i
-                                data-lucide="settings"></i> Settings</button>
-                        <button type="button" class="admin-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
-                            <i data-lucide="log-out"></i> Sign Out
-                        </button>
-                    </nav>
-                </div>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="admin-main">
-
-                <!-- OVERVIEW TAB -->
-                <div id="admin-tab-overview" class="admin-tab-content active">
-
-                    <!-- Section 1: Welcome Banner -->
-                    <div class="admin-welcome-banner">
-                        <div class="admin-welcome-content">
-                            <h2 id="adminWelcomeTitle">Welcome</h2>
-                            <p>Manage the entire IUEA Today ecosystem from one central hub. Here's what's happening
-                                today.</p>
-                            <div class="admin-welcome-actions">
-                                <button class="btn-primary" onclick="showAdminTab('approvals')">Review Pending</button>
-                                <button class="btn-secondary"
-                                    style="color:var(--iuea-gray); border-color:rgba(255,255,255,0.5)">View
-                                    Reports</button>
-                            </div>
-                        </div>
-                        <div class="admin-welcome-status">
-                            <div class="date-display" id="adminDateDisplay">Loading date...</div>
-                            <div class="platform-status"><span class="status-dot"></span> All Systems Operational</div>
-                        </div>
-                    </div>
-
-                    <!-- Section 2: Analytics Cards -->
-                    <div class="admin-stats-grid" id="adminStatsGrid">
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Total Users</span>
-                                <div class="stat-icon-wrap bg-blue"><i data-lucide="users"></i></div>
-                            </div>
-                            <div class="stat-value" id="stat-users-num">—</div>
-                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> +12% this month</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Alumni</span>
-                                <div class="stat-icon-wrap bg-purple"><i data-lucide="graduation-cap"></i></div>
-                            </div>
-                            <div class="stat-value" id="stat-alumni-num">—</div>
-                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> +4% this month</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Innovations</span>
-                                <div class="stat-icon-wrap bg-gold"><i data-lucide="lightbulb"></i></div>
-                            </div>
-                            <div class="stat-value" id="stat-innovations-num">—</div>
-                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> +8% this month</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Startups</span>
-                                <div class="stat-icon-wrap bg-orange"><i data-lucide="rocket"></i></div>
-                            </div>
-                            <div class="stat-value" id="stat-startups-num">—</div>
-                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> +15% this month</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Research Papers</span>
-                                <div class="stat-icon-wrap bg-teal"><i data-lucide="microscope"></i></div>
-                            </div>
-                            <div class="stat-value">342</div>
-                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> +2% this month</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Events</span>
-                                <div class="stat-icon-wrap bg-green"><i data-lucide="calendar"></i></div>
-                            </div>
-                            <div class="stat-value" id="stat-events-num">—</div>
-                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> +5% this month</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Donations</span>
-                                <div class="stat-icon-wrap bg-maroon"><i data-lucide="heart"></i></div>
-                            </div>
-                            <div class="stat-value" id="stat-donations-num">—</div>
-                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> +22% this month</div>
-                        </div>
-                        <div class="admin-stat-card-pro warning">
-                            <div class="stat-header">
-                                <span class="stat-title">Pending Approvals</span>
-                                <div class="stat-icon-wrap bg-red"><i data-lucide="clock"></i></div>
-                            </div>
-                            <div class="stat-value" id="stat-pending-num">—</div>
-                            <div class="stat-trend negative"><i data-lucide="alert-circle"></i> Requires attention</div>
-                        </div>
-                    </div>
-
-                    <!-- Layout Grid for Charts and Feed -->
-                    <div class="admin-dashboard-grid">
-
-                        <!-- Section 3: Charts -->
-                        <div class="admin-chart-section">
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>User Growth</h3>
-                                    <select class="admin-select-sm">
-                                        <option>Last 30 Days</option>
-                                        <option>This Year</option>
-                                    </select>
-                                </div>
-                                <div class="chart-container" style="position: relative; height:250px; width:100%">
-                                    <canvas id="userGrowthChart"></canvas>
-                                </div>
-                            </div>
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>Content Activity</h3>
-                                    <select class="admin-select-sm">
-                                        <option>Last 7 Days</option>
-                                        <option>This Month</option>
-                                    </select>
-                                </div>
-                                <div class="chart-container" style="position: relative; height:250px; width:100%">
-                                    <canvas id="contentActivityChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Section 4 & 6: Feed and Featured -->
-                        <div class="admin-sidebar-panels">
-
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>Live Activity</h3>
-                                    <button class="btn-text"><i data-lucide="refresh-cw"></i></button>
-                                </div>
-                                <div class="activity-feed">
-                                    <div class="activity-item">
-                                        <div class="activity-icon bg-gold"><i data-lucide="lightbulb"></i></div>
-                                        <div class="activity-details">
-                                            <p><strong>John Doe</strong> submitted an innovation</p>
-                                            <span>2 mins ago</span>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-icon bg-purple"><i data-lucide="graduation-cap"></i></div>
-                                        <div class="activity-details">
-                                            <p><strong>Sarah Smith</strong> joined alumni network</p>
-                                            <span>15 mins ago</span>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-icon bg-maroon"><i data-lucide="heart"></i></div>
-                                        <div class="activity-details">
-                                            <p><strong>Anonymous</strong> donated $5,000</p>
-                                            <span>1 hour ago</span>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-icon bg-teal"><i data-lucide="microscope"></i></div>
-                                        <div class="activity-details">
-                                            <p><strong>Dr. Okello</strong> uploaded a research paper</p>
-                                            <span>3 hours ago</span>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-icon bg-orange"><i data-lucide="rocket"></i></div>
-                                        <div class="activity-details">
-                                            <p><strong>TechVision</strong> startup registered</p>
-                                            <span>5 hours ago</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>Featured Content</h3>
-                                </div>
-                                <div class="featured-content-list">
-                                    <div class="featured-item">
-                                        <div class="featured-thumb"
-                                            style="background:#f1f5f9;border-radius:4px;width:40px;height:40px"></div>
-                                        <div class="featured-info">
-                                            <h4>Annual Tech Summit 2026</h4>
-                                            <span>1,240 views • Event</span>
-                                        </div>
-                                    </div>
-                                    <div class="featured-item">
-                                        <div class="featured-thumb"
-                                            style="background:#f1f5f9;border-radius:4px;width:40px;height:40px"></div>
-                                        <div class="featured-info">
-                                            <h4>Solar Powered Irrigation System</h4>
-                                            <span>980 views • Innovation</span>
-                                        </div>
-                                    </div>
-                                    <div class="featured-item">
-                                        <div class="featured-thumb"
-                                            style="background:#f1f5f9;border-radius:4px;width:40px;height:40px"></div>
-                                        <div class="featured-info">
-                                            <h4>AI in African Agriculture</h4>
-                                            <span>850 views • Research</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <!-- APPROVALS TAB -->
-                <div id="admin-tab-approvals" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Approval Center</h3>
-                            <p>Review and manage community submissions.</p>
-                        </div>
-                        <div class="admin-filters">
-                            <select class="admin-select">
-                                <option>All Types</option>
-                                <option>Innovations</option>
-                                <option>News</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="kanban-board">
-                        <div class="kanban-column">
-                            <div class="kanban-header">
-                                <h4>Pending <span class="badge" id="kanban-pending-count">0</span></h4>
-                            </div>
-                            <div class="kanban-cards" id="pendingContentList">
-                                <!-- Cards injected via JS -->
-                            </div>
-                        </div>
-
-                        <div class="kanban-column kanban-column--approved">
-                            <div class="kanban-header">
-                                <h4>Recently Approved <span class="badge" id="kanban-approved-count">0</span></h4>
-                            </div>
-                            <div class="kanban-cards kanban-empty" id="approvedContentList">
-                                <p>Approved items appear here temporarily.</p>
-                            </div>
-                        </div>
-
-                        <div class="kanban-column kanban-column--rejected">
-                            <div class="kanban-header">
-                                <h4>Rejected <span class="badge" id="kanban-rejected-count">0</span></h4>
-                            </div>
-                            <div class="kanban-cards kanban-empty" id="rejectedContentList">
-                                <p>Rejected items appear here.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- USERS TAB -->
-                <div id="admin-tab-users" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>User Directory</h3>
-                            <p>Manage platform access and roles.</p>
-                        </div>
-                        <div class="admin-filters">
-                            <div class="admin-search-wrap" style="width:250px">
-                                <i data-lucide="search"></i>
-                                <input type="text" placeholder="Search users...">
-                            </div>
-                            <button class="btn-primary"><i data-lucide="user-plus"></i> Invite User</button>
-                        </div>
-                    </div>
-                    <div class="admin-panel p-0">
-                        <table class="admin-table-modern">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Joined Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody"></tbody>
-                        </table>
-                        <div class="table-pagination">
-                            <span>Showing 1-10 of <span id="userCount">0</span> users</span>
-                            <div class="pagination-controls">
-                                <button disabled><i data-lucide="chevron-left"></i></button>
-                                <button><i data-lucide="chevron-right"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ANALYTICS TAB -->
-                <div id="admin-tab-analytics" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Platform Analytics</h3>
-                            <p id="analyticsPeriodLabel">IUEA Today engagement, content pipeline, and system health.</p>
-                        </div>
-                        <div class="admin-filters">
-                            <button type="button" class="btn-outline-small" id="analyticsExportBtn" onclick="exportAnalyticsCsv()">
-                                <i data-lucide="download"></i> Export CSV
-                            </button>
-                            <select class="admin-select" id="analyticsPeriodSelect" onchange="onAnalyticsPeriodChange(this.value)">
-                                <option value="30d" selected>Last 30 Days</option>
-                                <option value="year">This Year</option>
-                                <option value="all">All Time</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- KPI Cards -->
-                    <div class="admin-stats-grid admin-analytics-kpi">
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Total Users</span>
-                                <div class="stat-icon-wrap bg-blue"><i data-lucide="users"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-users">—</div>
-                            <div class="stat-trend positive" id="analytics-users-sub"><span id="analytics-active-users">—</span> active accounts</div>
-                        </div>
-                        <div class="admin-stat-card-pro warning">
-                            <div class="stat-header">
-                                <span class="stat-title">Pending Approvals</span>
-                                <div class="stat-icon-wrap bg-red"><i data-lucide="clock"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-pending">—</div>
-                            <div class="stat-trend negative"><i data-lucide="alert-circle"></i> Awaiting review</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Approved Content</span>
-                                <div class="stat-icon-wrap bg-green"><i data-lucide="check-circle"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-approved">—</div>
-                            <div class="stat-trend positive" id="analytics-rejected-sub"><span id="analytics-rejected">—</span> rejected</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">News & Events</span>
-                                <div class="stat-icon-wrap bg-maroon"><i data-lucide="newspaper"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-news-events">—</div>
-                            <div class="stat-trend positive" id="analytics-news-events-sub">Published stories & calendar items</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Innovation Hub</span>
-                                <div class="stat-icon-wrap bg-gold"><i data-lucide="lightbulb"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-innovation-hub">—</div>
-                            <div class="stat-trend positive" id="analytics-innovation-hub-sub">Innovations, startups & alumni</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Engagement</span>
-                                <div class="stat-icon-wrap bg-purple"><i data-lucide="heart"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-engagement">—</div>
-                            <div class="stat-trend positive" id="analytics-engagement-sub"><span id="analytics-likes">—</span> likes · <span id="analytics-comments">—</span> comments</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Publications</span>
-                                <div class="stat-icon-wrap bg-teal"><i data-lucide="book-open"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-publications">—</div>
-                            <div class="stat-trend positive">Research & academic output</div>
-                        </div>
-                        <div class="admin-stat-card-pro" id="analytics-health-card">
-                            <div class="stat-header">
-                                <span class="stat-title">System Health</span>
-                                <div class="stat-icon-wrap bg-green" id="analytics-health-icon"><i data-lucide="activity"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-health-status">—</div>
-                            <div class="stat-trend positive" id="analytics-health-sub">Checking services…</div>
-                        </div>
-                    </div>
-
-                    <!-- Charts & Panels -->
-                    <div class="admin-analytics-layout">
-                        <div class="admin-analytics-primary">
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>Content by Module</h3>
-                                    <span class="analytics-panel-meta" id="analyticsContentMeta">Across all submission types</span>
-                                </div>
-                                <div class="chart-container analytics-chart-container">
-                                    <canvas id="analyticsContentByTypeChart"></canvas>
-                                </div>
-                            </div>
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>Approval Pipeline</h3>
-                                    <span class="analytics-panel-meta">Pending · Approved · Rejected</span>
-                                </div>
-                                <div class="chart-container analytics-chart-container analytics-chart-container--sm">
-                                    <canvas id="analyticsApprovalPipelineChart"></canvas>
-                                </div>
-                                <div class="analytics-pipeline-legend" id="analyticsPipelineLegend"></div>
-                            </div>
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>User Roles Distribution</h3>
-                                    <span class="analytics-panel-meta">Registered platform accounts</span>
-                                </div>
-                                <div class="chart-container analytics-chart-container analytics-chart-container--sm">
-                                    <canvas id="analyticsUserRolesChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="admin-analytics-sidebar">
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>Recent Platform Activity</h3>
-                                    <button type="button" class="admin-table-action-btn" onclick="loadAdminAnalytics(document.getElementById('analyticsPeriodSelect').value)">
-                                        <i data-lucide="refresh-cw"></i> Refresh
-                                    </button>
-                                </div>
-                                <div class="activity-feed" id="analyticsActivityFeed">
-                                    <div class="admin-empty-state" style="padding:1.5rem 0;">
-                                        <p style="color:#64748b;margin:0;">Loading activity…</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="admin-panel admin-system-panel">
-                                <div class="panel-header">
-                                    <h3>System Information</h3>
-                                    <span class="analytics-status-dot analytics-status-dot--online" id="analyticsApiDot" title="API status"></span>
-                                </div>
-                                <dl class="admin-system-info">
-                                    <div class="admin-system-info-row">
-                                        <dt>API Status</dt>
-                                        <dd id="analytics-api-status">—</dd>
-                                    </div>
-                                    <div class="admin-system-info-row">
-                                        <dt>Database</dt>
-                                        <dd id="analytics-db-status">—</dd>
-                                    </div>
-                                    <div class="admin-system-info-row">
-                                        <dt>API Version</dt>
-                                        <dd id="analytics-api-version">—</dd>
-                                    </div>
-                                    <div class="admin-system-info-row">
-                                        <dt>Last Updated</dt>
-                                        <dd id="analytics-last-updated">—</dd>
-                                    </div>
-                                    <div class="admin-system-info-row">
-                                        <dt>Backend URL</dt>
-                                        <dd class="admin-system-info-mono" id="analytics-api-url">—</dd>
-                                    </div>
-                                    <div class="admin-system-info-row">
-                                        <dt>Data Period</dt>
-                                        <dd id="analytics-data-period">—</dd>
-                                    </div>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CONTENT TAB (Generic Placeholder) -->
-                <div id="admin-tab-content" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div class="admin-panel-header-text">
-                            <h3 id="adminContentModuleTitle">Content Management</h3>
-                            <p id="adminContentModuleSubtitle">Select a content module from the sidebar to manage items.</p>
-                        </div>
-                        <div id="adminContentHeaderActions" class="admin-panel-header-actions"></div>
-                    </div>
-                    <div id="adminContentArea" class="admin-panel p-0">
-                        <div class="admin-empty-state" style="padding:3rem;">
-                            <div class="empty-icon"><i data-lucide="database"></i></div>
-                            <h3>Content Database</h3>
-                            <p>Select a specific content module from the sidebar to manage items.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- EVENT REGISTRATIONS TAB -->
-                <div id="admin-tab-event-registrations" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div class="admin-panel-header-text">
-                            <h3>Event Registrations</h3>
-                            <p>Manage participants and event registrations.</p>
-                        </div>
-                        <div class="admin-panel-header-actions">
-                            <button type="button" class="btn-secondary" onclick="loadEventRegistrationsAdmin(null, { forceRefresh: true })">
-                                <i data-lucide="refresh-cw"></i> Refresh
-                            </button>
-                        </div>
-                    </div>
-                    <div id="adminEventRegistrationsArea" class="admin-panel p-0"></div>
-                </div>
-
-                <!-- DONATIONS TAB -->
-                <div id="admin-tab-donations" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Endowment & Donations</h3>
-                            <p>Track funding and manage donor relations.</p>
-                        </div>
-                        <button class="btn-primary"><i data-lucide="download"></i> Export Report</button>
-                    </div>
-
-                    <div class="admin-stats-grid" style="margin-bottom: 2rem;">
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Total Raised</span>
-                                <div class="stat-icon-wrap bg-maroon"><i data-lucide="dollar-sign"></i></div>
-                            </div>
-                            <div class="stat-value">$3.2M</div>
-                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> +5% this month</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Monthly Raised</span>
-                                <div class="stat-icon-wrap bg-green"><i data-lucide="trending-up"></i></div>
-                            </div>
-                            <div class="stat-value">$125K</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Top Donors</span>
-                                <div class="stat-icon-wrap bg-gold"><i data-lucide="award"></i></div>
-                            </div>
-                            <div class="stat-value">42</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Avg. Donation</span>
-                                <div class="stat-icon-wrap bg-blue"><i data-lucide="pie-chart"></i></div>
-                            </div>
-                            <div class="stat-value">$850</div>
-                        </div>
-                    </div>
-
-                    <div class="admin-panel p-0">
-                        <table class="admin-table-modern">
-                            <thead>
-                                <tr>
-                                    <th>Donor</th>
-                                    <th>Amount</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="user-cell">
-                                            <div class="avatar"><i data-lucide="user"></i></div><strong>John
-                                                Doe</strong>
-                                        </div>
-                                    </td>
-                                    <td style="font-weight:700; color:var(--iuea-maroon)">$5,000</td>
-                                    <td>Today, 10:00 AM</td>
-                                    <td><span class="status-badge active">Completed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="user-cell">
-                                            <div class="avatar"><i data-lucide="user"></i></div><strong>Sarah
-                                                Smith</strong>
-                                        </div>
-                                    </td>
-                                    <td style="font-weight:700; color:var(--iuea-maroon)">$10,000</td>
-                                    <td>Yesterday</td>
-                                    <td><span class="status-badge active">Completed</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- SETTINGS TAB -->
-                <div id="admin-tab-messages" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Messages</h3>
-                            <p>Chat with platform users and team members.</p>
-                        </div>
-                    </div>
-                    <div class="msg-layout msg-layout-admin">
+                <div class="admin-tab-content ia-tab" id="ia-tab-messages" data-ia-tab="messages">
+                    <div class="msg-layout">
+                        <!-- Conversations List -->
                         <div class="msg-sidebar">
-                            <div class="msg-search-wrap">
-                                <i data-lucide="search"></i>
-                                <input type="text" id="admin-msg-search" placeholder="Search users..." autocomplete="off">
-                            </div>
-                            <div class="msg-conversation-list" id="admin-msg-conversations"></div>
-                        </div>
-                        <div class="msg-main" id="admin-msg-main">
-                            <div class="msg-empty-state" id="admin-msg-empty">
-                                <i data-lucide="message-circle"></i>
-                                <h3>Select a conversation</h3>
-                                <p>Choose a user from the list or search to start chatting.</p>
-                            </div>
-                            <div class="msg-thread" id="admin-msg-thread" hidden>
-                                <div class="msg-thread-header" id="admin-msg-thread-header"></div>
-                                <div class="msg-messages" id="admin-msg-messages"></div>
-                                <div class="msg-compose">
-                                    <textarea id="admin-msg-input" rows="1" placeholder="Type a message…" maxlength="5000"></textarea>
-                                    <button type="button" class="msg-send-btn" id="admin-msg-send" title="Send"><i data-lucide="send"></i></button>
+                            <div class="msg-header">
+                                <h2 class="msg-title">Messages</h2>
+                                <div class="msg-search-wrap">
+                                    <i data-lucide="search"></i>
+                                    <input type="text" class="msg-search-input" id="ia-msg-search" placeholder="Search contacts…">
                                 </div>
                             </div>
+                            <div class="msg-list" id="ia-msg-conversations">
+                                <!-- Populated dynamically -->
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div id="admin-tab-settings" class="admin-tab-content">
-                    <div class="admin-settings-sticky-bar">
-                        <div class="admin-settings-sticky-inner">
-                            <div class="admin-settings-sticky-text">
-                                <div class="admin-settings-title-row">
-                                    <h3><i data-lucide="settings-2"></i> Platform Settings</h3>
-                                    <span class="admin-settings-dirty-badge" id="adminSettingsDirtyBadge" hidden>
-                                        <i data-lucide="circle-dot"></i> Unsaved changes
-                                    </span>
+                        <!-- Active Conversation Area -->
+                        <div class="msg-main" id="ia-msg-main" style="display:none">
+                            <div class="msg-main-header">
+                                <div class="msg-main-user">
+                                    <div class="msg-main-avatar" id="ia-msg-avatar"></div>
+                                    <div>
+                                        <h3 class="msg-main-name" id="ia-msg-name"></h3>
+                                        <div class="msg-main-status" id="ia-msg-role"></div>
+                                    </div>
                                 </div>
-                                <p>Configure university identity, branding, contact details, and platform behavior.</p>
-                            </div>
-                            <div class="admin-panel-header-actions">
-                                <button type="button" class="btn-settings-secondary" id="adminSettingsResetBtn" onclick="resetAdminSettings()">
-                                    <i data-lucide="rotate-ccw"></i> Reset
+                                <button type="button" class="admin-icon-btn" onclick="msgEl('ia','main').style.display='none'" aria-label="Close conversation">
+                                    <i data-lucide="x"></i>
                                 </button>
-                                <button type="button" class="btn-primary" id="adminSettingsSaveBtn" onclick="saveAdminSettings()">
-                                    <i data-lucide="save"></i> <span>Save Changes</span>
+                            </div>
+                            <div class="msg-thread" id="ia-msg-thread">
+                                <!-- Messages injected here -->
+                            </div>
+                            <div class="msg-composer">
+                                <input type="text" class="msg-input" id="ia-msg-input" placeholder="Type your message…">
+                                <button type="button" class="msg-send-btn" id="ia-msg-send" aria-label="Send message">
+                                    <i data-lucide="send"></i>
                                 </button>
                             </div>
                         </div>
-                    </div>
 
-                    <div id="adminSettingsSkeleton" class="admin-settings-skeleton" hidden>
-                        <div class="admin-settings-skeleton-nav">
-                            <div class="skeleton-line skeleton-nav-item"></div>
-                            <div class="skeleton-line skeleton-nav-item"></div>
-                            <div class="skeleton-line skeleton-nav-item"></div>
-                            <div class="skeleton-line skeleton-nav-item"></div>
-                            <div class="skeleton-line skeleton-nav-item"></div>
-                        </div>
-                        <div class="admin-settings-skeleton-content">
-                            <div class="skeleton-line skeleton-title"></div>
-                            <div class="skeleton-line skeleton-subtitle"></div>
-                            <div class="admin-settings-skeleton-grid">
-                                <div class="skeleton-line skeleton-field"></div>
-                                <div class="skeleton-line skeleton-field"></div>
-                                <div class="skeleton-line skeleton-field"></div>
-                                <div class="skeleton-line skeleton-field"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="adminSettingsError" class="admin-settings-error admin-empty-state" hidden>
-                        <i data-lucide="alert-circle"></i>
-                        <h3>Could not load settings</h3>
-                        <p id="adminSettingsErrorMessage">Something went wrong while loading platform settings.</p>
-                        <button type="button" class="btn-primary" onclick="retryLoadAdminSettings()">
-                            <i data-lucide="refresh-cw"></i> Try again
-                        </button>
-                    </div>
-
-                    <div id="adminSettingsBody" class="admin-settings-body" hidden>
-                        <nav class="admin-settings-nav" id="adminSettingsNav" aria-label="Settings sections">
-                            <button type="button" class="admin-settings-nav-btn active" data-settings-section="general" onclick="showAdminSettingsSection('general', this)">
-                                <i data-lucide="building-2"></i> General
-                            </button>
-                            <button type="button" class="admin-settings-nav-btn" data-settings-section="branding" onclick="showAdminSettingsSection('branding', this)">
-                                <i data-lucide="palette"></i> Branding
-                            </button>
-                            <button type="button" class="admin-settings-nav-btn" data-settings-section="contact" onclick="showAdminSettingsSection('contact', this)">
-                                <i data-lucide="mail"></i> Contact
-                            </button>
-                            <button type="button" class="admin-settings-nav-btn" data-settings-section="system" onclick="showAdminSettingsSection('system', this)">
-                                <i data-lucide="sliders-horizontal"></i> System
-                            </button>
-                            <button type="button" class="admin-settings-nav-btn" data-settings-section="security" onclick="showAdminSettingsSection('security', this)">
-                                <i data-lucide="shield"></i> Security
-                            </button>
-                        </nav>
-
-                        <form id="adminSettingsForm" class="admin-settings-content" novalidate>
-                            <!-- General -->
-                            <section class="admin-settings-section active" data-settings-panel="general">
-                                <div class="admin-panel admin-settings-panel">
-                                    <div class="admin-settings-panel-head">
-                                        <div class="admin-settings-panel-icon stat-icon-wrap bg-maroon"><i data-lucide="building-2"></i></div>
-                                        <div>
-                                            <h4>University Identity</h4>
-                                            <p>Official name and public-facing identity shown across IUEA Today.</p>
-                                        </div>
-                                    </div>
-                                    <div class="admin-settings-fields admin-settings-fields-grid">
-                                        <div class="admin-form-field admin-form-field--full">
-                                            <label for="settingsUniversityName">
-                                                University Name <span class="required">*</span>
-                                                <span class="field-tooltip" data-tip="Shown in the public header, footer, and page title."><i data-lucide="help-circle"></i></span>
-                                            </label>
-                                            <input type="text" id="settingsUniversityName" name="university_name" required maxlength="255" autocomplete="organization">
-                                            <span class="field-help">Displayed in headers, footers, and email templates.</span>
-                                            <span class="field-error" id="settingsUniversityNameError"></span>
-                                        </div>
-                                        <div class="admin-form-field">
-                                            <label for="settingsMotto">Motto</label>
-                                            <input type="text" id="settingsMotto" name="motto" maxlength="255" placeholder="Learning to Succeed">
-                                            <span class="field-help">Short phrase accompanying the university name.</span>
-                                        </div>
-                                        <div class="admin-form-field">
-                                            <label for="settingsTagline">Tagline</label>
-                                            <input type="text" id="settingsTagline" name="tagline" maxlength="255" placeholder="East Africa's premier international university">
-                                            <span class="field-help">One-line description for marketing surfaces.</span>
-                                        </div>
-                                        <div class="admin-form-field">
-                                            <label for="settingsFoundedYear">Founded Year</label>
-                                            <input type="number" id="settingsFoundedYear" name="founded_year" min="1800" max="2100" step="1" placeholder="2010">
-                                            <span class="field-error" id="settingsFoundedYearError"></span>
-                                        </div>
-                                        <div class="admin-form-field admin-form-field--full">
-                                            <label for="settingsLogoUrl">
-                                                Logo URL
-                                                <span class="field-tooltip" data-tip="Direct image URL or path under /assets/. Leave blank to use the default IUEA logo."><i data-lucide="help-circle"></i></span>
-                                            </label>
-                                            <input type="url" id="settingsLogoUrl" name="logo_url" maxlength="255" placeholder="/assets/images/iuea-logo.png">
-                                            <span class="field-help">Direct link to the university logo image (upload via Media later).</span>
-                                            <span class="field-error" id="settingsLogoUrlError"></span>
-                                            <div class="admin-logo-preview" id="settingsLogoPreview" hidden>
-                                                <img id="settingsLogoPreviewImg" src="" alt="Logo preview">
-                                                <span class="admin-logo-preview-label">Current logo preview</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Branding -->
-                            <section class="admin-settings-section" data-settings-panel="branding" hidden>
-                                <div class="admin-panel admin-settings-panel">
-                                    <div class="admin-settings-panel-head">
-                                        <div class="admin-settings-panel-icon stat-icon-wrap bg-gold"><i data-lucide="palette"></i></div>
-                                        <div>
-                                            <h4>Brand Colors</h4>
-                                            <p>Primary and accent colors applied to the public portal.</p>
-                                        </div>
-                                    </div>
-                                    <div class="admin-settings-fields admin-settings-fields-grid">
-                                        <div class="admin-form-field">
-                                            <label for="settingsPrimaryColor">
-                                                Primary Color
-                                                <span class="field-tooltip" data-tip="Main brand color for headers, buttons, and links on the public site."><i data-lucide="help-circle"></i></span>
-                                            </label>
-                                            <div class="admin-color-field">
-                                                <input type="color" id="settingsPrimaryColorPicker" class="admin-color-picker" value="#800000" aria-label="Primary color picker">
-                                                <span class="admin-color-swatch" id="settingsPrimarySwatch" style="background:#800000;"></span>
-                                                <input type="text" id="settingsPrimaryColor" name="primary_color" class="admin-color-hex" pattern="^#[0-9A-Fa-f]{6}$" maxlength="7" placeholder="#800000">
-                                            </div>
-                                            <span class="field-help">Maroon is the IUEA brand default (#800000).</span>
-                                            <span class="field-error" id="settingsPrimaryColorError"></span>
-                                        </div>
-                                        <div class="admin-form-field">
-                                            <label for="settingsAccentColor">
-                                                Accent Color
-                                                <span class="field-tooltip" data-tip="Secondary highlight color for badges, borders, and accents."><i data-lucide="help-circle"></i></span>
-                                            </label>
-                                            <div class="admin-color-field">
-                                                <input type="color" id="settingsAccentColorPicker" class="admin-color-picker" value="#cba052" aria-label="Accent color picker">
-                                                <span class="admin-color-swatch" id="settingsAccentSwatch" style="background:#cba052;"></span>
-                                                <input type="text" id="settingsAccentColor" name="accent_color" class="admin-color-hex" pattern="^#[0-9A-Fa-f]{6}$" maxlength="7" placeholder="#cba052">
-                                            </div>
-                                            <span class="field-help">Highlights, badges, and call-to-action accents.</span>
-                                            <span class="field-error" id="settingsAccentColorError"></span>
-                                        </div>
-                                        <div class="admin-form-field admin-form-field--full">
-                                            <label>Live Preview <span class="field-help-inline">— mini public header mockup</span></label>
-                                            <div class="admin-branding-preview admin-branding-preview--site" id="settingsBrandingPreview">
-                                                <div class="admin-branding-preview-header" id="settingsPreviewHeader">
-                                                    <div class="admin-branding-preview-logo-wrap">
-                                                        <img id="settingsPreviewLogo" class="admin-branding-preview-logo" src="" alt="" hidden>
-                                                        <span class="admin-branding-preview-logo-fallback" id="settingsPreviewLogoFallback">IUEA</span>
-                                                    </div>
-                                                    <div class="admin-branding-preview-nav">
-                                                        <span>Home</span>
-                                                        <span>Innovation</span>
-                                                        <span>Alumni</span>
-                                                    </div>
-                                                    <span class="admin-branding-preview-signin" id="settingsPreviewSignIn">Sign In</span>
-                                                </div>
-                                                <div class="admin-branding-preview-hero">
-                                                    <span class="admin-branding-preview-title" id="settingsPreviewTitle">University Name</span>
-                                                    <span class="admin-branding-preview-tagline" id="settingsPreviewTagline">Tagline appears here</span>
-                                                    <div class="admin-branding-preview-actions">
-                                                        <button type="button" class="admin-branding-preview-btn admin-branding-preview-btn--primary" id="settingsPreviewBtnPrimary">Explore</button>
-                                                        <button type="button" class="admin-branding-preview-btn admin-branding-preview-btn--accent" id="settingsPreviewBtnAccent">Learn More</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Contact -->
-                            <section class="admin-settings-section" data-settings-panel="contact" hidden>
-                                <div class="admin-panel admin-settings-panel">
-                                    <div class="admin-settings-panel-head">
-                                        <div class="admin-settings-panel-icon stat-icon-wrap bg-teal"><i data-lucide="mail"></i></div>
-                                        <div>
-                                            <h4>Contact Details</h4>
-                                            <p>Public contact information displayed on the platform.</p>
-                                        </div>
-                                    </div>
-                                    <div class="admin-settings-fields admin-settings-fields-grid">
-                                        <div class="admin-form-field">
-                                            <label for="settingsContactEmail">Contact Email <span class="required">*</span></label>
-                                            <input type="email" id="settingsContactEmail" name="contact_email" required maxlength="100" autocomplete="email">
-                                            <span class="field-help">Primary inbox for platform inquiries.</span>
-                                            <span class="field-error" id="settingsContactEmailError"></span>
-                                        </div>
-                                        <div class="admin-form-field">
-                                            <label for="settingsContactPhone">Contact Phone</label>
-                                            <input type="tel" id="settingsContactPhone" name="contact_phone" maxlength="50" autocomplete="tel" placeholder="+256 414 000 000">
-                                        </div>
-                                        <div class="admin-form-field admin-form-field--full">
-                                            <label for="settingsContactAddress">Campus Address</label>
-                                            <textarea id="settingsContactAddress" name="contact_address" rows="2" maxlength="500" placeholder="Kansanga, Kampala, Uganda"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="admin-panel admin-settings-panel">
-                                    <div class="admin-settings-panel-head">
-                                        <div class="admin-settings-panel-icon stat-icon-wrap bg-blue"><i data-lucide="share-2"></i></div>
-                                        <div>
-                                            <h4>Website &amp; Social</h4>
-                                            <p>Official web presence and social profile links.</p>
-                                        </div>
-                                    </div>
-                                    <div class="admin-settings-fields admin-settings-fields-grid">
-                                        <div class="admin-form-field admin-form-field--full">
-                                            <label for="settingsWebsiteUrl"><i data-lucide="globe"></i> Website URL</label>
-                                            <input type="url" id="settingsWebsiteUrl" name="website_url" maxlength="255" placeholder="https://iuea.ac.ug">
-                                            <span class="field-error" id="settingsWebsiteUrlError"></span>
-                                        </div>
-                                        <div class="admin-form-field">
-                                            <label for="settingsFacebookUrl"><i data-lucide="facebook"></i> Facebook</label>
-                                            <input type="url" id="settingsFacebookUrl" name="facebook_url" maxlength="255" placeholder="https://facebook.com/...">
-                                            <span class="field-error" id="settingsFacebookUrlError"></span>
-                                        </div>
-                                        <div class="admin-form-field">
-                                            <label for="settingsTwitterUrl"><i data-lucide="twitter"></i> Twitter / X</label>
-                                            <input type="url" id="settingsTwitterUrl" name="twitter_url" maxlength="255" placeholder="https://x.com/...">
-                                            <span class="field-error" id="settingsTwitterUrlError"></span>
-                                        </div>
-                                        <div class="admin-form-field">
-                                            <label for="settingsLinkedinUrl"><i data-lucide="linkedin"></i> LinkedIn</label>
-                                            <input type="url" id="settingsLinkedinUrl" name="linkedin_url" maxlength="255" placeholder="https://linkedin.com/...">
-                                            <span class="field-error" id="settingsLinkedinUrlError"></span>
-                                        </div>
-                                        <div class="admin-form-field">
-                                            <label for="settingsInstagramUrl"><i data-lucide="instagram"></i> Instagram</label>
-                                            <input type="url" id="settingsInstagramUrl" name="instagram_url" maxlength="255" placeholder="https://instagram.com/...">
-                                            <span class="field-error" id="settingsInstagramUrlError"></span>
-                                        </div>
-                                        <div class="admin-form-field">
-                                            <label for="settingsYoutubeUrl"><i data-lucide="youtube"></i> YouTube</label>
-                                            <input type="url" id="settingsYoutubeUrl" name="youtube_url" maxlength="255" placeholder="https://youtube.com/@...">
-                                            <span class="field-error" id="settingsYoutubeUrlError"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- System -->
-                            <section class="admin-settings-section" data-settings-panel="system" hidden>
-                                <div class="admin-panel admin-settings-panel">
-                                    <div class="admin-settings-panel-head">
-                                        <div class="admin-settings-panel-icon stat-icon-wrap bg-blue"><i data-lucide="sliders-horizontal"></i></div>
-                                        <div>
-                                            <h4>System Preferences</h4>
-                                            <p>Operational defaults and access controls for the platform.</p>
-                                        </div>
-                                    </div>
-                                    <div class="admin-settings-fields">
-                                        <div class="admin-form-field">
-                                            <label for="settingsTimezone">Timezone</label>
-                                            <select id="settingsTimezone" name="timezone" class="admin-select admin-select-full">
-                                                <option value="Africa/Kampala">Africa/Kampala (EAT)</option>
-                                                <option value="Africa/Nairobi">Africa/Nairobi (EAT)</option>
-                                                <option value="UTC">UTC</option>
-                                                <option value="Europe/London">Europe/London (GMT/BST)</option>
-                                                <option value="America/New_York">America/New_York (EST/EDT)</option>
-                                            </select>
-                                            <span class="field-help">Used for scheduling events and activity timestamps.</span>
-                                        </div>
-                                        <div class="admin-settings-toggles">
-                                            <label class="admin-settings-toggle">
-                                                <input type="checkbox" id="settingsMaintenanceMode" name="maintenance_mode">
-                                                <span class="admin-settings-toggle-ui"></span>
-                                                <span class="admin-settings-toggle-text">
-                                                    <strong>Maintenance Mode</strong>
-                                                    <small>Show a maintenance notice to public visitors.</small>
-                                                </span>
-                                            </label>
-                                            <div class="admin-settings-warning" id="settingsMaintenanceWarning" hidden>
-                                                <i data-lucide="alert-triangle"></i>
-                                                <div>
-                                                    <strong>Maintenance mode is enabled</strong>
-                                                    <p>Public visitors will see a maintenance page until you turn this off.</p>
-                                                </div>
-                                            </div>
-                                            <label class="admin-settings-toggle">
-                                                <input type="checkbox" id="settingsAllowRegistrations" name="allow_registrations" checked>
-                                                <span class="admin-settings-toggle-ui"></span>
-                                                <span class="admin-settings-toggle-text">
-                                                    <strong>Allow New Registrations</strong>
-                                                    <small>Let visitors create new platform accounts.</small>
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Security -->
-                            <section class="admin-settings-section" data-settings-panel="security" hidden>
-                                <div class="admin-panel admin-settings-panel">
-                                    <div class="admin-settings-panel-head">
-                                        <div class="admin-settings-panel-icon stat-icon-wrap bg-purple"><i data-lucide="shield"></i></div>
-                                        <div>
-                                            <h4>Account &amp; Session</h4>
-                                            <p>Your current admin session and account security options.</p>
-                                        </div>
-                                    </div>
-                                    <div class="admin-settings-session-card" id="adminSettingsSessionCard">
-                                        <div class="admin-settings-session-row">
-                                            <span class="admin-settings-session-label">Signed in as</span>
-                                            <span class="admin-settings-session-value" id="adminSettingsSessionName">—</span>
-                                        </div>
-                                        <div class="admin-settings-session-row">
-                                            <span class="admin-settings-session-label">Email</span>
-                                            <span class="admin-settings-session-value" id="adminSettingsSessionEmail">—</span>
-                                        </div>
-                                        <div class="admin-settings-session-row">
-                                            <span class="admin-settings-session-label">Role</span>
-                                            <span class="admin-settings-session-value" id="adminSettingsSessionRole">—</span>
-                                        </div>
-                                        <div class="admin-settings-session-row">
-                                            <span class="admin-settings-session-label">Session</span>
-                                            <span class="admin-settings-session-value admin-settings-session-active">
-                                                <i data-lucide="circle"></i> Active
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="admin-settings-security-actions">
-                                        <button type="button" class="btn-outline-small" id="adminSettingsChangePasswordBtn" onclick="showToast('Password change will be available in a future update.', 'error')">
-                                            <i data-lucide="key-round"></i> Change Password
-                                        </button>
-                                        <span class="field-help">Password management will be linked to the auth service.</span>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <p class="admin-settings-meta" id="adminSettingsUpdatedAt"></p>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- HERO VIDEOS TAB -->
-                <div id="admin-tab-hero-videos" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Hero Videos Settings</h3>
-                            <p>Manage the background videos for each public page hero section.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="admin-panel">
-                        <div id="heroVideosList" style="display:flex; flex-direction:column; gap:1.5rem;">
-                            <!-- Populated by JS -->
+                        <!-- Empty State -->
+                        <div class="msg-empty-state" id="ia-msg-empty">
+                            <div class="msg-empty-icon"><i data-lucide="message-square"></i></div>
+                            <h3>Your Messages</h3>
+                            <p>Select a conversation from the list or start a new one to begin chatting.</p>
                         </div>
                     </div>
                 </div>
-
             </main>
-        </div>
-    </div>
-
-    <!-- Global Modals & Notifications -->
-
-    <!-- Auth Modal -->
-    <div id="authModal" class="detail-modal">
-        <div class="auth-modal-container">
-            <button class="close-modal" type="button" onclick="closeAuthModal()" aria-label="Close sign in"><i data-lucide="x"></i></button>
-            <div id="authFormContent">
-                <div class="auth-modal-header">
-                    <h2>Sign In</h2>
-                    <p>Welcome back to IUEA Today</p>
-                </div>
-                <div class="auth-modal-body">
-                    <div class="form-group">
-                        <label for="loginEmail">Email</label>
-                        <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Password</label>
-                        <div class="pw-toggle-wrap">
-                            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
-                            <button type="button" class="pw-toggle-btn" onclick="toggleLoginPassword()" aria-label="Toggle password visibility" id="loginPasswordToggle">
-                                <i data-lucide="eye" id="loginPasswordEyeIcon"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-primary auth-submit-btn" onclick="signIn()">Sign In</button>
-                </div>
-                <div class="auth-modal-footer">
-                    <p>Don't have an account? <a href="#" onclick="showSignUp(); return false;">Sign Up</a></p>
-                </div>
-            </div>
         </div>
     </div>
 
