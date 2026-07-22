@@ -2038,39 +2038,13 @@
                             </div>
                         </div>
                         <div class="ia-section-hero-actions">
-                            <select id="ia-filter-innovations-status" class="ia-filter-select" onchange="iaLoadContent('innovations')" aria-label="Filter innovations by status">
-                                <option value="all">All Statuses</option>
-                                <option value="pending" selected>Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
                             <button class="ia-refresh-btn" onclick="iaLoadContent('innovations')">
                                 <i data-lucide="refresh-cw"></i> Refresh
                             </button>
                         </div>
                     </div>
-                    <div class="ia-table-wrap">
-                        <div id="ia-loading-innovations" class="ia-loading-state" hidden>
-                            <i data-lucide="loader-2"></i>
-                            <p>Loading innovations…</p>
-                        </div>
-                        <div id="ia-empty-innovations" class="ia-empty-state" hidden>
-                            <div class="ia-empty-icon"><i data-lucide="inbox"></i></div>
-                            <h3>No innovations found</h3>
-                            <p>Innovation submissions will appear here once available.</p>
-                        </div>
-                        <table class="ia-table" id="ia-table-innovations" hidden>
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Author</th>
-                                    <th>Status</th>
-                                    <th>Submitted</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ia-tbody-innovations"></tbody>
-                        </table>
+                    <div id="ia-innovations-module-area">
+                        <!-- Module UI injected via JS -->
                     </div>
                 </div>
 
@@ -2085,39 +2059,13 @@
                             </div>
                         </div>
                         <div class="ia-section-hero-actions">
-                            <select id="ia-filter-startups-status" class="ia-filter-select" onchange="iaLoadContent('startups')" aria-label="Filter startups by status">
-                                <option value="all">All Statuses</option>
-                                <option value="pending" selected>Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
                             <button class="ia-refresh-btn" onclick="iaLoadContent('startups')">
                                 <i data-lucide="refresh-cw"></i> Refresh
                             </button>
                         </div>
                     </div>
-                    <div class="ia-table-wrap">
-                        <div id="ia-loading-startups" class="ia-loading-state" hidden>
-                            <i data-lucide="loader-2"></i>
-                            <p>Loading startups…</p>
-                        </div>
-                        <div id="ia-empty-startups" class="ia-empty-state" hidden>
-                            <div class="ia-empty-icon"><i data-lucide="inbox"></i></div>
-                            <h3>No startups found</h3>
-                            <p>Startup submissions will appear here once available.</p>
-                        </div>
-                        <table class="ia-table" id="ia-table-startups" hidden>
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Founder</th>
-                                    <th>Status</th>
-                                    <th>Submitted</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ia-tbody-startups"></tbody>
-                        </table>
+                    <div id="ia-startups-module-area">
+                        <!-- Module UI injected via JS -->
                     </div>
                 </div>
 

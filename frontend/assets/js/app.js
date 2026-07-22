@@ -4965,6 +4965,17 @@ function reloadAdminModuleAfterCrud(moduleName, options = {}) {
         : isTechParkSubModule(moduleName) ? 'techpark'
         : isDonationsSubModule(moduleName) ? 'donations'
         : moduleName;
+
+    const iaDash = document.getElementById('innovation-admin-dashboard');
+    if (iaDash && iaDash.classList.contains('active')) {
+        if (moduleName === 'startups' || moduleName === 'startup-news') {
+            iaLoadContent('startups');
+        } else {
+            iaLoadContent('innovations');
+        }
+        return;
+    }
+
     loadAdminModule(parentModule, null, options);
 }
 
@@ -9605,58 +9616,52 @@ async function iaLoadContent(contentType) {
         return iaLoadRequests();
     }
 
-    const tbody = document.getElementById(`ia-tbody-${contentType}`);
-    if (!tbody) return;
+    const targetArea = document.getElementById(`ia-${contentType}-module-area`);
+    if (!targetArea) return;
 
-    const table = document.getElementById(`ia-table-${contentType}`);
-    const empty = document.getElementById(`ia-empty-${contentType}`);
-    const loading = document.getElementById(`ia-loading-${contentType}`);
+    let subModulesToLoad = [];
+    if (contentType === 'innovations') {
+        subModulesToLoad = INNOVATIONS_SUBMODULES.filter(sub => sub.key === 'innovation-news' || sub.key === 'innovations');
+    } else if (contentType === 'startups') {
+        subModulesToLoad = INNOVATIONS_SUBMODULES.filter(sub => sub.key === 'startup-news' || sub.key === 'startups');
+    }
 
-    // Show loading state
-    if (loading) loading.hidden = false;
-    if (empty) empty.hidden = true;
-    if (table) table.hidden = true;
-    tbody.innerHTML = '';
+    targetArea.innerHTML = '<div class="admin-empty-state" style="padding:2rem;"><p>Loading…</p></div>';
 
     try {
-        const items = await apiGet(`/innovation-admin/content/${contentType}`);
+        const results = await Promise.all(
+            subModulesToLoad.map(async (sub) => {
+                const items = await fetchAdminContentList(sub.key);
+                return { key: sub.key, items: Array.isArray(items) ? items : [] };
+            })
+        );
 
-        if (loading) loading.hidden = true;
+        results.forEach(({ key, items }) => {
+            adminContentItemsCache[key] = items;
+            adminModuleCacheReady.add(key);
+        });
 
-        if (!Array.isArray(items) || !items.length) {
-            if (empty) empty.hidden = false;
-            return;
-        }
-
-        if (table) table.hidden = false;
-
-        tbody.innerHTML = items.map(item => {
-            const displayName = item.title || item.name || 'Untitled';
-            const displaySub  = item.author ? item.author.name : 'Unknown';
-
-            return `
-            <tr>
-                <td>${escapeHtml(displayName)}</td>
-                <td>${escapeHtml(displaySub)}</td>
-                <td><span class="status-badge ${ruStoryStatusClass(item.status)}">${item.status || 'pending'}</span></td>
-                <td>${formatShortDate(item.created_at)}</td>
-                <td>
-                    <div class="admin-table-actions">
-                        ${item.status === 'pending' ? `
-                        <button type="button" class="btn-approve" onclick="iaUpdateStatus('${contentType}', ${item.id}, 'approve')"><i data-lucide="check"></i> Approve</button>
-                        <button type="button" class="btn-reject" onclick="iaUpdateStatus('${contentType}', ${item.id}, 'reject')"><i data-lucide="x"></i> Reject</button>
-                        ` : ''}
-                        <button type="button" class="btn-danger btn-danger-sm" onclick="iaDeleteContent('${contentType}', ${item.id})"><i data-lucide="trash-2"></i></button>
-                    </div>
-                </td>
-            </tr>`;
-        }).join('');
+        targetArea.innerHTML = `
+            <div class="admin-research-sections">
+                ${subModulesToLoad.map(sub => {
+                    const items = adminContentItemsCache[sub.key] || [];
+                    return `
+                    <section class="admin-research-block">
+                        <div class="admin-research-block-header">
+                            <div class="admin-research-block-title">
+                                <i data-lucide="${sub.icon}"></i>
+                                <h4>${sub.label}</h4>
+                            </div>
+                            <span class="admin-research-block-count">${items.length} item${items.length === 1 ? '' : 's'}</span>
+                        </div>
+                        ${buildAdminTableHTML(sub.key, items)}
+                    </section>`;
+                }).join('')}
+            </div>`;
         lucide.createIcons();
     } catch (err) {
         console.error('iaLoadContent error:', err);
-        if (loading) loading.hidden = true;
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load data: ${err.message || err}</td></tr>`;
-        if (table) table.hidden = false;
+        targetArea.innerHTML = `<div class="admin-empty-state" style="padding:2rem;color:red;"><p>Failed to load data: ${err.message || err}</p></div>`;
     }
 }
 
