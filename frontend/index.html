@@ -1924,7 +1924,7 @@
                 <div class="admin-sidebar-section">
                     <div class="admin-sidebar-label">Modules</div>
                     <nav class="admin-nav">
-                        <button class="admin-nav-btn ia-nav-btn" data-module="innovations" onclick="showRoleTab('ia', 'content', this); iaLoadContent('content')"><i data-lucide="lightbulb"></i> Innovations</button>
+                        <button class="admin-nav-btn ia-nav-btn" data-module="innovations" onclick="loadInnovationsAdminModule(this, { targetId: 'iaContentArea', skipHeaderUpdate: true }); showRoleTab('ia', 'content', this)"><i data-lucide="lightbulb"></i> Innovations</button>
                     </nav>
                 </div>
 
@@ -1943,8 +1943,8 @@
                 <div class="admin-tab-content ia-tab active" id="ia-tab-overview" data-ia-tab="overview">
                     <div class="admin-panel-header">
                         <div class="admin-panel-header-text">
-                            <h3 id="iaWelcomeTitle">Dashboard Overview</h3>
-                            <p id="iaDateDisplay">Welcome back! Here's what's happening with innovations and startups.</p>
+                            <h3>Dashboard Overview</h3>
+                            <p>Welcome back! Here's what's happening with innovations and startups.</p>
                         </div>
                         <div class="admin-panel-header-actions">
                             <button class="btn-primary" onclick="showCreateModal()"><i data-lucide="plus"></i> New Project</button>
@@ -2739,7 +2739,7 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.js?v=43"></script>
+    <script src="assets/js/app.js?v=42"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

@@ -8689,11 +8689,11 @@ boot().then(() => {
 
 /* =================== ROLE DASHBOARD HELPERS =================== */
 function usesAdminRoleLayout(prefix) {
-    return prefix === 'dp' || prefix === 'ia';
+    return prefix === 'dp';
 }
 
 function usesAdminRoleNav(prefix) {
-    return prefix === 'dp' || prefix === 'ru' || prefix === 'ia';
+    return prefix === 'dp' || prefix === 'ru';
 }
 
 function getRoleTabSelector(prefix) {
@@ -8714,7 +8714,6 @@ function showRoleTab(prefix, tabId, btn) {
         ru: 'registered-user-dashboard',
         dp: 'donor-partner-dashboard',
         co: 'coordinator-dashboard',
-        ia: 'innovation-admin-dashboard',
     }[prefix];
     if (!dashId) return;
     const dash = document.getElementById(dashId);
