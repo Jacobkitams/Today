@@ -9620,6 +9620,10 @@ async function iaLoadContent(contentType) {
         return iaLoadRequests();
     }
 
+    if (contentType === 'messages') {
+        return initMessaging('ia');
+    }
+
     if (contentType === 'content') {
         const actionsEl = document.getElementById('ia-content-actions');
         if (actionsEl && actionsEl.dataset.initialized !== 'true') {
