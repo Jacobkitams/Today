@@ -2088,51 +2088,34 @@
 
                 <!-- MESSAGES TAB -->
                 <div id="ia-tab-messages" class="role-tab">
-                    <div class="msg-layout">
-                        <!-- Conversations List -->
+                    <div class="admin-panel-header">
+                        <div>
+                            <h3>Messages</h3>
+                            <p>Chat with approved students and members.</p>
+                        </div>
+                    </div>
+                    <div class="msg-layout msg-layout-ru">
                         <div class="msg-sidebar">
-                            <div class="msg-header">
-                                <h2 class="msg-title">Messages</h2>
-                                <div class="msg-search-wrap">
-                                    <i data-lucide="search"></i>
-                                    <input type="text" class="msg-search-input" id="ia-msg-search" placeholder="Search contacts…">
+                            <div class="msg-search-wrap">
+                                <i data-lucide="search"></i>
+                                <input type="text" id="ia-msg-search" placeholder="Search contacts..." autocomplete="off">
+                            </div>
+                            <div class="msg-conversation-list" id="ia-msg-conversations"></div>
+                        </div>
+                        <div class="msg-main" id="ia-msg-main">
+                            <div class="msg-empty-state" id="ia-msg-empty">
+                                <i data-lucide="message-circle"></i>
+                                <h3>Select a conversation</h3>
+                                <p>Choose a contact to start chatting.</p>
+                            </div>
+                            <div class="msg-thread" id="ia-msg-thread" hidden>
+                                <div class="msg-thread-header" id="ia-msg-thread-header"></div>
+                                <div class="msg-messages" id="ia-msg-messages"></div>
+                                <div class="msg-compose">
+                                    <textarea id="ia-msg-input" rows="1" placeholder="Type a message…" maxlength="5000"></textarea>
+                                    <button type="button" class="msg-send-btn" id="ia-msg-send" title="Send"><i data-lucide="send"></i></button>
                                 </div>
                             </div>
-                            <div class="msg-list" id="ia-msg-conversations">
-                                <!-- Populated dynamically -->
-                            </div>
-                        </div>
-
-                        <!-- Active Conversation Area -->
-                        <div class="msg-main" id="ia-msg-main" style="display:none">
-                            <div class="msg-main-header">
-                                <div class="msg-main-user">
-                                    <div class="msg-main-avatar" id="ia-msg-avatar"></div>
-                                    <div>
-                                        <h3 class="msg-main-name" id="ia-msg-name"></h3>
-                                        <div class="msg-main-status" id="ia-msg-role"></div>
-                                    </div>
-                                </div>
-                                <button type="button" class="admin-icon-btn" onclick="msgEl('ia','main').style.display='none'" aria-label="Close conversation">
-                                    <i data-lucide="x"></i>
-                                </button>
-                            </div>
-                            <div class="msg-thread" id="ia-msg-thread">
-                                <!-- Messages injected here -->
-                            </div>
-                            <div class="msg-composer">
-                                <input type="text" class="msg-input" id="ia-msg-input" placeholder="Type your message…">
-                                <button type="button" class="msg-send-btn" id="ia-msg-send" aria-label="Send message">
-                                    <i data-lucide="send"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Empty State -->
-                        <div class="msg-empty-state" id="ia-msg-empty">
-                            <div class="msg-empty-icon"><i data-lucide="message-square"></i></div>
-                            <h3>Your Messages</h3>
-                            <p>Select a conversation from the list or start a new one to begin chatting.</p>
                         </div>
                     </div>
                 </div>
