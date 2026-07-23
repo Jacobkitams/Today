@@ -796,6 +796,13 @@ function navigateTo(pageId) {
         return;
     }
     page.classList.add('active');
+    
+    // Update URL hash for SPA routing (preserve state on refresh/back)
+    const targetHash = pageId === 'home' ? '' : '#' + pageId;
+    if (window.location.hash !== targetHash && window.location.hash !== '#' + pageId) {
+        window.history.pushState(null, '', '#' + pageId);
+    }
+
     const link = document.querySelector(`.nav-links a[onclick="navigateTo('${pageId}')"]`);
     if (link) link.classList.add('active-nav');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -8687,8 +8694,21 @@ async function boot() {
 
 boot().then(() => {
     refreshIconsIn(document.getElementById('publicHeader'));
+    
+    // Restore page state from URL hash
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+        navigateTo(hash);
+    }
+
     handleShareDeepLink();
     initNotificationsUI();
+
+    // Listen for browser back/forward navigation
+    window.addEventListener('popstate', () => {
+        const currentHash = window.location.hash.substring(1) || 'home';
+        navigateTo(currentHash);
+    });
 });
 
 /* =================== ROLE DASHBOARD HELPERS =================== */
