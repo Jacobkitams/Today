@@ -755,7 +755,28 @@ function navigateTo(pageId) {
     const isAdminDash = pageId === 'admin-dashboard';
     const isRoleDash  = Object.values(ROLE_DASHBOARD_MAP).includes(pageId) && pageId !== 'admin-dashboard';
 
-    // Guards moved below page transition to allow URL and UI to update before prompting for auth
+    // Guard: admin-dashboard requires admin role
+    if (isAdminDash && (!currentUser || !['super_admin',
+    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role))) {
+        showToast('Access denied.', 'error');
+        showAuthModal();
+        return;
+    }
+
+    // Guard: role dashboards require login
+    if (isRoleDash && !currentUser) {
+        showToast('Please sign in first.', 'error');
+        showAuthModal();
+        return;
+    }
+
+    // Guard: coordinator dashboard requires coordinator role
+    if (pageId === 'coordinator-dashboard' && currentUser?.role !== 'coordinator') {
+        showToast('Access denied.', 'error');
+        if (currentUser) navigateToDashboard();
+        else navigateTo('home');
+        return;
+    }
 
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active-nav'));
@@ -775,13 +796,6 @@ function navigateTo(pageId) {
         return;
     }
     page.classList.add('active');
-    
-    // Update URL hash for SPA routing (preserve state on refresh/back)
-    const targetHash = pageId === 'home' ? '' : '#' + pageId;
-    if (window.location.hash !== targetHash && window.location.hash !== '#' + pageId) {
-        window.history.pushState(null, '', '#' + pageId);
-    }
-
     const link = document.querySelector(`.nav-links a[onclick="navigateTo('${pageId}')"]`);
     if (link) link.classList.add('active-nav');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -804,29 +818,6 @@ function navigateTo(pageId) {
         if (pubSearch) { pubSearch.style.removeProperty('display'); pubSearch.classList.remove('show-mobile'); }
         if (footer)    footer.style.display    = 'block';
         if (applyBtn)  applyBtn.style.display  = 'inline-flex';
-    }
-
-    if (isAdminDash || isRoleDash || pageId === 'coordinator-dashboard') {
-        // Guard: admin-dashboard requires admin role
-        if (isAdminDash && (!currentUser || !['super_admin', 'marketing_admin', 'content_editor', 'admin'].includes(currentUser.role))) {
-            showToast('Access denied.', 'error');
-            showAuthModal();
-            return;
-        }
-
-        // Guard: role dashboards require login
-        if (isRoleDash && !currentUser) {
-            showToast('Please sign in first.', 'error');
-            showAuthModal();
-            return;
-        }
-
-        // Guard: coordinator dashboard requires coordinator role
-        if (pageId === 'coordinator-dashboard' && currentUser?.role !== 'coordinator') {
-            showToast('Access denied.', 'error');
-            showAuthModal();
-            return;
-        }
     }
 
     if (isAdminDash) loadAdminDashboard();
@@ -7440,13 +7431,7 @@ function logout() {
     stopNotificationPolling();
     updateUIForUser();
     applySavedStateToCards();
-    
-    const currentHash = window.location.hash.substring(1);
-    const isProtected = currentHash === 'admin-dashboard' || Object.values(ROLE_DASHBOARD_MAP).includes(currentHash);
-    
-    // We do not force redirect to home here, so the user can stay on the page and log back in if their session expired.
-    // If they need to go home, they can click the Home button manually.
-    
+    navigateTo('home');
     showToast('Signed out successfully.');
 }
 
@@ -8702,21 +8687,8 @@ async function boot() {
 
 boot().then(() => {
     refreshIconsIn(document.getElementById('publicHeader'));
-    
-    // Restore page state from URL hash
-    const hash = window.location.hash.substring(1);
-    if (hash) {
-        navigateTo(hash);
-    }
-
     handleShareDeepLink();
     initNotificationsUI();
-
-    // Listen for browser back/forward navigation
-    window.addEventListener('popstate', () => {
-        const currentHash = window.location.hash.substring(1) || 'home';
-        navigateTo(currentHash);
-    });
 });
 
 /* =================== ROLE DASHBOARD HELPERS =================== */
