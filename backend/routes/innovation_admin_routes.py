@@ -35,29 +35,20 @@ def _activity_title(item, content_type: str) -> str:
 # --- STATS ---
 @router.get("/stats")
 def get_innovation_stats(db: Session = Depends(get_db), current_user: User = Depends(require_innovation_admin)):
-    innovations_total = db.query(models.Innovation).count()
-    innovations_pending = db.query(models.Innovation).filter(models.Innovation.status == "pending").count()
-    innovations_approved = db.query(models.Innovation).filter(models.Innovation.status == "approved").count()
-    innovations_rejected = db.query(models.Innovation).filter(models.Innovation.status == "rejected").count()
-
-    startups_total = db.query(models.Startup).count()
-    startups_pending = db.query(models.Startup).filter(models.Startup.status == "pending").count()
-    startups_approved = db.query(models.Startup).filter(models.Startup.status == "approved").count()
-    startups_rejected = db.query(models.Startup).filter(models.Startup.status == "rejected").count()
-
+    innovations = db.query(models.Innovation).count()
+    startups = db.query(models.Startup).count()
+    
+    pending_innovations = db.query(models.Innovation).filter(models.Innovation.status == "pending").count()
+    pending_startups = db.query(models.Startup).filter(models.Startup.status == "pending").count()
+    pending_requests = db.query(models.FormSubmission).filter(
+        models.FormSubmission.form_type.in_(["innovation_join", "startup_join"]), 
+        models.FormSubmission.status == "pending"
+    ).count()
+    
     return {
-        "innovations": {
-            "total": innovations_total,
-            "pending": innovations_pending,
-            "approved": innovations_approved,
-            "rejected": innovations_rejected
-        },
-        "startups": {
-            "total": startups_total,
-            "pending": startups_pending,
-            "approved": startups_approved,
-            "rejected": startups_rejected
-        }
+        "total_innovations": innovations,
+        "total_startups": startups,
+        "pending_items": pending_innovations + pending_startups + pending_requests
     }
 
 # --- CONTENT ---
