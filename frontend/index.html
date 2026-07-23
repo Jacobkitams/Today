@@ -2720,6 +2720,41 @@
         </div>
     </footer>
 
+    <!-- =================== AUTH MODAL =================== -->
+    <div id="authModal" class="detail-modal" onclick="handleAuthModalBackdrop(event)" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+        <div class="modal-dialog auth-modal-container">
+            <button class="close-modal" onclick="closeAuthModal()" aria-label="Close sign in">&times;</button>
+            <div class="modal-body">
+                <div id="authFormContent">
+                    <div class="auth-modal-header">
+                        <h2 id="authModalTitle">Sign In</h2>
+                        <p>Welcome back to IUEA Today</p>
+                    </div>
+                    <div class="auth-modal-body">
+                        <div class="form-group">
+                            <label for="loginEmail">Email</label>
+                            <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <div class="pw-toggle-wrap">
+                                <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"
+                                    onkeydown="if(event.key==='Enter') signIn()">
+                                <button type="button" class="pw-toggle-btn" onclick="toggleLoginPassword()" aria-label="Toggle password visibility" id="loginPasswordToggle">
+                                    <i data-lucide="eye" id="loginPasswordEyeIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-primary auth-submit-btn" onclick="signIn()">Sign In</button>
+                    </div>
+                    <div class="auth-modal-footer">
+                        <p>Don't have an account? <a href="#" onclick="showSignUp(); return false;">Sign Up</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="assets/js/app.js?v=44"></script>

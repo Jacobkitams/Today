@@ -6443,6 +6443,10 @@ function closeAuthModal() {
 }
 function closeDetailModal() { document.getElementById('detailModal').classList.remove('show'); }
 
+function handleAuthModalBackdrop(event) {
+    if (event.target.id === 'authModal') closeAuthModal();
+}
+
 /* =================== AUTHOR PROFILE MODAL =================== */
 let authorProfileState = {
     userId: null,
