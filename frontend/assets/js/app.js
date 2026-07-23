@@ -7438,7 +7438,13 @@ function logout() {
     stopNotificationPolling();
     updateUIForUser();
     applySavedStateToCards();
-    navigateTo('home');
+    
+    const currentHash = window.location.hash.substring(1);
+    const isProtected = currentHash === 'admin-dashboard' || Object.values(ROLE_DASHBOARD_MAP).includes(currentHash);
+    if (isProtected) {
+        navigateTo('home');
+    }
+    
     showToast('Signed out successfully.');
 }
 
