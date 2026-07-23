@@ -1475,7 +1475,7 @@
                 <div class="admin-sidebar-section">
                     <div class="admin-sidebar-label">Form Submissions</div>
                     <nav class="admin-nav">
-                        <button type="button" class="admin-nav-btn cdash-nav-btn" data-co-tab="innovation" id="co-nav-innovation"><i data-lucide="lightbulb"></i> Innovation Join <span class="nav-badge" id="co-nav-innovation-badge" style="display:none">0</span></button>
+
                         <button type="button" class="admin-nav-btn cdash-nav-btn" data-co-tab="alumni" id="co-nav-alumni"><i data-lucide="graduation-cap"></i> Alumni Join <span class="nav-badge" id="co-nav-alumni-badge" style="display:none">0</span></button>
                         <button type="button" class="admin-nav-btn cdash-nav-btn" data-co-tab="donations" id="co-nav-donations"><i data-lucide="gift"></i> Donations <span class="nav-badge" id="co-nav-donations-badge" style="display:none">0</span></button>
                         <button type="button" class="admin-nav-btn cdash-nav-btn" data-co-tab="community" id="co-nav-community"><i data-lucide="users"></i> Community Join <span class="nav-badge" id="co-nav-community-badge" style="display:none">0</span></button>
@@ -1510,14 +1510,7 @@
                     </div>
 
                     <div class="admin-stats-grid co-stats-grid">
-                        <div class="admin-stat-card-pro co-stat-card co-stat-card--innovation">
-                            <div class="stat-header">
-                                <span class="stat-title">Innovation Join</span>
-                                <div class="stat-icon-wrap co-icon-innovation"><i data-lucide="lightbulb"></i></div>
-                            </div>
-                            <div class="stat-value" id="co-stat-innovation-pending">0</div>
-                            <div class="stat-trend"><i data-lucide="clock"></i> <span id="co-stat-innovation-label">pending review</span></div>
-                        </div>
+
                         <div class="admin-stat-card-pro co-stat-card co-stat-card--alumni">
                             <div class="stat-header">
                                 <span class="stat-title">Alumni Join</span>
@@ -1573,49 +1566,6 @@
                     </div>
                 </div>
 
-                <!-- INNOVATION JOIN -->
-                <div id="co-tab-innovation" class="co-tab">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Innovation Join Submissions</h3>
-                            <p>Applications from the innovation join form — innovation team join requests.</p>
-                        </div>
-                        <div class="admin-panel-header-actions co-filter-bar">
-                            <select id="co-filter-innovation-status" class="co-filter-select" aria-label="Filter innovation submissions by status">
-                                <option value="all">All statuses</option>
-                                <option value="pending" selected>Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="admin-panel p-0 co-submissions-panel">
-                        <div id="co-innovation-loading" class="co-loading-state" hidden>
-                            <i data-lucide="loader"></i>
-                            <p>Loading submissions…</p>
-                        </div>
-                        <div id="co-innovation-empty" class="co-empty-state">
-                            <i data-lucide="inbox"></i>
-                            <h3>No innovation submissions</h3>
-                            <p>New join requests will appear here for review.</p>
-                        </div>
-                        <table class="admin-table-modern co-submissions-table" id="co-table-innovation" hidden>
-                            <thead>
-                                <tr>
-                                    <th>Applicant</th>
-                                    <th>Email</th>
-                                    <th>Submitted</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="co-tbody-innovation"></tbody>
-                        </table>
-                        <div class="table-pagination" id="co-pagination-innovation" hidden>
-                            <span id="co-pagination-innovation-count">0 submissions</span>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- ALUMNI JOIN -->
                 <div id="co-tab-alumni" class="co-tab">
