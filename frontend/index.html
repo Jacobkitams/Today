@@ -1498,69 +1498,102 @@
 
                 <!-- OVERVIEW -->
                 <div id="co-tab-overview" class="co-tab active">
-                    <div class="admin-welcome-banner co-welcome-banner">
+                    <div class="admin-welcome-banner">
                         <div class="admin-welcome-content">
                             <h2 id="coWelcomeTitle">Coordinator Dashboard</h2>
-                            <p>Review and manage join-form submissions across innovation, alumni, donations, community, and research programs.</p>
+                            <p>Review and manage join-form submissions across alumni, donations, community, and research programs.</p>
+                            <div class="admin-welcome-actions">
+                                <button class="btn-primary" onclick="switchCoTab('alumni', document.querySelector('[data-co-tab=alumni]'))"><i data-lucide="inbox"></i> Review Queue</button>
+                                <button class="btn-secondary" style="color:var(--iuea-gray);border-color:rgba(255,255,255,0.5)" onclick="switchCoTab('community', document.querySelector('[data-co-tab=community]'))">Community</button>
+                            </div>
                         </div>
                         <div class="admin-welcome-status">
                             <div class="date-display" id="coDateDisplay">Loading date…</div>
-                            <div class="platform-status"><span class="status-dot co-status-dot"></span> Review queue active</div>
+                            <div class="platform-status"><span class="status-dot"></span> Review queue active</div>
                         </div>
                     </div>
 
-                    <div class="admin-stats-grid co-stats-grid">
-
-                        <div class="admin-stat-card-pro co-stat-card co-stat-card--alumni">
+                    <div class="admin-stats-grid">
+                        <div class="admin-stat-card-pro">
                             <div class="stat-header">
                                 <span class="stat-title">Alumni Join</span>
-                                <div class="stat-icon-wrap co-icon-alumni"><i data-lucide="graduation-cap"></i></div>
+                                <div class="stat-icon-wrap bg-purple"><i data-lucide="graduation-cap"></i></div>
                             </div>
                             <div class="stat-value" id="co-stat-alumni-pending">0</div>
                             <div class="stat-trend"><i data-lucide="clock"></i> <span id="co-stat-alumni-label">pending review</span></div>
                         </div>
-                        <div class="admin-stat-card-pro co-stat-card co-stat-card--donations">
+                        <div class="admin-stat-card-pro">
                             <div class="stat-header">
                                 <span class="stat-title">Donations</span>
-                                <div class="stat-icon-wrap co-icon-donations"><i data-lucide="gift"></i></div>
+                                <div class="stat-icon-wrap bg-maroon"><i data-lucide="gift"></i></div>
                             </div>
                             <div class="stat-value" id="co-stat-donations-pending">0</div>
                             <div class="stat-trend"><i data-lucide="clock"></i> <span id="co-stat-donations-label">pending review</span></div>
                         </div>
-                        <div class="admin-stat-card-pro co-stat-card co-stat-card--community">
+                        <div class="admin-stat-card-pro">
                             <div class="stat-header">
                                 <span class="stat-title">Community Join</span>
-                                <div class="stat-icon-wrap co-icon-community"><i data-lucide="users"></i></div>
+                                <div class="stat-icon-wrap bg-teal"><i data-lucide="users"></i></div>
                             </div>
                             <div class="stat-value" id="co-stat-community-pending">0</div>
                             <div class="stat-trend"><i data-lucide="clock"></i> <span id="co-stat-community-label">pending review</span></div>
                         </div>
-                        <div class="admin-stat-card-pro co-stat-card co-stat-card--research">
+                        <div class="admin-stat-card-pro">
                             <div class="stat-header">
                                 <span class="stat-title">Research Join</span>
-                                <div class="stat-icon-wrap co-icon-research"><i data-lucide="microscope"></i></div>
+                                <div class="stat-icon-wrap bg-teal"><i data-lucide="microscope"></i></div>
                             </div>
                             <div class="stat-value" id="co-stat-research-pending">0</div>
                             <div class="stat-trend"><i data-lucide="clock"></i> <span id="co-stat-research-label">pending review</span></div>
                         </div>
+                        <div class="admin-stat-card-pro warning">
+                            <div class="stat-header">
+                                <span class="stat-title">Total Pending</span>
+                                <div class="stat-icon-wrap bg-red"><i data-lucide="alert-circle"></i></div>
+                            </div>
+                            <div class="stat-value" id="co-stat-total-pending">0</div>
+                            <div class="stat-trend negative"><i data-lucide="alert-circle"></i> Requires attention</div>
+                        </div>
+                        <div class="admin-stat-card-pro">
+                            <div class="stat-header">
+                                <span class="stat-title">Approved Today</span>
+                                <div class="stat-icon-wrap bg-green"><i data-lucide="check-circle"></i></div>
+                            </div>
+                            <div class="stat-value" id="co-stat-approved-today">0</div>
+                            <div class="stat-trend positive"><i data-lucide="trending-up"></i> Processed today</div>
+                        </div>
+                        <div class="admin-stat-card-pro">
+                            <div class="stat-header">
+                                <span class="stat-title">Rejected Today</span>
+                                <div class="stat-icon-wrap bg-orange"><i data-lucide="x-circle"></i></div>
+                            </div>
+                            <div class="stat-value" id="co-stat-rejected-today">0</div>
+                            <div class="stat-trend"><i data-lucide="minus-circle"></i> Declined today</div>
+                        </div>
                     </div>
 
-                    <div class="admin-panel co-overview-summary">
-                        <div class="panel-header">
-                            <h3>Submission Queue Summary</h3>
+                    <div class="admin-dashboard-grid">
+                        <div class="admin-panel">
+                            <div class="panel-header">
+                                <h3>Quick Actions</h3>
+                            </div>
+                            <p style="color:var(--iuea-gray-light);font-size:0.9rem;margin:0 0 1.25rem;">Jump directly to a form submission queue to start reviewing.</p>
+                            <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                                <button class="btn-outline-small" style="justify-content:flex-start;gap:0.5rem;" onclick="switchCoTab('alumni', document.querySelector('[data-co-tab=alumni]'))"><i data-lucide="graduation-cap"></i> Alumni Join Queue</button>
+                                <button class="btn-outline-small" style="justify-content:flex-start;gap:0.5rem;" onclick="switchCoTab('donations', document.querySelector('[data-co-tab=donations]'))"><i data-lucide="gift"></i> Donations Queue</button>
+                                <button class="btn-outline-small" style="justify-content:flex-start;gap:0.5rem;" onclick="switchCoTab('community', document.querySelector('[data-co-tab=community]'))"><i data-lucide="users"></i> Community Join Queue</button>
+                                <button class="btn-outline-small" style="justify-content:flex-start;gap:0.5rem;" onclick="switchCoTab('research', document.querySelector('[data-co-tab=research]'))"><i data-lucide="microscope"></i> Research Join Queue</button>
+                            </div>
                         </div>
-                        <div class="co-summary-row">
-                            <div class="co-summary-metric">
-                                <span class="co-summary-label">Total Pending</span>
-                                <strong id="co-stat-total-pending">0</strong>
+
+                        <div class="admin-panel">
+                            <div class="panel-header">
+                                <h3>Recent Activity</h3>
                             </div>
-                            <div class="co-summary-metric">
-                                <span class="co-summary-label">Approved Today</span>
-                                <strong id="co-stat-approved-today">0</strong>
-                            </div>
-                            <div class="co-summary-metric">
-                                <span class="co-summary-label">Rejected Today</span>
-                                <strong id="co-stat-rejected-today">0</strong>
+                            <div id="coRecentActivity">
+                                <div class="admin-empty-state" style="padding:1.5rem 0;">
+                                    <p style="color:#64748b;margin:0;">No recent activity yet.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2994,66 +3027,101 @@
             <main class="admin-main">
                 <!-- OVERVIEW TAB -->
                 <div id="ia-tab-overview" class="role-tab active">
-                    <div class="admin-panel-header">
-                        <div class="admin-panel-header-text">
-                            <h3>Dashboard Overview</h3>
-                            <p>Welcome back! Here's what's happening with innovations and startups.</p>
+                    <div class="admin-welcome-banner">
+                        <div class="admin-welcome-content">
+                            <h2 id="iaWelcomeTitle">Innovation Dashboard</h2>
+                            <p>Manage innovations and startups submitted to the IUEA Innovation Hub.</p>
+                            <div class="admin-welcome-actions">
+                                <button class="btn-primary" onclick="showCreateModal()"><i data-lucide="plus"></i> New Project</button>
+                                <button class="btn-secondary" style="color:var(--iuea-gray);border-color:rgba(255,255,255,0.5)" onclick="showIaTab('requests', document.querySelector('.ia-tab-btn'))">View Requests</button>
+                            </div>
                         </div>
-                        <div class="admin-panel-header-actions">
-                            <button class="btn-primary" onclick="showCreateModal()"><i data-lucide="plus"></i> New Project</button>
+                        <div class="admin-welcome-status">
+                            <div class="date-display" id="iaDateDisplay">Loading date...</div>
+                            <div class="platform-status"><span class="status-dot"></span> All Systems Operational</div>
                         </div>
                     </div>
-                    
+
                     <div class="admin-stats-grid">
                         <!-- Innovations block -->
-                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #800000">
+                        <div class="admin-stat-card-pro">
                             <div class="stat-header">
                                 <span class="stat-title">Innovations — Total</span>
-                                <div class="stat-icon-wrap" style="background:#fef2f2;color:#800000"><i data-lucide="lightbulb"></i></div>
+                                <div class="stat-icon-wrap bg-maroon"><i data-lucide="lightbulb"></i></div>
                             </div>
                             <div class="stat-value" id="ia-stat-inn-total">—</div>
-                            <div class="stat-trend"><i data-lucide="database"></i> All submissions</div>
+                            <div class="stat-trend positive"><i data-lucide="database"></i> All submissions</div>
                         </div>
-                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #f59e0b">
+                        <div class="admin-stat-card-pro warning">
                             <div class="stat-header">
                                 <span class="stat-title">Innovations — Pending</span>
-                                <div class="stat-icon-wrap" style="background:#fffbeb;color:#f59e0b"><i data-lucide="clock"></i></div>
+                                <div class="stat-icon-wrap bg-red"><i data-lucide="clock"></i></div>
                             </div>
                             <div class="stat-value" id="ia-stat-inn-pending">—</div>
-                            <div class="stat-trend"><i data-lucide="clock"></i> Awaiting review</div>
+                            <div class="stat-trend negative"><i data-lucide="alert-circle"></i> Awaiting review</div>
                         </div>
-                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #22c55e">
+                        <div class="admin-stat-card-pro">
                             <div class="stat-header">
                                 <span class="stat-title">Innovations — Approved</span>
-                                <div class="stat-icon-wrap" style="background:#f0fdf4;color:#22c55e"><i data-lucide="check-circle"></i></div>
+                                <div class="stat-icon-wrap bg-green"><i data-lucide="check-circle"></i></div>
                             </div>
                             <div class="stat-value" id="ia-stat-inn-approved">—</div>
-                            <div class="stat-trend"><i data-lucide="check"></i> Live on platform</div>
+                            <div class="stat-trend positive"><i data-lucide="check"></i> Live on platform</div>
                         </div>
                         <!-- Startups block -->
-                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #7c3aed">
+                        <div class="admin-stat-card-pro">
                             <div class="stat-header">
                                 <span class="stat-title">Startups — Total</span>
-                                <div class="stat-icon-wrap" style="background:#faf5ff;color:#7c3aed"><i data-lucide="rocket"></i></div>
+                                <div class="stat-icon-wrap bg-purple"><i data-lucide="rocket"></i></div>
                             </div>
                             <div class="stat-value" id="ia-stat-st-total">—</div>
-                            <div class="stat-trend"><i data-lucide="database"></i> All submissions</div>
+                            <div class="stat-trend positive"><i data-lucide="database"></i> All submissions</div>
                         </div>
-                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #f59e0b">
+                        <div class="admin-stat-card-pro warning">
                             <div class="stat-header">
                                 <span class="stat-title">Startups — Pending</span>
-                                <div class="stat-icon-wrap" style="background:#fffbeb;color:#f59e0b"><i data-lucide="clock"></i></div>
+                                <div class="stat-icon-wrap bg-red"><i data-lucide="clock"></i></div>
                             </div>
                             <div class="stat-value" id="ia-stat-st-pending">—</div>
-                            <div class="stat-trend"><i data-lucide="clock"></i> Awaiting review</div>
+                            <div class="stat-trend negative"><i data-lucide="alert-circle"></i> Awaiting review</div>
                         </div>
-                        <div class="admin-stat-card-pro co-stat-card" style="border-top:3px solid #22c55e">
+                        <div class="admin-stat-card-pro">
                             <div class="stat-header">
                                 <span class="stat-title">Startups — Approved</span>
-                                <div class="stat-icon-wrap" style="background:#f0fdf4;color:#22c55e"><i data-lucide="check-circle"></i></div>
+                                <div class="stat-icon-wrap bg-green"><i data-lucide="check-circle"></i></div>
                             </div>
                             <div class="stat-value" id="ia-stat-st-approved">—</div>
-                            <div class="stat-trend"><i data-lucide="check"></i> Live on platform</div>
+                            <div class="stat-trend positive"><i data-lucide="check"></i> Live on platform</div>
+                        </div>
+                    </div>
+
+                    <div class="admin-dashboard-grid">
+                        <div class="admin-panel">
+                            <div class="panel-header">
+                                <h3>Quick Actions</h3>
+                            </div>
+                            <p style="color:var(--iuea-gray-light);font-size:0.9rem;margin:0 0 1.25rem;">Manage content and review incoming project applications.</p>
+                            <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                                <button class="btn-outline-small" style="justify-content:flex-start;gap:0.5rem;" onclick="showIaTab('content', document.querySelector('.ia-tab-btn[onclick*=content]'))"><i data-lucide="lightbulb"></i> Manage Innovations</button>
+                                <button class="btn-outline-small" style="justify-content:flex-start;gap:0.5rem;" onclick="showIaTab('requests', document.querySelector('.ia-tab-btn[onclick*=requests]'))"><i data-lucide="inbox"></i> Review Join Requests</button>
+                                <button class="btn-outline-small" style="justify-content:flex-start;gap:0.5rem;" onclick="showCreateModal()"><i data-lucide="plus-circle"></i> Create New Project</button>
+                            </div>
+                        </div>
+
+                        <div class="admin-panel">
+                            <div class="panel-header">
+                                <h3>Recent Activity</h3>
+                                <button class="btn-text"><i data-lucide="refresh-cw"></i></button>
+                            </div>
+                            <div class="activity-feed">
+                                <div class="activity-item">
+                                    <div class="activity-icon bg-gold"><i data-lucide="lightbulb"></i></div>
+                                    <div class="activity-details">
+                                        <p>New innovations and startups will appear here as they are submitted.</p>
+                                        <span>—</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
