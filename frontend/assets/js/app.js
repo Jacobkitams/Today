@@ -9505,9 +9505,16 @@ let iaActiveTab = 'overview';
 async function iaLoadStats() {
     try {
         const stats = await apiGet('/innovation-admin/stats');
-        if (document.getElementById('ia-stat-innovations')) document.getElementById('ia-stat-innovations').textContent = stats.total_innovations || 0;
-        if (document.getElementById('ia-stat-startups')) document.getElementById('ia-stat-startups').textContent = stats.total_startups || 0;
-        if (document.getElementById('ia-stat-pending')) document.getElementById('ia-stat-pending').textContent = stats.pending_items || 0;
+        if (stats.innovations) {
+            if (document.getElementById('ia-stat-inn-total')) document.getElementById('ia-stat-inn-total').textContent = stats.innovations.total || 0;
+            if (document.getElementById('ia-stat-inn-pending')) document.getElementById('ia-stat-inn-pending').textContent = stats.innovations.pending || 0;
+            if (document.getElementById('ia-stat-inn-approved')) document.getElementById('ia-stat-inn-approved').textContent = stats.innovations.approved || 0;
+        }
+        if (stats.startups) {
+            if (document.getElementById('ia-stat-st-total')) document.getElementById('ia-stat-st-total').textContent = stats.startups.total || 0;
+            if (document.getElementById('ia-stat-st-pending')) document.getElementById('ia-stat-st-pending').textContent = stats.startups.pending || 0;
+            if (document.getElementById('ia-stat-st-approved')) document.getElementById('ia-stat-st-approved').textContent = stats.startups.approved || 0;
+        }
     } catch (err) {
         console.error('Failed to load IA stats', err);
     }
