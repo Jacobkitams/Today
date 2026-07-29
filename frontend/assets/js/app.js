@@ -7461,6 +7461,27 @@ function updateUIForUser() {
             }
         }
 
+        const sidebarAvatars = [
+            { img: 'ruAvatarImg', icon: 'ruAvatarIcon' },
+            { img: 'dpAvatarImg', icon: 'dpAvatarIcon' },
+            { img: 'coAvatarImg', icon: 'coAvatarIcon' },
+            { img: 'adminDashAvatarImg', icon: 'adminDashAvatarIcon' }
+        ];
+        sidebarAvatars.forEach(({img, icon}) => {
+            const imgEl = document.getElementById(img);
+            const iconEl = document.getElementById(icon);
+            if (imgEl && iconEl) {
+                if (currentUser.profile_picture) {
+                    imgEl.src = resolveMediaUrl(currentUser.profile_picture);
+                    imgEl.classList.remove('hidden');
+                    iconEl.classList.add('hidden');
+                } else {
+                    imgEl.classList.add('hidden');
+                    iconEl.classList.remove('hidden');
+                }
+            }
+        });
+
         if (mobileLink) mobileLink.innerHTML = `<i data-lucide="log-out"></i> Sign Out`;
         if (mobileLink) mobileLink.setAttribute('onclick', 'logout()');
 
@@ -7497,6 +7518,21 @@ function updateUIForUser() {
             avatarImg.classList.add('hidden');
             avatarIcon.classList.remove('hidden');
         }
+
+        const sidebarAvatars = [
+            { img: 'ruAvatarImg', icon: 'ruAvatarIcon' },
+            { img: 'dpAvatarImg', icon: 'dpAvatarIcon' },
+            { img: 'coAvatarImg', icon: 'coAvatarIcon' },
+            { img: 'adminDashAvatarImg', icon: 'adminDashAvatarIcon' }
+        ];
+        sidebarAvatars.forEach(({img, icon}) => {
+            const imgEl = document.getElementById(img);
+            const iconEl = document.getElementById(icon);
+            if (imgEl && iconEl) {
+                imgEl.classList.add('hidden');
+                iconEl.classList.remove('hidden');
+            }
+        });
         
         if (mobileLink) { mobileLink.innerHTML = `<i data-lucide="log-in"></i> Sign In`; mobileLink.setAttribute('onclick', 'showAuthModal()'); }
         if (userDashLink) userDashLink.classList.add('hidden');
