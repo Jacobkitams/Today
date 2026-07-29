@@ -9913,8 +9913,18 @@ function previewProfilePicture(input) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const preview = document.getElementById('ruProfilePicturePreview');
-            preview.src = e.target.result;
-            preview.style.padding = '0';
+            if (preview) {
+                preview.src = e.target.result;
+                preview.style.padding = '0';
+            }
+            // Also update the navbar avatar immediately for live feedback
+            const navImg  = document.getElementById('userAvatarImg');
+            const navIcon = document.getElementById('userAvatarIcon');
+            if (navImg && navIcon) {
+                navImg.src = e.target.result;
+                navImg.classList.remove('hidden');
+                navIcon.classList.add('hidden');
+            }
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -9975,7 +9985,18 @@ async function saveProfile() {
         if (res.ok) {
             const updatedUser = await res.json();
             currentUser = updatedUser;
+            cacheUserSession(updatedUser);  // keep localStorage in sync
             updateUIForUser();
+            // Re-sync the profile settings preview to the saved picture
+            const picPreview = document.getElementById('ruProfilePicturePreview');
+            if (picPreview) {
+                if (updatedUser.profile_picture) {
+                    picPreview.src = resolveMediaUrl(updatedUser.profile_picture);
+                    picPreview.style.padding = '0';
+                } else {
+                    picPreview.style.padding = '10px';
+                }
+            }
             showToast('Profile saved successfully!', 'success');
             passEl.value = ''; // clear password field
             if (picInput) picInput.value = '';
