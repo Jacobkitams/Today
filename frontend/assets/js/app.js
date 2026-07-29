@@ -7440,6 +7440,7 @@ function logout() {
 function updateUIForUser() {
     const display    = document.getElementById('userNameDisplay');
     const mobileLink = document.getElementById('mobileAuthLink');
+    const userDashLink = document.getElementById('userDashboardNavLink');
     const badge      = document.getElementById('adminRoleBadge');
     const welcomeTitle = document.getElementById('adminWelcomeTitle');
 
@@ -7450,6 +7451,10 @@ function updateUIForUser() {
         if (mobileLink) mobileLink.setAttribute('onclick', 'logout()');
 
         const role = currentUser.role || 'public_visitor';
+        if (userDashLink) {
+            if (getDashboardForRole(role)) userDashLink.classList.remove('hidden');
+            else userDashLink.classList.add('hidden');
+        }
         const roleLabel = formatRoleLabel(role);
         if (badge) badge.textContent = roleLabel;
         if (welcomeTitle) welcomeTitle.textContent = `Welcome back, ${displayName}`;
@@ -7474,6 +7479,7 @@ function updateUIForUser() {
     } else {
         if (display) display.textContent = `Sign In`;
         if (mobileLink) { mobileLink.innerHTML = `<i data-lucide="log-in"></i> Sign In`; mobileLink.setAttribute('onclick', 'showAuthModal()'); }
+        if (userDashLink) userDashLink.classList.add('hidden');
         if (badge) badge.textContent = '';
         if (welcomeTitle) welcomeTitle.textContent = 'Welcome';
         const adminUserName = document.getElementById('adminUserName');
