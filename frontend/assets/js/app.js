@@ -7443,10 +7443,24 @@ function updateUIForUser() {
     const userDashLink = document.getElementById('userDashboardNavLink');
     const badge      = document.getElementById('adminRoleBadge');
     const welcomeTitle = document.getElementById('adminWelcomeTitle');
+    const avatarImg  = document.getElementById('userAvatarImg');
+    const avatarIcon = document.getElementById('userAvatarIcon');
 
     if (currentUser) {
         const displayName = getUserDisplayName(currentUser) || 'User';
         if (display) display.textContent = displayName;
+        
+        if (avatarImg && avatarIcon) {
+            if (currentUser.profile_picture) {
+                avatarImg.src = resolveMediaUrl(currentUser.profile_picture);
+                avatarImg.classList.remove('hidden');
+                avatarIcon.classList.add('hidden');
+            } else {
+                avatarImg.classList.add('hidden');
+                avatarIcon.classList.remove('hidden');
+            }
+        }
+
         if (mobileLink) mobileLink.innerHTML = `<i data-lucide="log-out"></i> Sign Out`;
         if (mobileLink) mobileLink.setAttribute('onclick', 'logout()');
 
@@ -7478,6 +7492,12 @@ function updateUIForUser() {
         startNotificationPolling();
     } else {
         if (display) display.textContent = `Sign In`;
+        
+        if (avatarImg && avatarIcon) {
+            avatarImg.classList.add('hidden');
+            avatarIcon.classList.remove('hidden');
+        }
+        
         if (mobileLink) { mobileLink.innerHTML = `<i data-lucide="log-in"></i> Sign In`; mobileLink.setAttribute('onclick', 'showAuthModal()'); }
         if (userDashLink) userDashLink.classList.add('hidden');
         if (badge) badge.textContent = '';
