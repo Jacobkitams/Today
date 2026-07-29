@@ -14,7 +14,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
-    <link rel="stylesheet" href="assets/css/style.css?v=15">
+    <link rel="stylesheet" href="assets/css/style.css?v=16">
 </head>
 
 <body>
@@ -53,7 +53,12 @@
                 <a onclick="navigateTo('innovation')"><i data-lucide="lightbulb"></i> Innovation</a>
                 <a onclick="navigateTo('alumni')"><i data-lucide="graduation-cap"></i> Alumni</a>
                 <a onclick="navigateTo('endowment')"><i data-lucide="wallet"></i> Endowment</a>
-                <a onclick="navigateTo('community')"><i data-lucide="landmark"></i> Community</a>
+                <div class="nav-dropdown" id="communityDropdown">
+                    <a class="nav-dropdown-trigger" onclick="navigateTo('community')"><i data-lucide="landmark"></i> Community <i data-lucide="chevron-down" class="nav-dropdown-chevron"></i></a>
+                    <div class="nav-dropdown-menu" id="communityDropdownMenu">
+                        <a class="nav-dropdown-item" onclick="navigateTo('conference')"><i data-lucide="presentation"></i> Conference</a>
+                    </div>
+                </div>
                 <a onclick="navigateTo('research')"><i data-lucide="microscope"></i> Research</a>
                 <a onclick="navigateTo('techpark')"><i data-lucide="building-2"></i> Tech Park</a>
                 <a onclick="navigateToDashboard()" id="userDashboardNavLink"

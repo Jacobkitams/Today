@@ -192,11 +192,108 @@ nav {
     gap: 0.3rem;
 }
 
+
 .nav-links a:hover, .nav-links a.active-nav,
 #publicHeader .nav-links .nav-link:hover,
 #publicHeader .nav-links .nav-link.active-nav {
     color: var(--iuea-maroon);
 }
+
+/* ── Community dropdown ─────────────────────────────────────────────── */
+.nav-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nav-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    text-decoration: none;
+    color: var(--iuea-gray);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color var(--transition-speed);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.nav-dropdown-trigger:hover {
+    color: var(--iuea-maroon);
+}
+
+.nav-dropdown-chevron {
+    width: 13px;
+    height: 13px;
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+
+.nav-dropdown:hover .nav-dropdown-chevron {
+    transform: rotate(180deg);
+}
+
+/* Invisible bridge: fills the gap between trigger and menu so hover stays active */
+.nav-dropdown::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 12px;
+}
+
+.nav-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-6px);
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+    min-width: 160px;
+    padding: 0.4rem 0;
+    z-index: 1050;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.nav-dropdown:hover .nav-dropdown-menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+.nav-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--iuea-gray);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    border-radius: 6px;
+    margin: 0 0.3rem;
+}
+
+.nav-dropdown-item:hover {
+    background: rgba(128, 0, 0, 0.07);
+    color: var(--iuea-maroon);
+}
+
+.nav-dropdown-item i {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+/* ────────────────────────────────────────────────────────────────────── */
 
 .nav-actions {
     display: flex;
@@ -8530,6 +8627,61 @@ body.app-offline .offline-admin-notice {
     body.nav-open {
         overflow: hidden;
     }
+
+    /* ── Community dropdown: mobile flat layout ── */
+    #publicHeader .nav-dropdown {
+        flex-direction: column;
+        align-items: stretch;
+        position: static;
+    }
+
+    #publicHeader .nav-dropdown::after {
+        display: none;
+    }
+
+    #publicHeader .nav-dropdown-trigger {
+        font-size: 0.95rem;
+        padding: 0.8rem 1rem;
+        min-height: var(--touch-target-min);
+        border-radius: var(--radius-md);
+        color: var(--iuea-gray);
+    }
+
+    #publicHeader .nav-dropdown-trigger:hover {
+        background: rgba(128, 0, 0, 0.06);
+        color: var(--iuea-maroon);
+    }
+
+    #publicHeader .nav-dropdown-chevron {
+        display: none;
+    }
+
+    #publicHeader .nav-dropdown-menu {
+        position: static;
+        transform: none;
+        opacity: 1;
+        pointer-events: auto;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        padding: 0;
+        min-width: 0;
+    }
+
+    #publicHeader .nav-dropdown-item {
+        font-size: 0.9rem;
+        padding: 0.65rem 1rem 0.65rem 2.2rem;
+        border-radius: var(--radius-md);
+        margin: 0;
+        color: var(--iuea-gray-light);
+    }
+
+    #publicHeader .nav-dropdown-item:hover {
+        background: rgba(128, 0, 0, 0.06);
+        color: var(--iuea-maroon);
+    }
+    /* ─────────────────────────────────────────── */
 }
 
 /* --- 960px: tablet / mobile nav drawer --- */
