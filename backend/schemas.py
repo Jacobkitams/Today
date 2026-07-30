@@ -57,6 +57,7 @@ class ContentBase(BaseModel):
 # ---------- NEWS ----------
 class NewsCreate(ContentBase):
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     video: Optional[str] = None
     type: Optional[str] = "news"
 
@@ -66,6 +67,7 @@ class NewsResponse(ContentBase):
     comments_count: int = 0
     author_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     type: str
     status: str
     video: Optional[str] = None
@@ -84,6 +86,7 @@ class FeedItemResponse(BaseModel):
     comments_count: int = 0
     author_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     source: str
     badge: str
     created_at: Optional[datetime] = None
@@ -97,6 +100,7 @@ class NewsCommentResponse(BaseModel):
     news_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     parent_id: Optional[int] = None
     comments_count: int = 0
@@ -128,6 +132,7 @@ class EventResponse(ContentBase):
     comments_count: int = 0
     author_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     date: Optional[str] = None
     location: Optional[str] = None
     attendees: int
@@ -146,6 +151,7 @@ class EventCommentResponse(BaseModel):
     event_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     comments_count: int
     created_at: Optional[datetime] = None
@@ -203,6 +209,7 @@ class EventRegistrationStatusUpdate(BaseModel):
 # ---------- INNOVATION ----------
 class InnovationCreate(ContentBase):
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     video: Optional[str] = None
 
 class InnovationResponse(ContentBase):
@@ -211,6 +218,7 @@ class InnovationResponse(ContentBase):
     comments_count: int = 0
     author_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     status: str
     video: Optional[str] = None
     created_at: Optional[datetime] = None
@@ -225,6 +233,7 @@ class InnovationCommentResponse(BaseModel):
     innovation_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     comments_count: int
     created_at: Optional[datetime] = None
@@ -255,6 +264,7 @@ class StartupCommentResponse(BaseModel):
     startup_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     comments_count: int
     created_at: Optional[datetime] = None
@@ -287,6 +297,7 @@ class AlumniCommentResponse(BaseModel):
     alumni_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     comments_count: int
     created_at: Optional[datetime] = None
@@ -363,6 +374,7 @@ class EndowmentCampaignCommentResponse(BaseModel):
     campaign_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     comments_count: int
     created_at: Optional[datetime] = None
@@ -404,6 +416,7 @@ class CommunityCommentResponse(BaseModel):
     community_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     comments_count: int
     created_at: Optional[datetime] = None
@@ -432,6 +445,7 @@ class ResearchAreaCommentResponse(BaseModel):
     research_area_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     comments_count: int
     created_at: Optional[datetime] = None
@@ -463,6 +477,7 @@ class PublicationCommentResponse(BaseModel):
     publication_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     comments_count: int
     created_at: Optional[datetime] = None
@@ -492,6 +507,7 @@ class ResearchLabCommentResponse(BaseModel):
     research_lab_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     comments_count: int
     created_at: Optional[datetime] = None
@@ -522,6 +538,7 @@ class TechParkCommentResponse(BaseModel):
     tech_park_id: int
     user_id: Optional[int] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     message: str
     comments_count: int
     created_at: Optional[datetime] = None
@@ -599,6 +616,7 @@ class AdminContentUpdate(BaseModel):
     category: Optional[str] = None
     stat: Optional[str] = None
     author_name: Optional[str] = None
+    author_profile_picture: Optional[str] = None
     founder_name: Optional[str] = None
     authors: Optional[str] = None
     journal: Optional[str] = None

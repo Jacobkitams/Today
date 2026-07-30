@@ -22,25 +22,26 @@ def _content_title(item) -> str:
         return f"{item.first_name} {item.last_name}".strip() or "Untitled"
     return "Untitled"
 
-def _resolve_author_name(db: Session, author_id: Optional[int]) -> Optional[str]:
+def _resolve_author_name(db: Session, author_id: Optional[int]) -> tuple[Optional[str], Optional[str]]:
     if not author_id:
-        return None
+        return None, None
     user = db.query(User).filter(User.id == author_id).first()
-    return user.name if user else None
+    return (user.name, user.profile_picture) if user else (None, None)
 
 
 def _resolve_author_names(db: Session, author_ids: List[int]) -> dict:
     ids = {author_id for author_id in author_ids if author_id}
     if not ids:
         return {}
-    rows = db.query(User.id, User.name).filter(User.id.in_(ids)).all()
-    return {row.id: row.name for row in rows}
+    rows = db.query(User.id, User.name, User.profile_picture).filter(User.id.in_(ids)).all()
+    return {row.id: {"name": row.name, "profile_picture": row.profile_picture} for row in rows}
 
 
 def _enrich_event(db: Session, item: models.Event) -> schemas.EventResponse:
     data = schemas.EventResponse.model_validate(item)
     if item.author_id:
-        return data.model_copy(update={"author_name": _resolve_author_name(db, item.author_id)})
+        name, pic = _resolve_author_name(db, item.author_id)
+        return data.model_copy(update={"author_name": name, "author_profile_picture": pic})
     return data
 
 
@@ -158,7 +159,8 @@ def _feed_item_from_news(row: models.News, author_names: dict) -> dict:
         "startup": "Startup",
         "alumni": "Alumni",
     }
-    author_name = row.author_name or author_names.get(row.author_id)
+    author_info = author_names.get(row.author_id) or {}
+    author_name = row.author_name or author_info.get("name")
     return {
         "id": row.id,
         "title": row.title,
@@ -169,12 +171,14 @@ def _feed_item_from_news(row: models.News, author_names: dict) -> dict:
         "comments_count": row.comments_count or 0,
         "author_id": row.author_id,
         "author_name": author_name,
+        "author_profile_picture": author_info.get("profile_picture"),
         "source": "news",
         "badge": badge_labels.get(row.type, "News"),
         "created_at": row.created_at,
     }
 
 def _feed_item_from_community(row: models.CommunityItem, author_names: dict) -> dict:
+    author_info = author_names.get(row.author_id) or {}
     return {
         "id": row.id,
         "title": row.title,
@@ -184,7 +188,8 @@ def _feed_item_from_community(row: models.CommunityItem, author_names: dict) -> 
         "likes": row.likes or 0,
         "comments_count": row.comments_count or 0,
         "author_id": row.author_id,
-        "author_name": author_names.get(row.author_id),
+        "author_name": author_info.get("name"),
+        "author_profile_picture": author_info.get("profile_picture"),
         "source": "community",
         "badge": "Community",
         "created_at": row.created_at,
@@ -217,14 +222,18 @@ def get_home_feed(
 
 def _news_comment_payload(db: Session, comment: models.NewsComment, comments_count: int = 0) -> dict:
     author_name = None
+    author_pic = None
     if comment.user_id:
         user = db.query(models.User).filter(models.User.id == comment.user_id).first()
-        author_name = user.name if user else None
+        if user:
+            author_name = user.name
+            author_pic = user.profile_picture
     return {
         "id": comment.id,
         "news_id": comment.news_id,
         "user_id": comment.user_id,
         "author_name": author_name,
+        "author_profile_picture": author_pic,
         "message": comment.message,
         "parent_id": comment.parent_id,
         "comments_count": comments_count,
@@ -297,7 +306,8 @@ def get_events(limit: Optional[int] = None, db: Session = Depends(get_db)):
     for item in items:
         data = schemas.EventResponse.model_validate(item)
         if item.author_id:
-            data = data.model_copy(update={"author_name": author_names.get(item.author_id)})
+            info = author_names.get(item.author_id) or {}
+            data = data.model_copy(update={"author_name": info.get("name"), "author_profile_picture": info.get("profile_picture")})
         result.append(data)
     return result
 
@@ -539,12 +549,21 @@ def _author_name(db: Session, user_id: Optional[int]) -> Optional[str]:
     user = db.query(models.User).filter(models.User.id == user_id).first()
     return user.name if user else None
 
+def _author_info(db: Session, user_id: Optional[int]) -> tuple[Optional[str], Optional[str]]:
+    """Returns (name, profile_picture) for a user_id."""
+    if not user_id:
+        return None, None
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    return (user.name, user.profile_picture) if user else (None, None)
+
 def _comment_payload(db: Session, comment, fk_name: str, comments_count: int) -> dict:
+    name, pic = _author_info(db, comment.user_id)
     return {
         "id": comment.id,
         fk_name: getattr(comment, fk_name),
         "user_id": comment.user_id,
-        "author_name": _author_name(db, comment.user_id),
+        "author_name": name,
+        "author_profile_picture": pic,
         "message": comment.message,
         "comments_count": comments_count,
         "created_at": comment.created_at,
@@ -699,15 +718,13 @@ def like_event(item_id: int, db: Session = Depends(get_db), current_user: User =
     return _toggle_likes(db, models.Event, item_id, current_user.id)
 
 def _event_comment_payload(db: Session, comment: models.EventComment, comments_count: int) -> dict:
-    author_name = None
-    if comment.user_id:
-        user = db.query(models.User).filter(models.User.id == comment.user_id).first()
-        author_name = user.name if user else None
+    name, pic = _author_info(db, comment.user_id)
     return {
         "id": comment.id,
         "event_id": comment.event_id,
         "user_id": comment.user_id,
-        "author_name": author_name,
+        "author_name": name,
+        "author_profile_picture": pic,
         "message": comment.message,
         "comments_count": comments_count,
         "created_at": comment.created_at,
@@ -781,11 +798,13 @@ def like_alumni(alumni_id: int, db: Session = Depends(get_db), current_user: Use
     return _toggle_likes(db, models.AlumniProfile, alumni_id, current_user.id)
 
 def _alumni_comment_payload(db: Session, comment: models.AlumniComment, comments_count: int) -> dict:
+    name, pic = _author_info(db, comment.user_id)
     return {
         "id": comment.id,
         "alumni_id": comment.alumni_id,
         "user_id": comment.user_id,
-        "author_name": _author_name(db, comment.user_id),
+        "author_name": name,
+        "author_profile_picture": pic,
         "message": comment.message,
         "comments_count": comments_count,
         "created_at": comment.created_at,

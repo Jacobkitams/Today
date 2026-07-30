@@ -569,17 +569,20 @@ function jsStringLiteral(value) {
     return `'${String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 }
 
-function authorChipHTML(authorId, authorName, contentType, contentId) {
+function authorChipHTML(authorId, authorName, authorPic, contentType, contentId) {
     const aId = authorId || 1;
     const name = (authorName || (authorId ? 'Community member' : 'IUEA Admin')).trim();
     const initial = msgInitials(name, '');
     const safeName = escapeHtml(name);
     const typeArg = contentType ? jsStringLiteral(contentType) : 'null';
     const idArg = contentId ? Number(contentId) : 'null';
+    const avatarContent = authorPic
+        ? `<img src="${resolveMediaUrl(authorPic)}" alt="${safeName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+        : initial;
     return `<button type="button" class="author-chip"
         onclick="event.stopPropagation(); openAuthorProfileModal(${aId}, ${jsStringLiteral(name)}, ${typeArg}, ${idArg})"
         aria-label="View profile of ${safeName}">
-        <span class="author-chip-avatar" aria-hidden="true">${initial}</span>
+        <span class="author-chip-avatar" aria-hidden="true">${avatarContent}</span>
         <span class="author-chip-text">
             <span class="author-chip-label">Shared by</span>
             <span class="author-chip-name">${safeName}</span>
@@ -587,8 +590,8 @@ function authorChipHTML(authorId, authorName, contentType, contentId) {
     </button>`;
 }
 
-function cardAuthorRowHTML(authorId, authorName, contentType, contentId) {
-    const chip = authorChipHTML(authorId, authorName, contentType, contentId);
+function cardAuthorRowHTML(authorId, authorName, authorPic, contentType, contentId) {
+    const chip = authorChipHTML(authorId, authorName, authorPic, contentType, contentId);
     return chip ? `<div class="card-author-row">${chip}</div>` : '';
 }
 
@@ -1324,7 +1327,7 @@ function createEventCard(item) {
     stats += cardCommentsStat(item);
     if (item.date) stats += statHTML('calendar', item.date);
     if (item.location) stats += statHTML('map-pin', item.location);
-    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, 'events', item.id);
+    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, item.author_profile_picture, 'events', item.id);
 
     const mediaHTML = videoUrl
         ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
@@ -1412,7 +1415,7 @@ function createHomeNewsCard(item) {
     if (item.likes !== undefined) stats += statHTML('heart', `${item.likes} likes`);
     stats += cardCommentsStat(item);
     if (item.date) stats += statHTML('calendar', item.date);
-    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, contentType, item.id);
+    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, item.author_profile_picture, contentType, item.id);
     const mediaHTML = videoUrl
         ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
         : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
@@ -1449,7 +1452,7 @@ function createEndowmentCampaignCard(item) {
     if (item.raised_amount) stats += statHTML('trending-up', `Raised: ${item.raised_amount}`);
     if (item.likes !== undefined) stats += statHTML('heart', `${item.likes} likes`);
     stats += cardCommentsStat(item);
-    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, contentType, item.id);
+    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, item.author_profile_picture, contentType, item.id);
 
     return `
     <div class="modern-card" data-content-type="${contentType}" data-content-id="${item.id}">
@@ -1492,7 +1495,7 @@ function createCard(item, cardType) {
     if (item.year) stats += statHTML('graduation-cap', `Class of ${item.year}`);
     if (item.date) stats += statHTML('calendar', item.date);
     if (item.authors) stats += statHTML('book-open', item.authors);
-    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, contentType, item.id);
+    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, item.author_profile_picture, contentType, item.id);
 
     const mediaHTML = videoUrl
         ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`

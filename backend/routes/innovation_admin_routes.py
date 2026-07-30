@@ -78,6 +78,8 @@ def get_innovation_admin_items(
             author = db.query(models.User).filter(models.User.id == item.author_id).first()
             if author:
                 item_dict["author"] = {"name": author.name, "email": author.email}
+                item_dict["author_name"] = author.name
+                item_dict["author_profile_picture"] = author.profile_picture
         result.append(item_dict)
     return result
 

@@ -313,14 +313,20 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
 # --- APPROVAL KANBAN CONTENT ---
 RECENT_APPROVAL_LIMIT = 30
 
-def _author_display(db: Session, item) -> str | None:
+def _author_display(db: Session, item) -> tuple[str | None, str | None]:
+    """Returns (name, profile_picture) for item's author."""
     if hasattr(item, "author_name") and item.author_name:
-        return item.author_name
+        # author_name stored in item; try to get picture from author_id
+        pic = None
+        if hasattr(item, "author_id") and item.author_id:
+            user = db.query(User).filter(User.id == item.author_id).first()
+            pic = user.profile_picture if user else None
+        return item.author_name, pic
     if hasattr(item, "author_id") and item.author_id:
         user = db.query(User).filter(User.id == item.author_id).first()
         if user:
-            return user.name
-    return None
+            return user.name, user.profile_picture
+    return None, None
 
 def _item_to_kanban(item, content_type: str, db: Session) -> dict:
     data = {
@@ -345,9 +351,11 @@ def _item_to_kanban(item, content_type: str, db: Session) -> dict:
         data["description"] = item.role
     if content_type == "publications" and hasattr(item, "authors"):
         data["description"] = item.authors
-    author = _author_display(db, item)
+    author, author_pic = _author_display(db, item)
     if author:
         data["author_name"] = author
+    if author_pic:
+        data["author_profile_picture"] = author_pic
     return data
 
 def _kanban_sort_key(item: dict) -> str:
