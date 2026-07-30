@@ -21,3 +21,10 @@ backend/uploads/
 # Environment secrets
 backend/.env
 frontend/.env
+
+# Local deploy scripts (contain credentials)
+push.sh
+
+# Server logs
+backend/uvicorn.log
+*.log
