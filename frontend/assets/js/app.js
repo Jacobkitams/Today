@@ -7463,6 +7463,7 @@ function updateUIForUser() {
 
         const sidebarAvatars = [
             { img: 'ruAvatarImg', icon: 'ruAvatarIcon' },
+            { img: 'ruDropAvatarImg', icon: 'ruDropAvatarIcon' },
             { img: 'dpAvatarImg', icon: 'dpAvatarIcon' },
             { img: 'coAvatarImg', icon: 'coAvatarIcon' },
             { img: 'adminDashAvatarImg', icon: 'adminDashAvatarIcon' }
@@ -7500,6 +7501,12 @@ function updateUIForUser() {
         // Populate name in role dashboards
         const ruDashNameEl = document.getElementById('ruDashName');
         if (ruDashNameEl) ruDashNameEl.textContent = displayName;
+        
+        const ruDropName = document.getElementById('ruDropName');
+        if (ruDropName) ruDropName.textContent = displayName;
+        const ruDropEmail = document.getElementById('ruDropEmail');
+        if (ruDropEmail) ruDropEmail.textContent = currentUser.email || '';
+
         const dpUserNameEl = document.getElementById('dpUserName');
         if (dpUserNameEl) dpUserNameEl.textContent = displayName;
         const dpRoleBadgeEl = document.getElementById('dpRoleBadge');
@@ -11278,3 +11285,30 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
         console.error(e);
     }
 }
+
+function toggleRuProfileDropdown(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    const drop = document.getElementById('ruProfileDropdown');
+    if (drop) {
+        drop.style.display = drop.style.display === 'none' || drop.style.display === '' ? 'block' : 'none';
+    }
+}
+
+function closeRuProfileDropdown() {
+    const drop = document.getElementById('ruProfileDropdown');
+    if (drop) {
+        drop.style.display = 'none';
+    }
+}
+
+document.addEventListener('click', function(event) {
+    const drop = document.getElementById('ruProfileDropdown');
+    const menu = document.querySelector('.admin-user-menu[onclick*="toggleRuProfileDropdown"]');
+    if (drop && drop.style.display === 'block') {
+        if (!drop.contains(event.target) && (!menu || !menu.contains(event.target))) {
+            drop.style.display = 'none';
+        }
+    }
+});

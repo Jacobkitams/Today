@@ -808,15 +808,31 @@
                     </button>
                 </div>
                 <div class="admin-topbar-divider" aria-hidden="true"></div>
-                <div class="admin-user-area">
-                    <div class="admin-user-menu" aria-label="Signed in user profile">
+                <div class="admin-user-area" style="position: relative;">
+                    <div class="admin-user-menu" aria-label="Signed in user profile" style="cursor: pointer;" onclick="toggleRuProfileDropdown(event)">
                         <div class="admin-avatar" aria-hidden="true">
                             <img id="ruAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                             <i data-lucide="user" id="ruAvatarIcon"></i>
                         </div>
                         <div class="admin-user-info">
                             <span id="ruDashName" class="admin-user-name">User</span>
-                            <span id="ruRoleBadge" class="admin-role-badge">Registered User</span>
+                        </div>
+                    </div>
+                    
+                    <div id="ruProfileDropdown" class="global-profile-dropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; z-index: 1060;">
+                        <div class="pd-header">
+                            <div class="pd-avatar">
+                                <img id="ruDropAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <i data-lucide="user" id="ruDropAvatarIcon"></i>
+                            </div>
+                            <div class="pd-info">
+                                <h4 id="ruDropName">User</h4>
+                                <p id="ruDropEmail">user@example.com</p>
+                            </div>
+                        </div>
+                        <div class="pd-links">
+                            <button type="button" onclick="ruGoToTab('profile'); closeRuProfileDropdown();" style="color: var(--iuea-gray);"><i data-lucide="user"></i> Profile</button>
+                            <button type="button" onclick="logout(); closeRuProfileDropdown();" style="color: #ef4444;"><i data-lucide="log-out"></i> Sign Out</button>
                         </div>
                     </div>
                 </div>
@@ -830,7 +846,6 @@
                     <nav class="admin-nav">
                         <button class="admin-nav-btn rdash-nav-btn active" data-ru-tab="overview" onclick="showRoleTab('ru','overview',this)"><i data-lucide="layout-dashboard"></i> Overview</button>
                         <button class="admin-nav-btn rdash-nav-btn" data-ru-tab="messages" onclick="showRoleTab('ru','messages',this)"><i data-lucide="message-circle"></i> Messages <span class="nav-badge nav-badge-unread" id="ru-nav-messages-badge" style="display:none">0</span></button>
-                        <button class="admin-nav-btn rdash-nav-btn" data-ru-tab="profile" onclick="showRoleTab('ru','profile',this)"><i data-lucide="user"></i> Profile Settings</button>
                     </nav>
                 </div>
 
@@ -848,9 +863,6 @@
                     <div class="admin-sidebar-label">Account</div>
                     <nav class="admin-nav">
                         <button type="button" class="admin-nav-btn rdash-nav-btn" onclick="returnToPublic()"><i data-lucide="globe"></i> Public Site</button>
-                        <button type="button" class="admin-nav-btn rdash-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
-                            <i data-lucide="log-out"></i> Sign Out
-                        </button>
                     </nav>
                 </div>
             </aside>
