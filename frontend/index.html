@@ -809,7 +809,7 @@
                 </div>
                 <div class="admin-topbar-divider" aria-hidden="true"></div>
                 <div class="admin-user-area" style="position: relative;">
-                    <div class="admin-user-menu" aria-label="Signed in user profile" style="cursor: pointer;" onclick="toggleRuProfileDropdown(event)">
+                    <div class="admin-user-menu" aria-label="Signed in user profile" style="cursor: pointer;" onclick="toggleProfileDropdown('ruProfileDropdown', event)">
                         <div class="admin-avatar" aria-hidden="true">
                             <img id="ruAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                             <i data-lucide="user" id="ruAvatarIcon"></i>
@@ -831,8 +831,8 @@
                             </div>
                         </div>
                         <div class="pd-links">
-                            <button type="button" onclick="ruGoToTab('profile'); closeRuProfileDropdown();" style="color: var(--iuea-gray);"><i data-lucide="user"></i> Profile</button>
-                            <button type="button" onclick="logout(); closeRuProfileDropdown();" style="color: #ef4444;"><i data-lucide="log-out"></i> Sign Out</button>
+                            <button type="button" onclick="ruGoToTab('profile'); closeAllProfileDropdowns();" style="color: var(--iuea-gray);"><i data-lucide="user"></i> Profile</button>
+                            <button type="button" onclick="logout(); closeAllProfileDropdowns();" style="color: #ef4444;"><i data-lucide="log-out"></i> Sign Out</button>
                         </div>
                     </div>
                 </div>
@@ -1079,7 +1079,7 @@
                 <div id="ru-tab-profile" class="role-tab">
                     <div class="admin-panel-header">
                         <div>
-                            <h3>Profile Settings</h3>
+                            <h3>Profile</h3>
                             <p>Update your account details and password.</p>
                         </div>
                         <button class="btn-primary" onclick="saveProfile()"><i data-lucide="save"></i> Save Changes</button>
@@ -1180,15 +1180,31 @@
                     </button>
                 </div>
                 <div class="admin-topbar-divider" aria-hidden="true"></div>
-                <div class="admin-user-area">
-                    <div class="admin-user-menu" aria-label="Signed in donor profile">
+                <div class="admin-user-area" style="position: relative;">
+                    <div class="admin-user-menu" aria-label="Signed in donor profile" style="cursor: pointer;" onclick="toggleProfileDropdown('dpProfileDropdown', event)">
                         <div class="admin-avatar" aria-hidden="true">
                             <img id="dpAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                             <i data-lucide="heart" id="dpAvatarIcon"></i>
                         </div>
                         <div class="admin-user-info">
                             <span id="dpUserName" class="admin-user-name">Donor</span>
-                            <span id="dpRoleBadge" class="admin-role-badge">Donor Partner</span>
+                        </div>
+                    </div>
+                    
+                    <div id="dpProfileDropdown" class="global-profile-dropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; z-index: 1060;">
+                        <div class="pd-header">
+                            <div class="pd-avatar">
+                                <img id="dpDropAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <i data-lucide="heart" id="dpDropAvatarIcon"></i>
+                            </div>
+                            <div class="pd-info">
+                                <h4 id="dpDropName">Donor</h4>
+                                <p id="dpDropEmail">donor@example.com</p>
+                            </div>
+                        </div>
+                        <div class="pd-links">
+                            <button type="button" onclick="showRoleTab('dp','profile',null); closeAllProfileDropdowns();" style="color: var(--iuea-gray);"><i data-lucide="user"></i> Profile</button>
+                            <button type="button" onclick="logout(); closeAllProfileDropdowns();" style="color: #ef4444;"><i data-lucide="log-out"></i> Sign Out</button>
                         </div>
                     </div>
                 </div>
@@ -1220,9 +1236,6 @@
                     <div class="admin-sidebar-label">Account</div>
                     <nav class="admin-nav">
                         <button type="button" class="admin-nav-btn" onclick="returnToPublic()"><i data-lucide="globe"></i> Public Site</button>
-                        <button type="button" class="admin-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
-                            <i data-lucide="log-out"></i> Sign Out
-                        </button>
                     </nav>
                 </div>
             </aside>
@@ -1426,6 +1439,25 @@
                         </div>
                     </div>
                 </div>
+                <div id="dp-tab-profile" class="admin-tab-content">
+                    <div class="admin-panel-header">
+                        <div><h3>Profile</h3><p>Update your account details and password.</p></div>
+                        <button class="btn-primary" onclick="saveProfile('dp')"><i data-lucide="save"></i> Save Changes</button>
+                    </div>
+                    <div class="admin-panel">
+                        <div class="form-group" style="display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;">
+                            <img id="dpProfilePicturePreview" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E" alt="Profile Picture" style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#eee;padding:10px;">
+                            <div>
+                                <label style="margin-bottom:0.5rem;display:block;">Profile Picture</label>
+                                <input type="file" id="dpProfilePictureInput" accept="image/*" style="font-size:0.85rem;padding:0.5rem;" onchange="previewProfilePicture(this, 'dp')">
+                                <p style="font-size:0.8rem;color:#666;margin-top:0.5rem;margin-bottom:0;">Square image recommended. Max 2MB.</p>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Full Name</label><input type="text" id="dpProfileName" placeholder="Your full name"></div>
+                        <div class="form-group"><label>Email</label><input type="email" id="dpProfileEmail" placeholder="you@example.com"></div>
+                        <div class="form-group"><label>New Password</label><input type="password" id="dpProfilePassword" placeholder="Leave blank to keep current"></div>
+                    </div>
+                </div>
 
             </main>
         </div>
@@ -1475,15 +1507,31 @@
                     </button>
                 </div>
                 <div class="admin-topbar-divider" aria-hidden="true"></div>
-                <div class="admin-user-area">
-                    <div class="admin-user-menu" aria-label="Signed in coordinator profile">
+                <div class="admin-user-area" style="position: relative;">
+                    <div class="admin-user-menu" aria-label="Signed in coordinator profile" style="cursor: pointer;" onclick="toggleProfileDropdown('coProfileDropdown', event)">
                         <div class="admin-avatar co-avatar" aria-hidden="true">
                             <img id="coAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                             <i data-lucide="clipboard-check" id="coAvatarIcon"></i>
                         </div>
                         <div class="admin-user-info">
                             <span id="coUserName" class="admin-user-name">Coordinator</span>
-                            <span id="coRoleBadge" class="admin-role-badge">Coordinator</span>
+                        </div>
+                    </div>
+                    
+                    <div id="coProfileDropdown" class="global-profile-dropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; z-index: 1060;">
+                        <div class="pd-header">
+                            <div class="pd-avatar co-avatar">
+                                <img id="coDropAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <i data-lucide="clipboard-check" id="coDropAvatarIcon"></i>
+                            </div>
+                            <div class="pd-info">
+                                <h4 id="coDropName">Coordinator</h4>
+                                <p id="coDropEmail">coordinator@example.com</p>
+                            </div>
+                        </div>
+                        <div class="pd-links">
+                            <button type="button" onclick="showRoleTab('co','profile',null); closeAllProfileDropdowns();" style="color: var(--iuea-gray);"><i data-lucide="user"></i> Profile</button>
+                            <button type="button" onclick="logout(); closeAllProfileDropdowns();" style="color: #ef4444;"><i data-lucide="log-out"></i> Sign Out</button>
                         </div>
                     </div>
                 </div>
@@ -1514,9 +1562,6 @@
                     <div class="admin-sidebar-label">Account</div>
                     <nav class="admin-nav">
                         <button type="button" class="admin-nav-btn cdash-nav-btn" onclick="returnToPublic()"><i data-lucide="globe"></i> Public Site</button>
-                        <button type="button" class="admin-nav-btn cdash-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
-                            <i data-lucide="log-out"></i> Sign Out
-                        </button>
                     </nav>
                 </div>
             </aside>
@@ -1806,6 +1851,25 @@
                         </div>
                     </div>
                 </div>
+                <div id="co-tab-profile" class="admin-tab-content co-tab">
+                    <div class="admin-panel-header">
+                        <div><h3>Profile</h3><p>Update your account details and password.</p></div>
+                        <button class="btn-primary" onclick="saveProfile('co')"><i data-lucide="save"></i> Save Changes</button>
+                    </div>
+                    <div class="admin-panel">
+                        <div class="form-group" style="display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;">
+                            <img id="coProfilePicturePreview" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E" alt="Profile Picture" style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#eee;padding:10px;">
+                            <div>
+                                <label style="margin-bottom:0.5rem;display:block;">Profile Picture</label>
+                                <input type="file" id="coProfilePictureInput" accept="image/*" style="font-size:0.85rem;padding:0.5rem;" onchange="previewProfilePicture(this, 'co')">
+                                <p style="font-size:0.8rem;color:#666;margin-top:0.5rem;margin-bottom:0;">Square image recommended. Max 2MB.</p>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Full Name</label><input type="text" id="coProfileName" placeholder="Your full name"></div>
+                        <div class="form-group"><label>Email</label><input type="email" id="coProfileEmail" placeholder="you@example.com"></div>
+                        <div class="form-group"><label>New Password</label><input type="password" id="coProfilePassword" placeholder="Leave blank to keep current"></div>
+                    </div>
+                </div>
 
             </main>
         </div>
@@ -1908,15 +1972,31 @@
                     </button>
                 </div>
                 <div class="admin-topbar-divider" aria-hidden="true"></div>
-                <div class="admin-user-area">
-                    <div class="admin-user-menu" id="adminUserProfile" aria-label="Signed in user profile">
+                <div class="admin-user-area" style="position: relative;">
+                    <div class="admin-user-menu" id="adminUserProfile" aria-label="Signed in user profile" style="cursor: pointer;" onclick="toggleProfileDropdown('adminProfileDropdown', event)">
                         <div class="admin-avatar" aria-hidden="true">
                             <img id="adminDashAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                             <i data-lucide="user" id="adminDashAvatarIcon"></i>
                         </div>
                         <div class="admin-user-info">
                             <span id="adminUserName" class="admin-user-name">Admin</span>
-                            <span id="adminRoleBadge" class="admin-role-badge"></span>
+                        </div>
+                    </div>
+                    
+                    <div id="adminProfileDropdown" class="global-profile-dropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; z-index: 1060;">
+                        <div class="pd-header">
+                            <div class="pd-avatar">
+                                <img id="adminDropAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <i data-lucide="user" id="adminDropAvatarIcon"></i>
+                            </div>
+                            <div class="pd-info">
+                                <h4 id="adminDropName">Admin</h4>
+                                <p id="adminDropEmail">admin@example.com</p>
+                            </div>
+                        </div>
+                        <div class="pd-links">
+                            <button type="button" onclick="showAdminTab('profile', null); closeAllProfileDropdowns();" style="color: var(--iuea-gray);"><i data-lucide="user"></i> Profile</button>
+                            <button type="button" onclick="logout(); closeAllProfileDropdowns();" style="color: #ef4444;"><i data-lucide="log-out"></i> Sign Out</button>
                         </div>
                     </div>
                 </div>
@@ -1976,9 +2056,8 @@
                     <nav class="admin-nav">
                         <button class="admin-nav-btn" onclick="showAdminTab('settings', this)"><i
                                 data-lucide="settings"></i> Settings</button>
-                        <button type="button" class="admin-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
-                            <i data-lucide="log-out"></i> Sign Out
-                        </button>
+                        <button type="button" class="admin-nav-btn" onclick="returnToPublic()"><i data-lucide="globe"></i>
+                            Public Site</button>
                     </nav>
                 </div>
             </aside>
@@ -2961,6 +3040,25 @@
                         </div>
                     </div>
                 </div>
+                <div id="admin-tab-profile" class="admin-tab-content">
+                    <div class="admin-panel-header">
+                        <div><h3>Profile</h3><p>Update your account details and password.</p></div>
+                        <button class="btn-primary" onclick="saveProfile('admin')"><i data-lucide="save"></i> Save Changes</button>
+                    </div>
+                    <div class="admin-panel">
+                        <div class="form-group" style="display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;">
+                            <img id="adminProfilePicturePreview" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E" alt="Profile Picture" style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#eee;padding:10px;">
+                            <div>
+                                <label style="margin-bottom:0.5rem;display:block;">Profile Picture</label>
+                                <input type="file" id="adminProfilePictureInput" accept="image/*" style="font-size:0.85rem;padding:0.5rem;" onchange="previewProfilePicture(this, 'admin')">
+                                <p style="font-size:0.8rem;color:#666;margin-top:0.5rem;margin-bottom:0;">Square image recommended. Max 2MB.</p>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Full Name</label><input type="text" id="adminProfileName" placeholder="Your full name"></div>
+                        <div class="form-group"><label>Email</label><input type="email" id="adminProfileEmail" placeholder="you@example.com"></div>
+                        <div class="form-group"><label>New Password</label><input type="password" id="adminProfilePassword" placeholder="Leave blank to keep current"></div>
+                    </div>
+                </div>
 
             </main>
         </div>
@@ -3014,12 +3112,27 @@
                     </button>
                 </div>
                 <div class="admin-topbar-divider" aria-hidden="true"></div>
-                <div class="admin-user-area">
-                    <div class="admin-user-menu" aria-label="Signed in innovation admin profile">
+                <div class="admin-user-area" style="position: relative;">
+                    <div class="admin-user-menu" aria-label="Signed in innovation admin profile" style="cursor: pointer;" onclick="toggleProfileDropdown('iaProfileDropdown', event)">
                         <div class="admin-avatar co-avatar" aria-hidden="true" style="background:linear-gradient(135deg,#800000,#b91c1c)"><i data-lucide="lightbulb"></i></div>
                         <div class="admin-user-info">
                             <span id="iaUserName" class="admin-user-name">Innovation Admin</span>
-                            <span class="admin-role-badge" style="background:#fef2f2;color:#800000;border-color:#fecaca;">Innovation Admin</span>
+                        </div>
+                    </div>
+                    
+                    <div id="iaProfileDropdown" class="global-profile-dropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; z-index: 1060;">
+                        <div class="pd-header">
+                            <div class="pd-avatar co-avatar" style="background:linear-gradient(135deg,#800000,#b91c1c);">
+                                <i data-lucide="lightbulb" style="color: white;"></i>
+                            </div>
+                            <div class="pd-info">
+                                <h4 id="iaDropName">Innovation Admin</h4>
+                                <p id="iaDropEmail">ia@example.com</p>
+                            </div>
+                        </div>
+                        <div class="pd-links">
+                            <button type="button" onclick="showRoleTab('ia','profile',null); closeAllProfileDropdowns();" style="color: var(--iuea-gray);"><i data-lucide="user"></i> Profile</button>
+                            <button type="button" onclick="logout(); closeAllProfileDropdowns();" style="color: #ef4444;"><i data-lucide="log-out"></i> Sign Out</button>
                         </div>
                     </div>
                 </div>
@@ -3047,9 +3160,6 @@
                 <div class="admin-sidebar-section admin-sidebar-footer">
                     <div class="admin-sidebar-label">Account</div>
                     <nav class="admin-nav">
-                        <button type="button" class="admin-nav-btn admin-nav-btn--danger" onclick="logout()" title="Sign out" aria-label="Sign out">
-                            <i data-lucide="log-out"></i> Sign Out
-                        </button>
                     </nav>
                 </div>
             </aside>
@@ -3269,7 +3379,26 @@
                             </div>
                         </div>
                     </div>
+                </div>                <div id="ia-tab-profile" class="role-tab">
+                    <div class="admin-panel-header">
+                        <div><h3>Profile</h3><p>Update your account details and password.</p></div>
+                        <button class="btn-primary" onclick="saveProfile('ia')"><i data-lucide="save"></i> Save Changes</button>
+                    </div>
+                    <div class="admin-panel">
+                        <div class="form-group" style="display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;">
+                            <img id="iaProfilePicturePreview" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E" alt="Profile Picture" style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#eee;padding:10px;">
+                            <div>
+                                <label style="margin-bottom:0.5rem;display:block;">Profile Picture</label>
+                                <input type="file" id="iaProfilePictureInput" accept="image/*" style="font-size:0.85rem;padding:0.5rem;" onchange="previewProfilePicture(this, 'ia')">
+                                <p style="font-size:0.8rem;color:#666;margin-top:0.5rem;margin-bottom:0;">Square image recommended. Max 2MB.</p>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Full Name</label><input type="text" id="iaProfileName" placeholder="Your full name"></div>
+                        <div class="form-group"><label>Email</label><input type="email" id="iaProfileEmail" placeholder="you@example.com"></div>
+                        <div class="form-group"><label>New Password</label><input type="password" id="iaProfilePassword" placeholder="Leave blank to keep current"></div>
+                    </div>
                 </div>
+
             </main>
         </div>
     </div>

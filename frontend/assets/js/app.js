@@ -912,6 +912,9 @@ function showAdminTab(tabId, btn) {
     const tab = document.getElementById(`admin-tab-${tabId}`);
     if (tab) tab.classList.add('active');
     
+    if (tabId === 'profile') {
+        populateProfileForm('admin');
+    }
     if (tabId === 'hero-videos') {
         loadHeroVideoSettings();
     }
@@ -7465,8 +7468,11 @@ function updateUIForUser() {
             { img: 'ruAvatarImg', icon: 'ruAvatarIcon' },
             { img: 'ruDropAvatarImg', icon: 'ruDropAvatarIcon' },
             { img: 'dpAvatarImg', icon: 'dpAvatarIcon' },
+            { img: 'dpDropAvatarImg', icon: 'dpDropAvatarIcon' },
             { img: 'coAvatarImg', icon: 'coAvatarIcon' },
-            { img: 'adminDashAvatarImg', icon: 'adminDashAvatarIcon' }
+            { img: 'coDropAvatarImg', icon: 'coDropAvatarIcon' },
+            { img: 'adminDashAvatarImg', icon: 'adminDashAvatarIcon' },
+            { img: 'adminDropAvatarImg', icon: 'adminDropAvatarIcon' }
         ];
         sidebarAvatars.forEach(({img, icon}) => {
             const imgEl = document.getElementById(img);
@@ -7509,12 +7515,29 @@ function updateUIForUser() {
 
         const dpUserNameEl = document.getElementById('dpUserName');
         if (dpUserNameEl) dpUserNameEl.textContent = displayName;
-        const dpRoleBadgeEl = document.getElementById('dpRoleBadge');
-        if (dpRoleBadgeEl) dpRoleBadgeEl.textContent = role === 'donor_partner' ? 'Donor Partner' : '';
+        const dpDropName = document.getElementById('dpDropName');
+        if (dpDropName) dpDropName.textContent = displayName;
+        const dpDropEmail = document.getElementById('dpDropEmail');
+        if (dpDropEmail) dpDropEmail.textContent = currentUser.email || '';
+
         const coUserNameEl = document.getElementById('coUserName');
         if (coUserNameEl) coUserNameEl.textContent = displayName;
-        const coRoleBadgeEl = document.getElementById('coRoleBadge');
-        if (coRoleBadgeEl) coRoleBadgeEl.textContent = role === 'coordinator' ? 'Coordinator' : '';
+        const coDropName = document.getElementById('coDropName');
+        if (coDropName) coDropName.textContent = displayName;
+        const coDropEmail = document.getElementById('coDropEmail');
+        if (coDropEmail) coDropEmail.textContent = currentUser.email || '';
+
+        const adminDropName = document.getElementById('adminDropName');
+        if (adminDropName) adminDropName.textContent = getAdminMenuDisplayName(currentUser);
+        const adminDropEmail = document.getElementById('adminDropEmail');
+        if (adminDropEmail) adminDropEmail.textContent = currentUser.email || '';
+
+        const iaUserNameEl = document.getElementById('iaUserName');
+        if (iaUserNameEl) iaUserNameEl.textContent = displayName;
+        const iaDropName = document.getElementById('iaDropName');
+        if (iaDropName) iaDropName.textContent = displayName;
+        const iaDropEmail = document.getElementById('iaDropEmail');
+        if (iaDropEmail) iaDropEmail.textContent = currentUser.email || '';
         refreshUnreadMessageBadges();
         refreshNotifications({ silent: true });
         startNotificationPolling();
@@ -7528,9 +7551,13 @@ function updateUIForUser() {
 
         const sidebarAvatars = [
             { img: 'ruAvatarImg', icon: 'ruAvatarIcon' },
+            { img: 'ruDropAvatarImg', icon: 'ruDropAvatarIcon' },
             { img: 'dpAvatarImg', icon: 'dpAvatarIcon' },
+            { img: 'dpDropAvatarImg', icon: 'dpDropAvatarIcon' },
             { img: 'coAvatarImg', icon: 'coAvatarIcon' },
-            { img: 'adminDashAvatarImg', icon: 'adminDashAvatarIcon' }
+            { img: 'coDropAvatarImg', icon: 'coDropAvatarIcon' },
+            { img: 'adminDashAvatarImg', icon: 'adminDashAvatarIcon' },
+            { img: 'adminDropAvatarImg', icon: 'adminDropAvatarIcon' }
         ];
         sidebarAvatars.forEach(({img, icon}) => {
             const imgEl = document.getElementById(img);
@@ -8809,16 +8836,8 @@ function showRoleTab(prefix, tabId, btn) {
     if (prefix === 'ru' && tabId === 'stories') {
         loadRuSharedStories();
     }
-    if (prefix === 'ru' && tabId === 'profile') {
-        const nameInput = document.getElementById('ruProfileName');
-        const emailInput = document.getElementById('ruProfileEmail');
-        const picPreview = document.getElementById('ruProfilePicturePreview');
-        if (nameInput) nameInput.value = currentUser?.name || '';
-        if (emailInput) emailInput.value = currentUser?.email || '';
-        if (picPreview) {
-            picPreview.src = currentUser?.profile_picture ? resolveMediaUrl(currentUser.profile_picture) : 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E';
-            picPreview.style.padding = currentUser?.profile_picture ? '0' : '10px';
-        }
+    if (tabId === 'profile') {
+        populateProfileForm(prefix);
     }
     if (prefix === 'ru' && tabId === 'saved') {
         loadRuSavedContent();
@@ -8939,11 +8958,6 @@ function populateRuDashboard() {
 
     const badge = document.getElementById('ruRoleBadge');
     if (badge) badge.textContent = 'Registered User';
-
-    const el = document.getElementById('ruProfileName');
-    if (el) el.value = currentUser.name || '';
-    const em = document.getElementById('ruProfileEmail');
-    if (em) em.value = currentUser.email || '';
 
     loadRuOverviewStats();
 }
@@ -9915,11 +9929,23 @@ async function makeDonation() {
     }
 }
 
-function previewProfilePicture(input) {
+function populateProfileForm(prefix) {
+    const nameInput = document.getElementById(`${prefix}ProfileName`);
+    const emailInput = document.getElementById(`${prefix}ProfileEmail`);
+    const picPreview = document.getElementById(`${prefix}ProfilePicturePreview`);
+    if (nameInput) nameInput.value = currentUser?.name || '';
+    if (emailInput) emailInput.value = currentUser?.email || '';
+    if (picPreview) {
+        picPreview.src = currentUser?.profile_picture ? resolveMediaUrl(currentUser.profile_picture) : 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E';
+        picPreview.style.padding = currentUser?.profile_picture ? '0' : '10px';
+    }
+}
+
+function previewProfilePicture(input, prefix = 'ru') {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            const preview = document.getElementById('ruProfilePicturePreview');
+            const preview = document.getElementById(`${prefix}ProfilePicturePreview`);
             if (preview) {
                 preview.src = e.target.result;
                 preview.style.padding = '0';
@@ -9937,12 +9963,12 @@ function previewProfilePicture(input) {
     }
 }
 
-async function saveProfile() {
+async function saveProfile(prefix = 'ru') {
     if (!currentUser) return;
-    const nameEl = document.getElementById('ruProfileName');
-    const emailEl = document.getElementById('ruProfileEmail');
-    const passEl = document.getElementById('ruProfilePassword');
-    const picInput = document.getElementById('ruProfilePictureInput');
+    const nameEl = document.getElementById(`${prefix}ProfileName`);
+    const emailEl = document.getElementById(`${prefix}ProfileEmail`);
+    const passEl = document.getElementById(`${prefix}ProfilePassword`);
+    const picInput = document.getElementById(`${prefix}ProfilePictureInput`);
     
     if (!nameEl || !emailEl || !passEl) return;
     
@@ -11286,29 +11312,25 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
     }
 }
 
-function toggleRuProfileDropdown(event) {
-    if (event) {
-        event.stopPropagation();
-    }
-    const drop = document.getElementById('ruProfileDropdown');
+function toggleProfileDropdown(id, event) {
+    if (event) event.stopPropagation();
+    document.querySelectorAll('.global-profile-dropdown').forEach(d => {
+        if (d.id !== id) d.style.display = 'none';
+    });
+    const drop = document.getElementById(id);
     if (drop) {
         drop.style.display = drop.style.display === 'none' || drop.style.display === '' ? 'block' : 'none';
     }
 }
 
-function closeRuProfileDropdown() {
-    const drop = document.getElementById('ruProfileDropdown');
-    if (drop) {
-        drop.style.display = 'none';
-    }
+function closeAllProfileDropdowns() {
+    document.querySelectorAll('.global-profile-dropdown').forEach(d => {
+        d.style.display = 'none';
+    });
 }
 
 document.addEventListener('click', function(event) {
-    const drop = document.getElementById('ruProfileDropdown');
-    const menu = document.querySelector('.admin-user-menu[onclick*="toggleRuProfileDropdown"]');
-    if (drop && drop.style.display === 'block') {
-        if (!drop.contains(event.target) && (!menu || !menu.contains(event.target))) {
-            drop.style.display = 'none';
-        }
+    if (!event.target.closest('.admin-user-menu') && !event.target.closest('.global-profile-dropdown')) {
+        closeAllProfileDropdowns();
     }
 });
