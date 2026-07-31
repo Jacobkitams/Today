@@ -10055,17 +10055,51 @@ async function saveProfile(prefix = 'ru') {
             const updatedUser = await res.json();
             currentUser = updatedUser;
             cacheUserSession(updatedUser);  // keep localStorage in sync
-            updateUIForUser();
-            // Re-sync the profile settings preview to the saved picture
+
+            // --- Instant avatar update (no page refresh needed) ---
+            // Grab the blob preview src that was set when the user picked the file.
+            // Using it lets every avatar show the new picture immediately, before
+            // any network round-trip to fetch the uploaded image from the server.
             const picPreview = document.getElementById(`${prefix}ProfilePicturePreview`);
-            if (picPreview) {
-                if (updatedUser.profile_picture) {
-                    picPreview.src = resolveMediaUrl(updatedUser.profile_picture);
+            const instantSrc = (picInput && picInput.files && picInput.files[0] && picPreview)
+                ? picPreview.src   // already a blob: or data: URL set by previewProfilePicture
+                : (updatedUser.profile_picture ? resolveMediaUrl(updatedUser.profile_picture) : null);
+
+            if (instantSrc) {
+                // Update every avatar img/icon pair in the page
+                const allAvatarPairs = [
+                    { img: 'userAvatarImg',       icon: 'userAvatarIcon' },
+                    { img: 'ruAvatarImg',          icon: 'ruAvatarIcon' },
+                    { img: 'ruDropAvatarImg',      icon: 'ruDropAvatarIcon' },
+                    { img: 'dpAvatarImg',          icon: 'dpAvatarIcon' },
+                    { img: 'dpDropAvatarImg',      icon: 'dpDropAvatarIcon' },
+                    { img: 'coAvatarImg',          icon: 'coAvatarIcon' },
+                    { img: 'coDropAvatarImg',      icon: 'coDropAvatarIcon' },
+                    { img: 'adminDashAvatarImg',   icon: 'adminDashAvatarIcon' },
+                    { img: 'adminDropAvatarImg',   icon: 'adminDropAvatarIcon' },
+                    { img: 'iaDashAvatarImg',      icon: 'iaDashAvatarIcon' },
+                    { img: 'iaDropAvatarImg',      icon: 'iaDropAvatarIcon' },
+                ];
+                allAvatarPairs.forEach(({ img, icon }) => {
+                    const imgEl  = document.getElementById(img);
+                    const iconEl = document.getElementById(icon);
+                    if (imgEl) {
+                        imgEl.src = instantSrc;
+                        imgEl.classList.remove('hidden');
+                    }
+                    if (iconEl) iconEl.classList.add('hidden');
+                });
+
+                // Also keep the settings preview in sync
+                if (picPreview) {
+                    picPreview.src = instantSrc;
                     picPreview.style.padding = '0';
-                } else {
-                    picPreview.style.padding = '10px';
                 }
+            } else if (picPreview) {
+                picPreview.style.padding = '10px';
             }
+
+            updateUIForUser(); // sync everything else (name, role labels, etc.)
             showToast('Profile saved successfully!', 'success');
             passEl.value = ''; // clear password field
             if (picInput) picInput.value = '';
