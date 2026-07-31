@@ -3114,7 +3114,10 @@
                 <div class="admin-topbar-divider" aria-hidden="true"></div>
                 <div class="admin-user-area" style="position: relative;">
                     <div class="admin-user-menu" aria-label="Signed in innovation admin profile" style="cursor: pointer;" onclick="toggleProfileDropdown('iaProfileDropdown', event)">
-                        <div class="admin-avatar co-avatar" aria-hidden="true" style="background:linear-gradient(135deg,#800000,#b91c1c)"><i data-lucide="lightbulb"></i></div>
+                        <div class="admin-avatar co-avatar" aria-hidden="true" style="background:linear-gradient(135deg,#800000,#b91c1c)">
+                            <img id="iaDashAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                            <i data-lucide="lightbulb" id="iaDashAvatarIcon"></i>
+                        </div>
                         <div class="admin-user-info">
                             <span id="iaUserName" class="admin-user-name">Innovation Admin</span>
                         </div>
@@ -3123,7 +3126,8 @@
                     <div id="iaProfileDropdown" class="global-profile-dropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; z-index: 1060;">
                         <div class="pd-header">
                             <div class="pd-avatar co-avatar" style="background:linear-gradient(135deg,#800000,#b91c1c);">
-                                <i data-lucide="lightbulb" style="color: white;"></i>
+                                <img id="iaDropAvatarImg" class="hidden" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <i data-lucide="lightbulb" id="iaDropAvatarIcon" style="color: white;"></i>
                             </div>
                             <div class="pd-info">
                                 <h4 id="iaDropName">Innovation Admin</h4>
@@ -3544,7 +3548,8 @@
                     </div>
                     <h3 id="kanbanPreviewTitle" class="kanban-preview-title"></h3>
                     <p class="kanban-preview-author-row" id="kanbanPreviewAuthorRow">
-                        <i data-lucide="user"></i> <span id="kanbanPreviewAuthor"></span>
+                        <img id="kanbanPreviewAuthorImg" src="" alt="Author" style="width:20px;height:20px;object-fit:cover;border-radius:50%;display:inline-block;vertical-align:-4px;margin-right:6px;" hidden>
+                        <i data-lucide="user" id="kanbanPreviewAuthorIcon"></i> <span id="kanbanPreviewAuthor"></span>
                     </p>
                     <p id="kanbanPreviewExcerpt" class="kanban-preview-excerpt"></p>
                 </div>

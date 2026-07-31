@@ -2962,6 +2962,19 @@ function openKanbanPreview(contentType, id, variant) {
     const authorRow = document.getElementById('kanbanPreviewAuthorRow');
     if (item.author_name) {
         document.getElementById('kanbanPreviewAuthor').textContent = item.author_name;
+        const imgEl = document.getElementById('kanbanPreviewAuthorImg');
+        const iconEl = document.getElementById('kanbanPreviewAuthorIcon');
+        if (imgEl && iconEl) {
+            if (item.author_profile_picture) {
+                imgEl.src = resolveMediaUrl(item.author_profile_picture);
+                imgEl.hidden = false;
+                iconEl.hidden = true;
+            } else {
+                imgEl.hidden = true;
+                imgEl.removeAttribute('src');
+                iconEl.hidden = false;
+            }
+        }
         authorRow.hidden = false;
     } else {
         authorRow.hidden = true;
@@ -3004,8 +3017,11 @@ function renderKanbanCard(item, variant) {
     const description = item.description
         ? item.description.substring(0, 100) + (item.description.length > 100 ? '…' : '')
         : 'No description';
+    const avatarHtml = item.author_profile_picture
+        ? `<img src="${resolveMediaUrl(item.author_profile_picture)}" alt="${escapeHtml(item.author_name)}" style="width:16px;height:16px;object-fit:cover;border-radius:50%;display:inline-block;vertical-align:-3px;margin-right:4px;">`
+        : `<i data-lucide="user"></i>`;
     const authorLine = item.author_name
-        ? `<span><i data-lucide="user"></i> ${item.author_name}</span>`
+        ? `<span>${avatarHtml} ${escapeHtml(item.author_name)}</span>`
         : '';
     const dateLine = `<span><i data-lucide="clock"></i> ${formatKanbanDate(item, variant)}</span>`;
 
@@ -6119,6 +6135,7 @@ function formatCommentDate(dateStr) {
 function renderCommentItem(comment, options = {}) {
     const { newsId = null, allowReply = false, depth = 0 } = options;
     const author = comment.author_name || 'Community member';
+    const pic = comment.author_profile_picture;
     const date = formatCommentDate(comment.created_at);
     const isNested = depth > 0;
     const replyBtn = allowReply && newsId && currentUser
@@ -6131,9 +6148,13 @@ function renderCommentItem(comment, options = {}) {
         ? `<div class="comment-replies">${comment.replies.map(r => renderCommentItem(r, { ...options, depth: depth + 1 })).join('')}</div>`
         : '';
 
+    const avatarContent = pic
+        ? `<img src="${resolveMediaUrl(pic)}" alt="${escapeHtml(author)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+        : getCommentAuthorInitial(author);
+
     return `
         <div class="comment-item${isNested ? ' comment-item-reply' : ''}" data-comment-id="${comment.id}">
-            <div class="comment-item-avatar" aria-hidden="true">${getCommentAuthorInitial(author)}</div>
+            <div class="comment-item-avatar" aria-hidden="true">${avatarContent}</div>
             <div class="comment-item-body">
                 <div class="comment-item-meta">
                     <span class="comment-item-author">${escapeHtml(author)}</span>
@@ -6149,6 +6170,7 @@ function renderCommentItem(comment, options = {}) {
 
 function renderRuStoryComment(comment, newsId, depth = 0) {
     const author = comment.author_name || 'Community member';
+    const pic = comment.author_profile_picture;
     const isNested = depth > 0;
     const replyBtn = currentUser
         ? `<button type="button" class="comment-reply-btn" onclick="toggleNewsReplyForm(${newsId}, ${comment.id}, 'ru')">Reply</button>`
@@ -6158,10 +6180,14 @@ function renderRuStoryComment(comment, newsId, depth = 0) {
         ? `<ul class="ru-story-comment-replies">${comment.replies.map(r => `<li>${renderRuStoryComment(r, newsId, depth + 1)}</li>`).join('')}</ul>`
         : '';
 
+    const avatarHtml = pic 
+        ? `<img src="${resolveMediaUrl(pic)}" alt="${escapeHtml(author)}" style="width:24px;height:24px;object-fit:cover;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:6px;">`
+        : '';
+
     return `
         <div class="ru-story-comment${isNested ? ' ru-story-comment-reply' : ''}" data-comment-id="${comment.id}">
             <div class="ru-story-comment-meta">
-                <strong>${escapeHtml(author)}</strong>
+                ${avatarHtml}<strong>${escapeHtml(author)}</strong>
                 <span>${formatShortDate(comment.created_at)}</span>
             </div>
             <p>${escapeHtml(comment.message || '')}</p>
@@ -6491,7 +6517,12 @@ function renderAuthorProfileModal(profile) {
     const isFollowingItem = !!authorProfileState.isFollowingItem;
     const hasItemContext = !!(authorProfileState.contentType && authorProfileState.contentId);
 
-    document.getElementById('authorProfileAvatar').textContent = initial;
+    const avatarEl = document.getElementById('authorProfileAvatar');
+    if (profile?.profile_picture) {
+        avatarEl.innerHTML = `<img src="${resolveMediaUrl(profile.profile_picture)}" alt="${escapeHtml(name)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+        avatarEl.textContent = initial;
+    }
     document.getElementById('authorProfileName').textContent = name;
     document.getElementById('authorProfileRole').textContent = role;
     document.getElementById('authorProfileMemberSince').textContent = memberSince;
@@ -7475,7 +7506,9 @@ function updateUIForUser() {
             { img: 'coAvatarImg', icon: 'coAvatarIcon' },
             { img: 'coDropAvatarImg', icon: 'coDropAvatarIcon' },
             { img: 'adminDashAvatarImg', icon: 'adminDashAvatarIcon' },
-            { img: 'adminDropAvatarImg', icon: 'adminDropAvatarIcon' }
+            { img: 'adminDropAvatarImg', icon: 'adminDropAvatarIcon' },
+            { img: 'iaDashAvatarImg', icon: 'iaDashAvatarIcon' },
+            { img: 'iaDropAvatarImg', icon: 'iaDropAvatarIcon' }
         ];
         sidebarAvatars.forEach(({img, icon}) => {
             const imgEl = document.getElementById(img);
