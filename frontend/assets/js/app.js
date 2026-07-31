@@ -10057,7 +10057,7 @@ async function saveProfile(prefix = 'ru') {
             cacheUserSession(updatedUser);  // keep localStorage in sync
             updateUIForUser();
             // Re-sync the profile settings preview to the saved picture
-            const picPreview = document.getElementById('ruProfilePicturePreview');
+            const picPreview = document.getElementById(`${prefix}ProfilePicturePreview`);
             if (picPreview) {
                 if (updatedUser.profile_picture) {
                     picPreview.src = resolveMediaUrl(updatedUser.profile_picture);
