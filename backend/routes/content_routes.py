@@ -1338,3 +1338,8 @@ def get_following_feed(
     for row in feed:
         row.pop("_sort_at", None)
     return feed
+
+@router.get("/conferences", response_model=List[schemas.ConferenceResponse])
+def get_conferences(db: Session = Depends(get_db)):
+    # Fetch all conferences, ordering by start_date ascending
+    return db.query(models.Conference).order_by(models.Conference.start_date.asc()).all()

@@ -763,7 +763,238 @@
                 <div id="endowmentCampaignsAllGrid" class="content-grid cols-3"></div>
             </section>
         </div>
+
+        <!-- CONFERENCE HUB PAGE -->
+        <div id="conference" class="page-section">
+
+            <!-- Page Title Header -->
+            <div style="padding: 2rem 0 1rem 0;">
+                <h1 style="display: flex; align-items: center; gap: 0.5rem; color: var(--iuea-maroon); font-size: 2rem; margin-bottom: 0.5rem; font-weight: 800;">
+                    🎓 IUEA Conference Hub
+                </h1>
+                <p style="color: var(--iuea-gray-light); font-size: 1.05rem; margin-bottom: 0; font-weight: 400;">
+                    Official home for International University of East Africa conferences
+                </p>
+            </div>
+
+            <!-- Hero Banner -->
+            <div class="conf-hero-banner">
+                <div class="conf-hero-inner">
+                    <div class="conf-hero-left">
+                        <span class="conf-hero-eyebrow">International University of East Africa</span>
+                        <h2 class="conf-hero-title">The IUEA Conference Hub</h2>
+                        <p class="conf-hero-sub">Your central home for every IUEA international conference — past proceedings, current programs, and what's coming next.</p>
+                        <div class="conf-hero-btns">
+                            <button class="conf-btn-primary" onclick="document.getElementById('conf-upcoming-section').scrollIntoView({behavior:'smooth'})">
+                                <i data-lucide="calendar"></i> Upcoming Conferences
+                            </button>
+                            <button class="conf-btn-ghost" onclick="document.getElementById('conf-archive-section').scrollIntoView({behavior:'smooth'})">
+                                <i data-lucide="archive"></i> Browse Archive
+                            </button>
+                        </div>
+                    </div>
+                    <div class="conf-hero-stats">
+                        <div class="conf-stat-box">
+                            <i data-lucide="globe-2"></i>
+                            <span class="conf-stat-num" id="conf-stat-total">—</span>
+                            <span class="conf-stat-lbl">Total Conferences</span>
+                        </div>
+                        <div class="conf-stat-box">
+                            <i data-lucide="calendar-check"></i>
+                            <span class="conf-stat-num" id="conf-stat-upcoming">—</span>
+                            <span class="conf-stat-lbl">Upcoming</span>
+                        </div>
+                        <div class="conf-stat-box">
+                            <i data-lucide="archive"></i>
+                            <span class="conf-stat-num" id="conf-stat-past">—</span>
+                            <span class="conf-stat-lbl">In Archive</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured / Next Conference -->
+            <section class="tab-section" style="padding-top: 2rem;">
+                <div id="conf-featured-wrap">
+                    <!-- Loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- Upcoming Conferences -->
+            <section id="conf-upcoming-section" class="tab-section" style="padding-top: 1rem;">
+                <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📅 UPCOMING CONFERENCES</h2>
+                </div>
+                <div class="conf-grid" id="upcoming-conferences-grid">
+                    <!-- Loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- Past Conferences / Archive -->
+            <section id="conf-archive-section" class="tab-section" style="padding-top: 1rem; padding-bottom: 4rem;">
+                <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🗂 PAST CONFERENCES</h2>
+                </div>
+                <div class="conf-timeline" id="archive-timeline">
+                    <!-- Loaded dynamically -->
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ===== PREMIUM SPORTS PAGE ===== -->
+        <div id="sports" class="page-section" style="background-color: var(--iuea-body-bg);">
+            
+            <!-- Cinematic Hero -->
+            <div class="sports-hero-premium">
+                <div class="sports-hero-bg">
+                    <img src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2069&auto=format&fit=crop" alt="IUEA Athletics Stadium">
+                    <div class="sports-hero-gradient"></div>
+                </div>
+                <div class="sports-hero-content">
+                    <div class="sports-hero-badge-glass"><i data-lucide="medal"></i> IUEA Athletics</div>
+                    <h1 class="sports-hero-headline">CHAMPIONS<br>ARE MADE HERE</h1>
+                    <p class="sports-hero-sub-premium">Elite training, unbreakable spirit, and a legacy of victory. Welcome to the home of IUEA Sports.</p>
+                </div>
+                <!-- Glassmorphism Action Bar -->
+                <div class="sports-hero-action-bar">
+                    <button onclick="document.getElementById('sports-bento-grid').scrollIntoView({behavior:'smooth'})"><i data-lucide="layout-grid"></i> Disciplines</button>
+                    <button onclick="document.getElementById('sports-match-center').scrollIntoView({behavior:'smooth'})"><i data-lucide="activity"></i> Match Center</button>
+                    <button onclick="document.getElementById('sports-facilities').scrollIntoView({behavior:'smooth'})"><i data-lucide="map-pin"></i> Facilities</button>
+                </div>
+            </div>
+
+            <div class="sports-main-container">
+                <!-- Live Action / Match Center -->
+                <section id="sports-match-center" class="sports-section">
+                    <div class="sports-section-header">
+                        <span class="sports-live-dot"></span>
+                        <h2>Match Center</h2>
+                    </div>
+                    <div class="match-center-board">
+                        <div class="match-card latest-result">
+                            <div class="match-header">LATEST RESULT - UFL FINALS</div>
+                            <div class="match-teams">
+                                <div class="team">
+                                    <div class="team-logo"><i data-lucide="shield"></i></div>
+                                    <span class="team-name">IUEA Eagles</span>
+                                </div>
+                                <div class="match-score"><span class="score-win">3</span> - <span class="score-lose">1</span></div>
+                                <div class="team">
+                                    <div class="team-logo" style="background:#333;"><i data-lucide="shield-alert"></i></div>
+                                    <span class="team-name">MUBS</span>
+                                </div>
+                            </div>
+                            <div class="match-footer">FULL TIME • Namboole Stadium</div>
+                        </div>
+                        <div class="match-card upcoming-fixture">
+                            <div class="match-header" style="color: var(--iuea-gold);">UPCOMING FIXTURE - BASKETBALL LEAGUE</div>
+                            <div class="match-teams">
+                                <div class="team">
+                                    <div class="team-logo"><i data-lucide="dribbble"></i></div>
+                                    <span class="team-name">IUEA Titans</span>
+                                </div>
+                                <div class="match-vs">VS</div>
+                                <div class="team">
+                                    <div class="team-logo" style="background:#004080;"><i data-lucide="dribbble"></i></div>
+                                    <span class="team-name">UCU Canons</span>
+                                </div>
+                            </div>
+                            <div class="match-footer"><i data-lucide="clock"></i> Saturday, 4:00 PM • IUEA Indoor Arena</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bento Box Teams Grid -->
+                <section id="sports-bento-grid" class="sports-section" style="margin-top: 4rem;">
+                    <div class="sports-section-header">
+                        <h2>Our Disciplines</h2>
+                    </div>
+                    <div class="bento-grid">
+                        <!-- Featured Large Box: Football -->
+                        <div class="bento-item bento-large group">
+                            <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1000&auto=format&fit=crop" class="bento-bg" alt="Football">
+                            <div class="bento-overlay"></div>
+                            <div class="bento-content">
+                                <i data-lucide="activity" class="bento-icon"></i>
+                                <h3>Football</h3>
+                                <p>The pride of IUEA, competing at the highest tiers of university leagues.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Tall Box: Basketball -->
+                        <div class="bento-item bento-tall group">
+                            <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=800&auto=format&fit=crop" class="bento-bg" alt="Basketball">
+                            <div class="bento-overlay"></div>
+                            <div class="bento-content">
+                                <i data-lucide="dribbble" class="bento-icon"></i>
+                                <h3>Basketball</h3>
+                                <p>Fast-paced, high-flying action on the court.</p>
+                            </div>
+                        </div>
+
+                        <!-- Standard Box: Athletics -->
+                        <div class="bento-item group">
+                            <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=800&auto=format&fit=crop" class="bento-bg" alt="Athletics">
+                            <div class="bento-overlay"></div>
+                            <div class="bento-content">
+                                <i data-lucide="medal" class="bento-icon"></i>
+                                <h3>Athletics</h3>
+                                <p>Track and field excellence.</p>
+                            </div>
+                        </div>
+
+                        <!-- Standard Box: Rugby -->
+                        <div class="bento-item group">
+                            <img src="https://images.unsplash.com/photo-1546738982-f673b0a70183?q=80&w=800&auto=format&fit=crop" class="bento-bg" alt="Rugby">
+                            <div class="bento-overlay"></div>
+                            <div class="bento-content">
+                                <i data-lucide="crosshair" class="bento-icon"></i>
+                                <h3>Rugby</h3>
+                                <p>Power, discipline, and brotherhood.</p>
+                            </div>
+                        </div>
+
+                        <!-- Standard Box: E-Sports -->
+                        <div class="bento-item bento-wide group">
+                            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000&auto=format&fit=crop" class="bento-bg" alt="E-Sports">
+                            <div class="bento-overlay"></div>
+                            <div class="bento-content">
+                                <i data-lucide="gamepad-2" class="bento-icon"></i>
+                                <h3>E-Sports</h3>
+                                <p>Next-generation digital competition dominating regional tournaments.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Glassmorphic Athlete Spotlight -->
+                <section class="sports-section" style="margin-top: 5rem; margin-bottom: 4rem;">
+                    <div class="athlete-spotlight-wrapper">
+                        <div class="athlete-image">
+                            <img src="https://images.unsplash.com/photo-1526566762798-8fac9c07aa22?q=80&w=800&auto=format&fit=crop" alt="Athlete Spotlight">
+                        </div>
+                        <div class="athlete-glass-card">
+                            <div class="spotlight-badge">Athlete Spotlight</div>
+                            <h3>David Omondi</h3>
+                            <h4>Captain, IUEA Basketball</h4>
+                            <p>Leading the Titans to their third consecutive national semi-final, David embodies the academic and athletic excellence that defines IUEA.</p>
+                            <div class="athlete-stats">
+                                <div class="a-stat"><strong>24.5</strong><span>PPG</span></div>
+                                <div class="a-stat"><strong>8.2</strong><span>APG</span></div>
+                                <div class="a-stat"><strong>2</strong><span>MVP</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+            </div>
+        </div>
+
     </div> <!-- Close main container -->
+
 
     <!-- ===== REGISTERED USER DASHBOARD ===== -->
     <div id="registered-user-dashboard" class="page-section admin-page-wrapper ru-dashboard">
@@ -3471,6 +3702,35 @@
                             <input type="text" id="adminEditRaisedAmount" placeholder="e.g. $3.2M">
                         </div>
                     </div>
+                    <div id="adminEditConferenceExtras" class="form-row" style="display:none; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Start Date</label>
+                            <input type="datetime-local" id="adminEditConfDate">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Display Date</label>
+                            <input type="text" id="adminEditConfDisplayDate" placeholder="e.g. Aug 15 - 17, 2026">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Location</label>
+                            <input type="text" id="adminEditConfLocation" placeholder="e.g. Main Auditorium">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Status</label>
+                            <select id="adminEditConfStatus">
+                                <option value="OPEN">Upcoming</option>
+                                <option value="CLOSED">Past</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Year</label>
+                            <input type="text" id="adminEditConfYear" placeholder="e.g. 2026">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>External URL</label>
+                            <input type="url" id="adminEditConfUrl" placeholder="https://...">
+                        </div>
+                    </div>
                     <div id="adminEditEventExtras" class="form-row" style="display:none;">
                         <div class="form-group">
                             <label>Ticket Types</label>
@@ -3645,6 +3905,35 @@
                     <div class="form-group">
                         <label id="createDescLabel">Description <span style="color:var(--iuea-maroon)">*</span></label>
                         <textarea id="createDesc" rows="5" placeholder="Describe this content in detail..."></textarea>
+                    </div>
+                    <div id="createConferenceExtras" class="form-row" style="display:none; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Start Date</label>
+                            <input type="datetime-local" id="createConfDate">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Display Date</label>
+                            <input type="text" id="createConfDisplayDate" placeholder="e.g. Aug 15 - 17, 2026">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Location</label>
+                            <input type="text" id="createConfLocation" placeholder="e.g. Main Auditorium">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Status</label>
+                            <select id="createConfStatus">
+                                <option value="OPEN">Upcoming</option>
+                                <option value="CLOSED">Past</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Year</label>
+                            <input type="text" id="createConfYear" placeholder="e.g. 2026">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>External URL</label>
+                            <input type="url" id="createConfUrl" placeholder="https://...">
+                        </div>
                     </div>
                     <div id="createEventExtras" class="form-row" style="display:none;">
                         <div class="form-group">

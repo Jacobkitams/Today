@@ -417,3 +417,15 @@ class ContentLike(Base):
     like_key = Column(String(255), unique=True, nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+class Conference(Base):
+    __tablename__ = "conferences"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    start_date = Column(DateTime, nullable=True)
+    display_date = Column(String(100), nullable=True)
+    location = Column(String(255), nullable=True)
+    status = Column(String(50), default="OPEN") # e.g. "OPEN", "CLOSED", "ARCHIVED"
+    year = Column(String(10), nullable=True)
+    external_url = Column(String(255), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

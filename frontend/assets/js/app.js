@@ -830,6 +830,7 @@ function navigateTo(pageId) {
     if (pageId === 'endowment-campaigns-all') loadAllEndowmentCampaignsPage();
     if (pageId === 'research-areas-all') loadAllResearchAreasPage();
     if (pageId === 'publications-all') loadAllPublicationsPage();
+    if (pageId === 'conference') loadConferencesPage();
     if (pageId === 'research-labs-all') loadAllResearchLabsPage();
     if (pageId === 'community-news-all') loadAllCommunityNewsPage();
     if (pageId === 'community-committees-all') loadAllCommunityCommitteesPage();
@@ -3174,7 +3175,8 @@ const COMMUNITY_SUBMODULES = [
     { key: 'community-news', label: 'Community News', createLabel: 'Add Community News', endpoint: '/content/community?type=news', createType: 'community-news', icon: 'newspaper' },
     { key: 'community-committees', label: 'Standing Committees', createLabel: 'Add Committee', endpoint: '/content/community?type=committee', createType: 'community-committees', icon: 'landmark' },
     { key: 'community-initiatives', label: 'Initiatives', createLabel: 'Add Initiative', endpoint: '/content/community?type=initiative', createType: 'community-initiatives', icon: 'target' },
-    { key: 'community-reports', label: 'Reports', createLabel: 'Add Report', endpoint: '/content/community?type=report', createType: 'community-reports', icon: 'file-bar-chart' }
+    { key: 'community-reports', label: 'Reports', createLabel: 'Add Report', endpoint: '/content/community?type=report', createType: 'community-reports', icon: 'file-bar-chart' },
+    { key: 'conferences', label: 'Conferences', createLabel: 'Add Conference', endpoint: '/admin/conferences', createType: 'conferences', icon: 'mic' }
 ];
 
 const COMMUNITY_VIRTUAL_TYPE_MAP = {
@@ -3255,7 +3257,8 @@ const ADMIN_MODULE_API_TYPES = {
     techpark: 'tech-park', 'tech-park': 'tech-park',
     donations: 'donations', 'donation-tiers': 'donation-tiers',
     'endowment-stats': 'endowment-stats', 'endowment-campaigns': 'endowment-campaigns',
-    'endowment-info': 'endowment-info'
+    'endowment-info': 'endowment-info',
+    conferences: 'conferences'
 };
 
 const ADMIN_MODULE_LABELS = {
@@ -3265,7 +3268,7 @@ const ADMIN_MODULE_LABELS = {
     'research-areas': 'Research Area', publications: 'Publication', 'research-labs': 'Research Lab',
     community: 'Community',
     'community-news': 'Community News', 'community-committees': 'Committee',
-    'community-initiatives': 'Initiative', 'community-reports': 'Report',
+    'community-initiatives': 'Initiative', 'community-reports': 'Report', conferences: 'Conference',
     techpark: 'Tech Park', 'tech-park': 'Facilities & Programs',
     donations: 'Donation', 'donation-tiers': 'Giving Tier',
     'endowment-stats': 'Impact Stat', 'endowment-campaigns': 'Campaign',
@@ -3537,6 +3540,19 @@ const CREATE_MODAL_CONFIG = {
         submitLabel: 'Add Profile',
         showMedia: true,
         showVideo: false
+    },
+    conferences: {
+        title: 'Add Conference',
+        subtitle: 'Schedule an upcoming conference or add a past one.',
+        icon: 'mic',
+        titleLabel: 'Conference Title',
+        titlePlaceholder: 'Enter the conference name…',
+        descLabel: 'Description',
+        descPlaceholder: 'Describe the theme and focus…',
+        submitLabel: 'Save Conference',
+        showMedia: false,
+        showVideo: false,
+        extraFields: 'conference'
     },
     'research-areas': {
         title: 'Add Research Area',
@@ -5224,11 +5240,13 @@ function configureAdminEditFields(moduleName) {
     const tierExtras = document.getElementById('adminEditDonationTierExtras');
     const campaignExtras = document.getElementById('adminEditEndowmentCampaignExtras');
     const eventExtras = document.getElementById('adminEditEventExtras');
+    const confExtras = document.getElementById('adminEditConferenceExtras');
     if (pubExtras) pubExtras.style.display = moduleName === 'publications' ? 'flex' : 'none';
     if (labExtras) labExtras.style.display = moduleName === 'research-labs' ? 'block' : 'none';
     if (tierExtras) tierExtras.style.display = moduleName === 'donation-tiers' ? 'flex' : 'none';
     if (campaignExtras) campaignExtras.style.display = moduleName === 'endowment-campaigns' ? 'flex' : 'none';
     if (eventExtras) eventExtras.style.display = moduleName === 'events' ? 'flex' : 'none';
+    if (confExtras) confExtras.style.display = moduleName === 'conferences' ? 'flex' : 'none';
 
     const imageGroup = document.getElementById('adminEditImageGroup');
     if (imageGroup) imageGroup.style.display = adminEditModuleHasImage(moduleName) ? 'block' : 'none';
@@ -5277,6 +5295,21 @@ function populateAdminEditForm(moduleName, item) {
     } else if (moduleName === 'endowment-stats') {
         titleEl.value = item.label || '';
         descEl.value = item.value || '';
+    } else if (moduleName === 'conferences') {
+        titleEl.value = item.title || '';
+        descEl.value = item.description || '';
+        const dateEl = document.getElementById('adminEditConfDate');
+        const displayDateEl = document.getElementById('adminEditConfDisplayDate');
+        const locEl = document.getElementById('adminEditConfLocation');
+        const statEl = document.getElementById('adminEditConfStatus');
+        const yearEl = document.getElementById('adminEditConfYear');
+        const urlEl = document.getElementById('adminEditConfUrl');
+        if (dateEl) dateEl.value = item.start_date ? item.start_date.substring(0,16) : '';
+        if (displayDateEl) displayDateEl.value = item.display_date || '';
+        if (locEl) locEl.value = item.location || '';
+        if (statEl) statEl.value = item.status || 'OPEN';
+        if (yearEl) yearEl.value = item.year || '';
+        if (urlEl) urlEl.value = item.external_url || '';
     } else if (moduleName === 'endowment-campaigns') {
         titleEl.value = item.title || '';
         descEl.value = item.description || '';
@@ -5353,6 +5386,15 @@ function buildAdminEditBody(moduleName) {
         body.title = document.getElementById('adminEditTitle').value.trim();
         body.description = document.getElementById('adminEditDesc').value.trim();
         body.status = document.getElementById('adminEditStatus').value;
+    } else if (moduleName === 'conferences') {
+        body.title = document.getElementById('adminEditTitle').value.trim();
+        body.description = document.getElementById('adminEditDesc').value.trim();
+        body.start_date = document.getElementById('adminEditConfDate')?.value || null;
+        body.display_date = document.getElementById('adminEditConfDisplayDate')?.value || null;
+        body.location = document.getElementById('adminEditConfLocation')?.value || null;
+        body.status = document.getElementById('adminEditConfStatus')?.value || 'OPEN';
+        body.year = document.getElementById('adminEditConfYear')?.value || null;
+        body.external_url = document.getElementById('adminEditConfUrl')?.value || null;
     } else if (moduleName === 'events') {
         body.title = document.getElementById('adminEditTitle').value.trim();
         body.description = document.getElementById('adminEditDesc').value.trim();
@@ -6721,11 +6763,13 @@ function applyCreateModalConfig(type, useGenericHeader) {
     const tierExtras = document.getElementById('createDonationTierExtras');
     const campaignExtras = document.getElementById('createEndowmentCampaignExtras');
     const eventExtras = document.getElementById('createEventExtras');
+    const confExtras = document.getElementById('createConferenceExtras');
     if (pubExtras) pubExtras.style.display = config.extraFields === 'publication' ? 'flex' : 'none';
     if (labExtras) labExtras.style.display = config.extraFields === 'lab' ? 'block' : 'none';
     if (tierExtras) tierExtras.style.display = config.extraFields === 'donation-tier' ? 'flex' : 'none';
     if (campaignExtras) campaignExtras.style.display = config.extraFields === 'endowment-campaign' ? 'flex' : 'none';
     if (eventExtras) eventExtras.style.display = config.extraFields === 'event' ? 'flex' : 'none';
+    if (confExtras) confExtras.style.display = config.extraFields === 'conference' ? 'flex' : 'none';
 
     const submitLabel = useGenericHeader ? CREATE_MODAL_GENERIC.submitLabel : config.submitLabel;
     if (submitBtn) submitBtn.innerHTML = `<i data-lucide="send"></i> ${submitLabel}`;
@@ -7138,7 +7182,8 @@ async function submitCreateForm() {
             'donation-tiers': '/content/donation-tiers',
             'endowment-stats': '/content/endowment-stats',
             'endowment-campaigns': '/content/endowment-campaigns',
-            'endowment-info': '/content/endowment-info'
+            'endowment-info': '/content/endowment-info',
+            conferences: '/admin/conferences'
         };
         const endpoint = ENDPOINT_MAP[type] || '/content/news';
         
@@ -7189,6 +7234,17 @@ async function submitCreateForm() {
             };
         } else if (type === 'endowment-info') {
             body = { title, description: desc, image: imageUrl };
+        } else if (type === 'conferences') {
+            body = {
+                title,
+                description: desc,
+                start_date: document.getElementById('createConfDate')?.value || null,
+                display_date: document.getElementById('createConfDisplayDate')?.value || null,
+                location: document.getElementById('createConfLocation')?.value || null,
+                status: document.getElementById('createConfStatus')?.value || 'OPEN',
+                year: document.getElementById('createConfYear')?.value || null,
+                external_url: document.getElementById('createConfUrl')?.value || null
+            };
         } else if (type === 'event') {
             body = { 
                 title, 
@@ -11404,3 +11460,191 @@ document.addEventListener('click', function(event) {
         closeAllProfileDropdowns();
     }
 });
+
+// ==========================================
+// CONFERENCE HUB LOGIC
+// ==========================================
+
+let conferenceTimerInterval = null;
+
+async function loadConferencesPage() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/content/conferences`);
+        if (!response.ok) throw new Error('Failed to fetch conferences');
+        const conferences = await response.json();
+
+        const now = new Date();
+        // Upcoming = status is OPEN, or start_date is in the future
+        const upcoming = conferences.filter(c => {
+            if (c.status === 'OPEN') return true;
+            if (c.start_date && new Date(c.start_date) > now) return true;
+            return false;
+        });
+        const past = conferences.filter(c => !upcoming.includes(c));
+
+        // Sort upcoming ascending (soonest first), past descending (newest first)
+        upcoming.sort((a, b) => new Date(a.start_date || 0) - new Date(b.start_date || 0));
+        past.sort((a, b) => new Date(b.start_date || 0) - new Date(a.start_date || 0));
+
+        // Update hero stats
+        const statTotal = document.getElementById('conf-stat-total');
+        const statUpcoming = document.getElementById('conf-stat-upcoming');
+        const statPast = document.getElementById('conf-stat-past');
+        if (statTotal) statTotal.textContent = conferences.length;
+        if (statUpcoming) statUpcoming.textContent = upcoming.length;
+        if (statPast) statPast.textContent = past.length;
+
+        renderFeaturedConference(upcoming.length > 0 ? upcoming[0] : null);
+        renderUpcomingConferences(upcoming.slice(1));
+        renderPastConferences(past);
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (e) {
+        console.error('Error loading conferences:', e);
+        const wrap = document.getElementById('conf-featured-wrap');
+        if (wrap) wrap.innerHTML = `<div class="conf-empty"><i data-lucide="wifi-off"></i><p>Could not load conference data. Please check your connection.</p></div>`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+}
+
+function renderFeaturedConference(conf) {
+    if (conferenceTimerInterval) { clearInterval(conferenceTimerInterval); conferenceTimerInterval = null; }
+    const wrap = document.getElementById('conf-featured-wrap');
+    if (!wrap) return;
+
+    if (!conf) {
+        wrap.innerHTML = `
+            <div class="conf-empty">
+                <i data-lucide="calendar-x"></i>
+                <p style="font-weight:600; color: var(--iuea-gray); margin-bottom:0.25rem;">No Upcoming Conferences</p>
+                <p style="font-size:0.9rem;">Stay tuned — new conferences will be announced here.</p>
+            </div>`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+    }
+
+    const dateStr = conf.display_date || (conf.start_date ? new Date(conf.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : 'TBA');
+    const statusCls = (conf.status || '').toUpperCase() === 'OPEN' ? 'open' : 'closed';
+    const statusLbl = (conf.status || 'OPEN').toUpperCase();
+
+    wrap.innerHTML = `
+        <div class="conf-featured-card">
+            <div class="conf-featured-accent"></div>
+            <div class="conf-featured-body">
+                <div class="conf-featured-meta-row">
+                    <span class="conf-badge-next">Next Conference</span>
+                    <span class="conf-badge-status ${statusCls}">${statusLbl}</span>
+                </div>
+                <h3>${conf.title || 'Untitled Conference'}</h3>
+                <p>${conf.description || ''}</p>
+                <div class="conf-meta-pills">
+                    <span class="conf-meta-pill"><i data-lucide="calendar"></i>${dateStr}</span>
+                    <span class="conf-meta-pill"><i data-lucide="map-pin"></i>${conf.location || 'TBA'}</span>
+                </div>
+                <div class="conf-featured-footer">
+                    ${conf.external_url ? `<a href="${conf.external_url}" target="_blank" class="conf-visit-btn"><i data-lucide="external-link"></i>Visit Conference Site</a>` : ''}
+                </div>
+            </div>
+            ${conf.start_date ? `
+            <div class="conf-timer-panel">
+                <span class="conf-timer-lbl">Conference Begins In</span>
+                <div class="conf-timer-boxes">
+                    <div class="conf-timer-box"><span class="conf-timer-num" id="t-days">00</span><span class="conf-timer-unit">Days</span></div>
+                    <div class="conf-timer-box"><span class="conf-timer-num" id="t-hours">00</span><span class="conf-timer-unit">Hours</span></div>
+                    <div class="conf-timer-box"><span class="conf-timer-num" id="t-mins">00</span><span class="conf-timer-unit">Mins</span></div>
+                    <div class="conf-timer-box"><span class="conf-timer-num" id="t-secs">00</span><span class="conf-timer-unit">Secs</span></div>
+                </div>
+            </div>` : ''}
+        </div>`;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Start countdown timer
+    if (conf.start_date) {
+        const target = new Date(conf.start_date).getTime();
+        function tick() {
+            const diff = target - Date.now();
+            if (diff <= 0) {
+                clearInterval(conferenceTimerInterval);
+                ['t-days','t-hours','t-mins','t-secs'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = '00';
+                });
+                return;
+            }
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v).padStart(2,'0'); };
+            set('t-days', d); set('t-hours', h); set('t-mins', m); set('t-secs', s);
+        }
+        tick();
+        conferenceTimerInterval = setInterval(tick, 1000);
+    }
+}
+
+function renderUpcomingConferences(upcoming) {
+    const grid = document.getElementById('upcoming-conferences-grid');
+    if (!grid) return;
+
+    if (upcoming.length === 0) {
+        grid.innerHTML = `<div class="conf-empty" style="grid-column:1/-1;"><i data-lucide="calendar"></i><p style="font-weight:600; margin-bottom:0.25rem;">No Other Upcoming Conferences</p><p style="font-size:0.9rem;">Check back soon for newly announced events.</p></div>`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+    }
+
+    grid.innerHTML = upcoming.map(c => {
+        const dateStr = c.display_date || (c.start_date ? new Date(c.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : 'TBA');
+        const year = c.year || (c.start_date ? new Date(c.start_date).getFullYear() : '');
+        const statusCls = (c.status || '').toUpperCase() === 'OPEN' ? 'open' : 'closed';
+        const statusLbl = (c.status || 'OPEN').toUpperCase();
+        return `
+        <div class="conf-card">
+            <div class="conf-card-top"></div>
+            <div class="conf-card-body">
+                <div class="conf-card-row">
+                    <span class="conf-year-chip">${year}</span>
+                    <span class="conf-badge-status ${statusCls}">${statusLbl}</span>
+                </div>
+                <h3>${c.title}</h3>
+                <p>${c.description || ''}</p>
+                <div class="conf-card-meta">
+                    <div><i data-lucide="calendar"></i>${dateStr}</div>
+                    <div><i data-lucide="map-pin"></i>${c.location || 'TBA'}</div>
+                </div>
+                ${c.external_url ? `<a href="${c.external_url}" target="_blank" class="conf-card-link"><i data-lucide="external-link"></i>Visit Site</a>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function renderPastConferences(past) {
+    const timeline = document.getElementById('archive-timeline');
+    if (!timeline) return;
+
+    if (past.length === 0) {
+        timeline.innerHTML = `<div class="conf-empty"><i data-lucide="archive"></i><p style="font-weight:600; margin-bottom:0.25rem;">No Past Conferences Yet</p><p style="font-size:0.9rem;">Completed conferences will appear in the archive.</p></div>`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+    }
+
+    timeline.innerHTML = past.map(c => {
+        const year = c.year || (c.start_date ? new Date(c.start_date).getFullYear() : '');
+        const dateStr = c.display_date || (c.start_date ? new Date(c.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : '');
+        return `
+        <div class="conf-tl-item">
+            <div class="conf-tl-header">
+                <span class="conf-tl-year">${year}</span>
+                <span class="conf-tl-date">${dateStr}</span>
+            </div>
+            <h3>${c.title}</h3>
+            <p>${c.description || ''}</p>
+            ${c.external_url ? `<a href="${c.external_url}" target="_blank"><i data-lucide="external-link"></i>View proceedings</a>` : ''}
+        </div>`;
+    }).join('');
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}

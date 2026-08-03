@@ -631,6 +631,9 @@ class AdminContentUpdate(BaseModel):
     goal_amount: Optional[str] = None
     raised_amount: Optional[str] = None
     sort_order: Optional[int] = None
+    start_date: Optional[datetime] = None
+    display_date: Optional[str] = None
+    external_url: Optional[str] = None
 
 # ---------- HERO VIDEOS ----------
 class HeroVideoResponse(BaseModel):
@@ -867,3 +870,26 @@ class PlatformSettingsUpdate(BaseModel):
     timezone: Optional[str] = None
     maintenance_mode: Optional[bool] = None
     allow_registrations: Optional[bool] = None
+
+class ConferenceBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    display_date: Optional[str] = None
+    location: Optional[str] = None
+    status: Optional[str] = "OPEN"
+    year: Optional[str] = None
+    external_url: Optional[str] = None
+
+class ConferenceCreate(ConferenceBase):
+    pass
+
+class ConferenceUpdate(ConferenceBase):
+    title: Optional[str] = None
+
+class ConferenceResponse(ConferenceBase):
+    id: int
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

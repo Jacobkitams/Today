@@ -410,6 +410,7 @@ CONTENT_TYPE_MAP = {
     "commission": models.CommunityItem,
     "publications": models.Publication,
     "research-labs": models.ResearchLab,
+    "conferences": models.Conference,
 }
 
 MODEL_MAP = CONTENT_TYPE_MAP
@@ -723,3 +724,48 @@ def reject_innovation_admin_item(
     notifications_service.notify_content_status(db, author_id, content_type, title, "rejected")
     db.commit()
     return {"message": "Rejected"}
+
+# Conference CRUD endpoints
+@router.post("/conferences", response_model=schemas.ConferenceResponse)
+def create_conference(
+    data: schemas.ConferenceCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    conference = models.Conference(**data.model_dump())
+    db.add(conference)
+    db.commit()
+    db.refresh(conference)
+    return conference
+
+@router.put("/conferences/{conference_id}", response_model=schemas.ConferenceResponse)
+def update_conference(
+    conference_id: int,
+    data: schemas.ConferenceUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    conference = db.query(models.Conference).filter(models.Conference.id == conference_id).first()
+    if not conference:
+        raise HTTPException(status_code=404, detail="Conference not found")
+    
+    update_data = data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(conference, key, value)
+    
+    db.commit()
+    db.refresh(conference)
+    return conference
+
+@router.delete("/conferences/{conference_id}")
+def delete_conference(
+    conference_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    conference = db.query(models.Conference).filter(models.Conference.id == conference_id).first()
+    if not conference:
+        raise HTTPException(status_code=404, detail="Conference not found")
+    db.delete(conference)
+    db.commit()
+    return {"message": "Conference deleted"}
