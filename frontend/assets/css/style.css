@@ -11301,3 +11301,218 @@ edia (max-width: 768px) {
         background: rgba(42, 0, 6, 0.85); /* fallback */
     }
 }
+
+/* ====== EDIT USER MODAL ====== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: fadeIn 0.15s ease;
+}
+
+.modal-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+    width: 100%;
+    max-width: 460px;
+    overflow: hidden;
+    animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: linear-gradient(135deg, #800000 0%, #a62121 100%);
+}
+
+.modal-card-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #fff;
+}
+
+.modal-card-title-wrap h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.modal-card-title-wrap i {
+    width: 20px;
+    height: 20px;
+    color: #fff;
+}
+
+.modal-close-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    transition: background 0.15s;
+}
+
+.modal-close-btn:hover { background: rgba(255,255,255,0.3); }
+.modal-close-btn i { width: 16px; height: 16px; }
+
+.modal-card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-card-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    background: #fafafa;
+}
+
+/* Avatar row inside modal */
+.edit-user-avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 0.25rem;
+}
+
+.edit-user-big-avatar {
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 14px !important;
+    font-size: 1.3rem !important;
+    flex-shrink: 0;
+}
+
+.edit-user-modal-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+
+.edit-user-modal-email {
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+/* Form fields */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.form-group label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-optional {
+    font-weight: 400;
+    color: #94a3b8;
+    font-size: 0.78rem;
+}
+
+.admin-input {
+    width: 100%;
+    padding: 0.6rem 0.9rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.admin-input:focus {
+    border-color: #800000;
+    box-shadow: 0 0 0 3px rgba(128,0,0,0.08);
+}
+
+.password-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrap .admin-input {
+    padding-right: 2.8rem;
+}
+
+.toggle-pass-btn {
+    position: absolute;
+    right: 0.6rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    padding: 0.2rem;
+    transition: color 0.15s;
+}
+
+.toggle-pass-btn:hover { color: #800000; }
+.toggle-pass-btn i { width: 18px; height: 18px; }
+
+/* Error banner */
+.edit-user-error {
+    padding: 0.6rem 0.9rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: #dc2626;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Cancel button */
+.btn-outline {
+    padding: 0.55rem 1.2rem;
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
+    background: #fff;
+    color: #374151;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.btn-outline:hover {
+    border-color: #800000;
+    color: #800000;
+    background: #fff5f5;
+}

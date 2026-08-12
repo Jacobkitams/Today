@@ -3078,6 +3078,7 @@ async function loadAdminUsers() {
     if (currentUser.role === 'super_admin') {
         if (usersTabBtn) usersTabBtn.style.display = 'flex';
         const users = await apiGet('/admin/users');
+        _adminUsersCache = users;
         const tbody = document.getElementById('usersTableBody');
         const userCount = document.getElementById('userCount');
         if (userCount) userCount.textContent = `${users.length} users`;
@@ -3181,9 +3182,112 @@ async function toggleUserStatus(userId, currentStatus) {
     else showToast('Failed to update status', 'error');
 }
 
+// Store users data for the edit modal
+let _adminUsersCache = [];
+
 function editUser(userId) {
-    // Placeholder for opening an edit user modal or redirecting
-    showToast('Edit user feature coming soon!', 'info');
+    const u = _adminUsersCache.find(u => u.id === userId);
+    if (!u) return showToast('User data not found. Please refresh.', 'error');
+
+    // Populate modal
+    document.getElementById('editUserId').value = u.id;
+    document.getElementById('editUserName').value = u.name || '';
+    document.getElementById('editUserEmail').value = u.email || '';
+    document.getElementById('editUserPassword').value = '';
+    document.getElementById('editUserError').style.display = 'none';
+
+    // Avatar
+    const avatarEl = document.getElementById('editUserAvatar');
+    const gradients = [
+        ['#6366f1','#8b5cf6'],['#0ea5e9','#6366f1'],['#f59e0b','#ef4444'],
+        ['#10b981','#0ea5e9'],['#ec4899','#8b5cf6'],['#f97316','#f59e0b']
+    ];
+    const [c1, c2] = gradients[u.id % gradients.length];
+    const parts = (u.name || 'U').trim().split(' ');
+    const initials = parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : parts[0].substring(0, 2);
+
+    if (u.profile_picture) {
+        avatarEl.innerHTML = '';
+        avatarEl.style.background = 'none';
+        avatarEl.style.padding = '0';
+        const img = document.createElement('img');
+        img.src = u.profile_picture;
+        img.alt = u.name;
+        img.className = 'ud-avatar-img edit-user-big-avatar';
+        img.onerror = () => {
+            avatarEl.innerHTML = initials.toUpperCase();
+            avatarEl.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+        };
+        avatarEl.appendChild(img);
+    } else {
+        avatarEl.innerHTML = initials.toUpperCase();
+        avatarEl.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+    }
+    document.getElementById('editUserAvatarName').textContent = u.name;
+    document.getElementById('editUserAvatarEmail').textContent = u.email;
+
+    // Reset password eye
+    const passInput = document.getElementById('editUserPassword');
+    passInput.type = 'password';
+    const eyeIcon = document.getElementById('editPassEyeIcon');
+    if (eyeIcon) eyeIcon.setAttribute('data-lucide', 'eye');
+
+    // Show modal
+    const modal = document.getElementById('editUserModal');
+    modal.style.display = 'flex';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    document.getElementById('editUserName').focus();
+}
+
+function closeEditUserModal() {
+    document.getElementById('editUserModal').style.display = 'none';
+}
+
+function toggleEditPassword() {
+    const input = document.getElementById('editUserPassword');
+    const icon = document.getElementById('editPassEyeIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+        input.type = 'password';
+        if (icon) icon.setAttribute('data-lucide', 'eye');
+    }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+async function saveEditUser() {
+    const userId = parseInt(document.getElementById('editUserId').value);
+    const name = document.getElementById('editUserName').value.trim();
+    const email = document.getElementById('editUserEmail').value.trim();
+    const password = document.getElementById('editUserPassword').value;
+    const errEl = document.getElementById('editUserError');
+    const saveBtn = document.getElementById('editUserSaveBtn');
+
+    errEl.style.display = 'none';
+    if (!name) { errEl.textContent = 'Name cannot be empty.'; errEl.style.display = 'block'; return; }
+    if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return; }
+
+    const payload = { name, email };
+    if (password) payload.password = password;
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+
+    const res = await apiPut(`/admin/users/${userId}`, payload);
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<i data-lucide="save"></i> Save Changes';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    if (res.ok) {
+        showToast('User updated successfully!');
+        closeEditUserModal();
+        loadAdminUsers();
+    } else {
+        const err = await res.json().catch(() => ({}));
+        errEl.textContent = err.detail || 'Failed to save changes.';
+        errEl.style.display = 'block';
+    }
 }
 
 async function deleteUser(userId, userName) {
