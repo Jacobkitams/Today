@@ -677,7 +677,6 @@ function showHomeLoadingState() {
 /* =================== ROLE DASHBOARD MAP =================== */
 const ROLE_DASHBOARD_MAP = {
     'registered_user':   'registered-user-dashboard',
-    'donor_partner':     'donor-partner-dashboard',
     'coordinator':       'coordinator-dashboard',
     'innovation_admin':  'innovation-admin-dashboard',
     'content_editor':    'admin-dashboard',
@@ -687,9 +686,7 @@ const ROLE_DASHBOARD_MAP = {
 };
 
 const ASSIGNABLE_USER_ROLES = [
-    'public_visitor',
     'registered_user',
-    'donor_partner',
     'coordinator',
     'innovation_admin',
     'content_editor',
@@ -3087,9 +3084,12 @@ async function loadAdminUsers() {
         if (tbody) {
             tbody.innerHTML = users.map((u, i) => `
                 <tr>
-                    <td style="color:var(--iuea-gray-light)">${i + 1}</td>
-                    <td><strong>${u.name}</strong></td>
-                    <td style="color:var(--iuea-gray-light)">${u.email}</td>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <strong style="color: var(--text-color); font-weight: 600;">${u.name}</strong>
+                            <span style="font-size: 0.85rem; color: var(--iuea-gray-light);">${u.email}</span>
+                        </div>
+                    </td>
                     <td>
                         <select class="role-select" onchange="updateUserRole(${u.id}, this.value)">
                             ${selectableRolesForUser(u.role).map(r =>
@@ -3098,13 +3098,19 @@ async function loadAdminUsers() {
                         </select>
                     </td>
                     <td><span class="status-badge ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
-                    <td style="color:var(--iuea-gray-light); font-size:0.85rem">${u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
-                    <td>
+                    <td style="display: flex; gap: 8px; align-items: center; justify-content: flex-end;">
                         <button class="btn-deactivate ${u.is_active ? 'active' : 'inactive'}" onclick="toggleUserStatus(${u.id}, ${u.is_active})">
                             ${u.is_active ? 'Deactivate' : 'Activate'}
                         </button>
+                        <button style="color:var(--iuea-blue); background:none; border:none; cursor:pointer; padding: 6px; display: flex; align-items: center; justify-content: center; border-radius: 6px;" class="hover-bg-light-blue" onclick="editUser(${u.id})" title="Edit User">
+                            <i data-lucide="edit" style="width: 18px; height: 18px;"></i>
+                        </button>
+                        <button style="color:var(--iuea-red); background:none; border:none; cursor:pointer; padding: 6px; display: flex; align-items: center; justify-content: center; border-radius: 6px;" class="hover-bg-light" onclick="deleteUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" title="Delete User">
+                            <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                        </button>
                     </td>
                 </tr>`).join('');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     } else {
         if (usersTabBtn) usersTabBtn.style.display = 'none';
@@ -3148,6 +3154,23 @@ async function toggleUserStatus(userId, currentStatus) {
     const res = await apiPut(`/admin/users/${userId}/status`, { is_active: !currentStatus });
     if (res.ok) { showToast(`User ${!currentStatus ? 'activated' : 'deactivated'}`); loadAdminUsers(); }
     else showToast('Failed to update status', 'error');
+}
+
+function editUser(userId) {
+    // Placeholder for opening an edit user modal or redirecting
+    showToast('Edit user feature coming soon!', 'info');
+}
+
+async function deleteUser(userId, userName) {
+    if (!confirm(`Are you sure you want to permanently delete user "${userName}"? This cannot be undone.`)) return;
+    const res = await apiDelete(`/admin/users/${userId}`);
+    if (res.ok) {
+        showToast('User deleted successfully');
+        loadAdminUsers();
+    } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.detail || 'Failed to delete user', 'error');
+    }
 }
 
 /* =================== ADMIN CONTENT MODULES =================== */
@@ -6703,7 +6726,6 @@ function getMessagingContextForCurrentUser() {
     if (['super_admin',
     'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(role)) return 'admin';
     if (role === 'registered_user') return 'ru';
-    if (role === 'donor_partner') return 'dp';
     return null;
 }
 
@@ -7584,7 +7606,7 @@ function updateUIForUser() {
         if (mobileLink) mobileLink.innerHTML = `<i data-lucide="log-out"></i> Sign Out`;
         if (mobileLink) mobileLink.setAttribute('onclick', 'logout()');
 
-        const role = currentUser.role || 'public_visitor';
+        const role = currentUser.role || 'registered_user';
         if (userDashLink) {
             if (getDashboardForRole(role)) userDashLink.classList.remove('hidden');
             else userDashLink.classList.add('hidden');
@@ -9248,7 +9270,8 @@ function renderDpRecentActivity(donations) {
 }
 
 async function populateDpDashboard() {
-    if (!currentUser || currentUser.role !== 'donor_partner') return;
+    // donor_partner role has been removed — this function is a no-op
+    return;
 
     const displayName = currentUser.name || 'Donor';
     const welcome = document.getElementById('dpWelcomeTitle');
@@ -10408,8 +10431,6 @@ function formatRoleShort(role) {
         registered_user: 'Registered User',
         student_innovator: 'Innovator',
         alumni: 'Alumni',
-        donor_partner: 'Donor',
-        public_visitor: 'Visitor',
     };
     return map[role] || role || 'User';
 }
@@ -10433,7 +10454,6 @@ async function refreshUnreadMessageBadges() {
     'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role);
     if (isAdmin) setMsgBadge('nav-messages-badge', count);
     if (currentUser.role === 'registered_user') setMsgBadge('ru-nav-messages-badge', count);
-    if (currentUser.role === 'donor_partner') setMsgBadge('dp-nav-messages-badge', count);
 }
 
 function stopMessagePolling(context) {
@@ -10747,7 +10767,6 @@ function getActiveNotifyContext() {
     if (['super_admin',
     'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(role)) return 'admin';
     if (role === 'registered_user') return 'ru';
-    if (role === 'donor_partner') return 'dp';
     return null;
 }
 

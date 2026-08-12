@@ -27,7 +27,8 @@ CONTENT_TYPE_LABELS = {
 
 ROLE_PANEL_PREFIX = {
     "registered_user": "ru",
-    "donor_partner": "dp",
+    "content_editor": "ce",
+    "coordinator": "co",
 }
 
 

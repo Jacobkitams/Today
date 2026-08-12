@@ -9,7 +9,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
-    role: Optional[str] = "public_visitor"
+    role: Optional[str] = "registered_user"
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
