@@ -3083,23 +3083,29 @@ async function loadAdminUsers() {
         if (userCount) userCount.textContent = `${users.length} users`;
         if (tbody) {
             tbody.innerHTML = users.map((u) => {
-                // Generate initials avatar from name
+                // Generate initials avatar from name (fallback)
                 const parts = (u.name || 'U').trim().split(' ');
                 const initials = parts.length >= 2
                     ? parts[0][0] + parts[parts.length - 1][0]
                     : parts[0].substring(0, 2);
-                // Unique gradient per user (based on id)
+                // Unique gradient per user (based on id) — used as fallback
                 const gradients = [
                     ['#6366f1','#8b5cf6'],['#0ea5e9','#6366f1'],['#f59e0b','#ef4444'],
                     ['#10b981','#0ea5e9'],['#ec4899','#8b5cf6'],['#f97316','#f59e0b']
                 ];
                 const [c1, c2] = gradients[u.id % gradients.length];
 
+                // Avatar: profile picture if available, else initials gradient
+                const avatarHtml = u.profile_picture
+                    ? `<img class="ud-avatar ud-avatar-img" src="${u.profile_picture}" alt="${u.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                       <div class="ud-avatar" style="display:none;background:linear-gradient(135deg,${c1},${c2});">${initials.toUpperCase()}</div>`
+                    : `<div class="ud-avatar" style="background:linear-gradient(135deg,${c1},${c2});">${initials.toUpperCase()}</div>`;
+
                 return `
                 <tr>
                     <td style="overflow:visible;">
                         <div class="ud-user-cell">
-                            <div class="ud-avatar" style="background: linear-gradient(135deg, ${c1}, ${c2});">${initials.toUpperCase()}</div>
+                            <div class="ud-avatar-wrap">${avatarHtml}</div>
                             <div class="ud-user-info">
                                 <span class="ud-user-name">${u.name}</span>
                                 <span class="ud-user-email">${u.email}</span>

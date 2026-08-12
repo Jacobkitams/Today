@@ -4466,6 +4466,23 @@ nav {
     box-shadow: 0 2px 8px rgba(99,102,241,0.3);
 }
 
+.ud-avatar-wrap {
+    flex-shrink: 0;
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+.ud-avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    object-fit: cover;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    background: #e2e8f0;
+}
+
 .ud-user-info {
     min-width: 0;
     overflow: hidden;
