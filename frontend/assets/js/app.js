@@ -577,7 +577,7 @@ function authorChipHTML(authorId, authorName, authorPic, contentType, contentId)
     const typeArg = contentType ? jsStringLiteral(contentType) : 'null';
     const idArg = contentId ? Number(contentId) : 'null';
     const avatarContent = authorPic
-        ? `<img src="${resolveMediaUrl(authorPic)}" alt="${safeName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+        ? `<img data-user-id="${aId}" src="${resolveMediaUrl(authorPic)}" alt="${safeName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
         : initial;
     return `<button type="button" class="author-chip"
         onclick="event.stopPropagation(); openAuthorProfileModal(${aId}, ${jsStringLiteral(name)}, ${typeArg}, ${idArg})"
@@ -585,7 +585,7 @@ function authorChipHTML(authorId, authorName, authorPic, contentType, contentId)
         <span class="author-chip-avatar" aria-hidden="true">${avatarContent}</span>
         <span class="author-chip-text">
             <span class="author-chip-label">Shared by</span>
-            <span class="author-chip-name">${safeName}</span>
+            <span class="author-chip-name" data-user-name-id="${aId}">${safeName}</span>
         </span>
     </button>`;
 }
@@ -11796,3 +11796,94 @@ function renderPastConferences(past) {
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
+
+// ==========================================
+// REAL-TIME WEBSOCKET CONNECTION
+// ==========================================
+let globalWebSocket = null;
+let wsReconnectTimer = null;
+let wsReconnectAttempts = 0;
+
+function connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    globalWebSocket = new WebSocket(wsUrl);
+    
+    globalWebSocket.onopen = () => {
+        console.log('WebSocket connected for real-time updates');
+        wsReconnectAttempts = 0;
+        if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
+    };
+    
+    globalWebSocket.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'USER_UPDATED') {
+                handleUserUpdatedEvent(data.payload);
+            }
+        } catch (e) {
+            console.error('Error parsing WebSocket message', e);
+        }
+    };
+    
+    globalWebSocket.onclose = () => {
+        // Exponential backoff reconnect
+        const delay = Math.min(1000 * (2 ** wsReconnectAttempts), 30000);
+        wsReconnectAttempts++;
+        wsReconnectTimer = setTimeout(connectWebSocket, delay);
+    };
+    
+    globalWebSocket.onerror = (err) => {
+        globalWebSocket.close();
+    };
+}
+
+function handleUserUpdatedEvent(payload) {
+    const { id, name, profile_picture } = payload;
+    if (!id) return;
+    
+    // Update global variables if this is the current user
+    if (currentUser && currentUser.id === id) {
+        currentUser.name = name;
+        if (profile_picture !== undefined) {
+            currentUser.profile_picture = profile_picture;
+        }
+        updateUIForUser(); // Refresh header avatar
+    }
+
+    // Update any DOM elements marked with this user ID
+    // 1. Update avatars
+    const avatarImgs = document.querySelectorAll(`img[data-user-id="${id}"]`);
+    avatarImgs.forEach(img => {
+        if (profile_picture) {
+            img.src = profile_picture;
+            img.style.display = 'block';
+            if (img.nextElementSibling && img.nextElementSibling.classList.contains('ud-avatar')) {
+                img.nextElementSibling.style.display = 'none';
+            }
+        }
+    });
+
+    // 2. Update names
+    const nameEls = document.querySelectorAll(`[data-user-name-id="${id}"]`);
+    nameEls.forEach(el => {
+        el.textContent = name;
+    });
+
+    // 3. If we are on the admin users tab, refresh the cache and table directly
+    if (typeof _adminUsersCache !== 'undefined') {
+        const u = _adminUsersCache.find(user => user.id === id);
+        if (u) {
+            u.name = name;
+            if (profile_picture !== undefined) u.profile_picture = profile_picture;
+            if (currentAdminModule === 'users') {
+                // Quickly re-render the admin users table to show updates
+                loadAdminUsers();
+            }
+        }
+    }
+}
+
+// Start connection when script loads
+connectWebSocket();

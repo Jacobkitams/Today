@@ -102,6 +102,20 @@ app.include_router(form_submissions_routes.router, prefix="/forms", tags=["Form 
 app.include_router(innovation_admin_routes.router, prefix="/innovation-admin", tags=["Innovation Admin"])
 app.include_router(event_registration_routes.router, prefix="/events-reg", tags=["Event Registration"])
 
+from fastapi import WebSocket, WebSocketDisconnect
+from websocket import manager
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            # We don't necessarily need to handle incoming messages right now,
+            # but keeping this loop open is required to maintain the connection.
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
 from fastapi.responses import FileResponse
 
 # Serve uploaded media files (images, videos)

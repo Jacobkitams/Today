@@ -3,7 +3,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from datetime import datetime, timezone, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
@@ -16,6 +16,7 @@ from platform_settings_service import (
     PLATFORM_SETTINGS_DEFAULTS,
     get_or_create_platform_settings,
 )
+from websocket import manager
 
 router = APIRouter()
 
@@ -273,7 +274,7 @@ def update_user_status(user_id: int, data: schemas.UserStatusUpdate, db: Session
     return {"message": f"User {'activated' if data.is_active else 'deactivated'}"}
 
 @router.put("/users/{user_id}")
-def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(get_db), current_user: User = Depends(require_super_admin)):
+def update_user(user_id: int, data: schemas.UserUpdate, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: User = Depends(require_super_admin)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -295,6 +296,16 @@ def update_user(user_id: int, data: schemas.UserUpdate, db: Session = Depends(ge
         user.hashed_password = get_password_hash(data.password.strip())
     db.commit()
     db.refresh(user)
+    
+    background_tasks.add_task(manager.broadcast, {
+        "type": "USER_UPDATED",
+        "payload": {
+            "id": user.id,
+            "name": user.name,
+            "profile_picture": user.profile_picture
+        }
+    })
+    
     return {"message": "User updated", "user": {"id": user.id, "name": user.name, "email": user.email}}
 
 @router.delete("/users/{user_id}")

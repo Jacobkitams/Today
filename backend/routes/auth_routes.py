@@ -3,13 +3,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 import models, schemas, auth
 from database import get_db
 from platform_settings_service import get_or_create_platform_settings
+from websocket import manager
 
 router = APIRouter()
 
@@ -69,6 +70,7 @@ def read_me(current_user: models.User = Depends(auth.get_current_user)):
 @router.put("/me", response_model=schemas.UserResponse)
 def update_me(
     user_update: schemas.UserUpdate,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -86,6 +88,16 @@ def update_me(
     
     db.commit()
     db.refresh(current_user)
+    
+    background_tasks.add_task(manager.broadcast, {
+        "type": "USER_UPDATED",
+        "payload": {
+            "id": current_user.id,
+            "name": current_user.name,
+            "profile_picture": current_user.profile_picture
+        }
+    })
+    
     return current_user
 
 
