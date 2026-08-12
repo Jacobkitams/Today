@@ -3082,12 +3082,28 @@ async function loadAdminUsers() {
         const userCount = document.getElementById('userCount');
         if (userCount) userCount.textContent = `${users.length} users`;
         if (tbody) {
-            tbody.innerHTML = users.map((u, i) => `
+            tbody.innerHTML = users.map((u) => {
+                // Generate initials avatar from name
+                const parts = (u.name || 'U').trim().split(' ');
+                const initials = parts.length >= 2
+                    ? parts[0][0] + parts[parts.length - 1][0]
+                    : parts[0].substring(0, 2);
+                // Unique gradient per user (based on id)
+                const gradients = [
+                    ['#6366f1','#8b5cf6'],['#0ea5e9','#6366f1'],['#f59e0b','#ef4444'],
+                    ['#10b981','#0ea5e9'],['#ec4899','#8b5cf6'],['#f97316','#f59e0b']
+                ];
+                const [c1, c2] = gradients[u.id % gradients.length];
+
+                return `
                 <tr>
-                    <td>
-                        <div style="display: flex; flex-direction: column;">
-                            <strong style="color: var(--text-color); font-weight: 600;">${u.name}</strong>
-                            <span style="font-size: 0.85rem; color: var(--iuea-gray-light);">${u.email}</span>
+                    <td style="overflow:visible;">
+                        <div class="ud-user-cell">
+                            <div class="ud-avatar" style="background: linear-gradient(135deg, ${c1}, ${c2});">${initials.toUpperCase()}</div>
+                            <div class="ud-user-info">
+                                <span class="ud-user-name">${u.name}</span>
+                                <span class="ud-user-email">${u.email}</span>
+                            </div>
                         </div>
                     </td>
                     <td>
@@ -3098,18 +3114,21 @@ async function loadAdminUsers() {
                         </select>
                     </td>
                     <td><span class="status-badge ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
-                    <td style="display: flex; gap: 8px; align-items: center; justify-content: flex-end;">
-                        <button class="btn-deactivate ${u.is_active ? 'active' : 'inactive'}" onclick="toggleUserStatus(${u.id}, ${u.is_active})">
-                            ${u.is_active ? 'Deactivate' : 'Activate'}
-                        </button>
-                        <button style="color:var(--iuea-blue); background:none; border:none; cursor:pointer; padding: 6px; display: flex; align-items: center; justify-content: center; border-radius: 6px;" class="hover-bg-light-blue" onclick="editUser(${u.id})" title="Edit User">
-                            <i data-lucide="edit" style="width: 18px; height: 18px;"></i>
-                        </button>
-                        <button style="color:var(--iuea-red); background:none; border:none; cursor:pointer; padding: 6px; display: flex; align-items: center; justify-content: center; border-radius: 6px;" class="hover-bg-light" onclick="deleteUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" title="Delete User">
-                            <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
-                        </button>
+                    <td>
+                        <div class="ud-actions">
+                            <button class="btn-deactivate ${u.is_active ? 'active' : 'inactive'}" onclick="toggleUserStatus(${u.id}, ${u.is_active})">
+                                ${u.is_active ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button class="ud-icon-btn edit" onclick="editUser(${u.id})" title="Edit User">
+                                <i data-lucide="pencil"></i>
+                            </button>
+                            <button class="ud-icon-btn delete" onclick="deleteUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" title="Delete User">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </div>
                     </td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     } else {
