@@ -12032,7 +12032,7 @@ function renderUpcomingCommunityServices(upcoming) {
         const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : null);
         const imageUrl = resolveMediaUrl(cs.cover_image_url) || `https://picsum.photos/600/400?random=${cs.id}`;
         const viewBtn = cs.file_url
-            ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.85rem;background:var(--iuea-maroon);color:#fff;border-radius:20px;font-size:0.78rem;font-weight:700;text-decoration:none;"><i data-lucide="eye" style="width:13px;height:13px;"></i> View Document</a>`
+            ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.85rem;background:var(--iuea-maroon);color:#fff;border-radius:20px;font-size:0.78rem;font-weight:700;text-decoration:none;"><i data-lucide="download" style="width:13px;height:13px;"></i> Download</a>`
             : '';
         return `
         <div class="modern-card" data-content-type="community-services" data-content-id="${cs.id}">
@@ -12144,7 +12144,7 @@ function renderPastCommunityServices(past) {
         const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : null);
         const imageUrl = resolveMediaUrl(cs.cover_image_url) || `https://picsum.photos/600/400?random=${cs.id}`;
         const viewBtn = cs.file_url
-            ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.85rem;background:var(--iuea-maroon);color:#fff;border-radius:20px;font-size:0.78rem;font-weight:700;text-decoration:none;"><i data-lucide="eye" style="width:13px;height:13px;"></i> View Document</a>`
+            ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.85rem;background:var(--iuea-maroon);color:#fff;border-radius:20px;font-size:0.78rem;font-weight:700;text-decoration:none;"><i data-lucide="download" style="width:13px;height:13px;"></i> Download</a>`
             : '';
         return `
         <div class="modern-card" data-content-type="community-services" data-content-id="${cs.id}">
