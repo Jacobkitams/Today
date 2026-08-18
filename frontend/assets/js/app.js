@@ -3719,7 +3719,7 @@ const CREATE_MODAL_CONFIG = {
         descLabel: 'Description',
         descPlaceholder: 'Describe the initiative and impact…',
         submitLabel: 'Save Initiative',
-        showMedia: false,
+        showMedia: true,
         showVideo: false,
         extraFields: 'community-service'
     },
@@ -5508,6 +5508,8 @@ function populateAdminEditForm(moduleName, item) {
                 csDocCurrentWrap.style.display = 'none';
             }
         }
+        // Load existing cover image into the image preview
+        adminEditExistingImageUrl = item.cover_image_url || null;
     } else if (moduleName === 'endowment-campaigns') {
         titleEl.value = item.title || '';
         descEl.value = item.description || '';
@@ -5603,6 +5605,8 @@ function buildAdminEditBody(moduleName) {
         body.year = document.getElementById('adminEditCsYear')?.value || null;
         const csDocUrl = document.getElementById('adminEditCsDocUrl')?.value || null;
         if (csDocUrl) body.file_url = csDocUrl;
+        const csImage = document.getElementById('adminEditImage')?.value.trim();
+        if (csImage) body.cover_image_url = csImage;
     } else if (moduleName === 'events') {
         body.title = document.getElementById('adminEditTitle').value.trim();
         body.description = document.getElementById('adminEditDesc').value.trim();
@@ -7488,7 +7492,8 @@ async function submitCreateForm() {
                 location: document.getElementById('createCsLocation')?.value || null,
                 status: document.getElementById('createCsStatus')?.value || 'OPEN',
                 year: document.getElementById('createCsYear')?.value || null,
-                file_url: docUrl || document.getElementById('createCsDocUrl')?.value || null
+                file_url: docUrl || document.getElementById('createCsDocUrl')?.value || null,
+                cover_image_url: imageUrl || null
             };
         } else if (type === 'event') {
             body = { 
