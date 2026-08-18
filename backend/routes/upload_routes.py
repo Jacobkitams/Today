@@ -20,9 +20,13 @@ MAX_VIDEO_SIZE = 200 * 1024 * 1024  # 200 MB
 MAX_UPLOAD_BYTES = MAX_VIDEO_SIZE   # Starlette multipart limit (must cover video)
 
 def _save_file(upload: UploadFile, dest_dir: str, allowed_types: set, max_size: int) -> str:
-    if upload.content_type not in allowed_types:
-        raise HTTPException(status_code=400, detail=f"Unsupported file type: {upload.content_type}")
     ext = os.path.splitext(upload.filename or "")[1].lower() or ".bin"
+    if upload.content_type not in allowed_types:
+        # Fallback for documents: allow based on extension if MIME type is unrecognised
+        if "documents" in dest_dir and ext in {".pdf", ".doc", ".docx", ".txt", ".rtf", ".csv", ".xls", ".xlsx", ".ppt", ".pptx"}:
+            pass
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: {upload.content_type} (ext: {ext})")
     filename = f"{uuid.uuid4().hex}{ext}"
     dest_path = os.path.join(dest_dir, filename)
     content = upload.file.read()
