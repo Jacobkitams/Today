@@ -440,4 +440,6 @@ class CommunityService(Base):
     location = Column(String(255), nullable=True)
     status = Column(String(50), default="OPEN") # e.g. "OPEN", "CLOSED"
     cover_image_url = Column(String(500), nullable=True)
+    file_url = Column(String(500), nullable=True)
+    year = Column(String(20), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

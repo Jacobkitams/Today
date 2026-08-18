@@ -903,7 +903,8 @@ class CommunityServiceBase(BaseModel):
     location: Optional[str] = None
     status: Optional[str] = "OPEN"
     cover_image_url: Optional[str] = None
-
+    file_url: Optional[str] = None
+    year: Optional[str] = None
 class CommunityServiceCreate(CommunityServiceBase):
     pass
 

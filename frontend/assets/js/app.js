@@ -3721,7 +3721,7 @@ const CREATE_MODAL_CONFIG = {
         submitLabel: 'Save Initiative',
         showMedia: false,
         showVideo: false,
-        extraFields: 'conference'
+        extraFields: 'community-service'
     },
     'research-areas': {
         title: 'Add Research Area',
@@ -5417,6 +5417,9 @@ function configureAdminEditFields(moduleName) {
     if (eventExtras) eventExtras.style.display = moduleName === 'events' ? 'flex' : 'none';
     if (confExtras) confExtras.style.display = moduleName === 'conferences' ? 'flex' : 'none';
 
+    const csExtras = document.getElementById('adminEditCommunityServiceExtras');
+    if (csExtras) csExtras.style.display = moduleName === 'community-services' ? 'flex' : 'none';
+
     const imageGroup = document.getElementById('adminEditImageGroup');
     if (imageGroup) imageGroup.style.display = adminEditModuleHasImage(moduleName) ? 'block' : 'none';
 }
@@ -5479,6 +5482,32 @@ function populateAdminEditForm(moduleName, item) {
         if (statEl) statEl.value = item.status || 'OPEN';
         if (yearEl) yearEl.value = item.year || '';
         if (urlEl) urlEl.value = item.external_url || '';
+    } else if (moduleName === 'community-services') {
+        titleEl.value = item.title || '';
+        descEl.value = item.description || '';
+        const csDateEl = document.getElementById('adminEditCsDate');
+        const csDisplayDateEl = document.getElementById('adminEditCsDisplayDate');
+        const csLocEl = document.getElementById('adminEditCsLocation');
+        const csStatEl = document.getElementById('adminEditCsStatus');
+        const csYearEl = document.getElementById('adminEditCsYear');
+        const csDocUrlEl = document.getElementById('adminEditCsDocUrl');
+        const csDocCurrentWrap = document.getElementById('adminEditCsDocCurrentWrap');
+        const csDocCurrentLink = document.getElementById('adminEditCsDocCurrentLink');
+        if (csDateEl) csDateEl.value = item.start_date ? item.start_date.substring(0,16) : '';
+        if (csDisplayDateEl) csDisplayDateEl.value = item.display_date || '';
+        if (csLocEl) csLocEl.value = item.location || '';
+        if (csStatEl) csStatEl.value = item.status || 'OPEN';
+        if (csYearEl) csYearEl.value = item.year || '';
+        if (csDocUrlEl) csDocUrlEl.value = item.file_url || '';
+        if (csDocCurrentWrap && csDocCurrentLink) {
+            if (item.file_url) {
+                csDocCurrentLink.href = item.file_url;
+                csDocCurrentLink.textContent = item.file_url.split('/').pop();
+                csDocCurrentWrap.style.display = 'block';
+            } else {
+                csDocCurrentWrap.style.display = 'none';
+            }
+        }
     } else if (moduleName === 'endowment-campaigns') {
         titleEl.value = item.title || '';
         descEl.value = item.description || '';
@@ -5564,6 +5593,16 @@ function buildAdminEditBody(moduleName) {
         body.status = document.getElementById('adminEditConfStatus')?.value || 'OPEN';
         body.year = document.getElementById('adminEditConfYear')?.value || null;
         body.external_url = document.getElementById('adminEditConfUrl')?.value || null;
+    } else if (moduleName === 'community-services') {
+        body.title = document.getElementById('adminEditTitle').value.trim();
+        body.description = document.getElementById('adminEditDesc').value.trim();
+        body.start_date = document.getElementById('adminEditCsDate')?.value || null;
+        body.display_date = document.getElementById('adminEditCsDisplayDate')?.value || null;
+        body.location = document.getElementById('adminEditCsLocation')?.value || null;
+        body.status = document.getElementById('adminEditCsStatus')?.value || 'OPEN';
+        body.year = document.getElementById('adminEditCsYear')?.value || null;
+        const csDocUrl = document.getElementById('adminEditCsDocUrl')?.value || null;
+        if (csDocUrl) body.file_url = csDocUrl;
     } else if (moduleName === 'events') {
         body.title = document.getElementById('adminEditTitle').value.trim();
         body.description = document.getElementById('adminEditDesc').value.trim();
@@ -5612,6 +5651,18 @@ async function saveAdminEdit() {
             if (uploadedUrl) {
                 const imageEl = document.getElementById('adminEditImage');
                 if (imageEl) imageEl.value = uploadedUrl;
+            }
+        }
+
+        // Upload document for community-services
+        if (moduleName === 'community-services') {
+            const csDocFile = document.getElementById('adminEditCsDocFile');
+            if (csDocFile?.files?.[0]) {
+                const uploadedDocUrl = await uploadFile(csDocFile, 'document', () => {});
+                if (uploadedDocUrl) {
+                    const hiddenEl = document.getElementById('adminEditCsDocUrl');
+                    if (hiddenEl) hiddenEl.value = uploadedDocUrl;
+                }
             }
         }
 
@@ -6939,6 +6990,9 @@ function applyCreateModalConfig(type, useGenericHeader) {
     if (eventExtras) eventExtras.style.display = config.extraFields === 'event' ? 'flex' : 'none';
     if (confExtras) confExtras.style.display = config.extraFields === 'conference' ? 'flex' : 'none';
 
+    const csExtras = document.getElementById('createCommunityServiceExtras');
+    if (csExtras) csExtras.style.display = config.extraFields === 'community-service' ? 'flex' : 'none';
+
     const submitLabel = useGenericHeader ? CREATE_MODAL_GENERIC.submitLabel : config.submitLabel;
     if (submitBtn) submitBtn.innerHTML = `<i data-lucide="send"></i> ${submitLabel}`;
 }
@@ -7269,7 +7323,7 @@ async function addNewsPost() {
 async function uploadFile(fileInput, type, onProgress) {
     const file = fileInput?.files[0];
     if (!file) return null;
-    const err = type === 'image' ? validateImageFile(file) : validateVideoFile(file);
+    const err = type === 'image' ? validateImageFile(file) : (type === 'document' ? null : validateVideoFile(file));
     if (err) throw new Error(err);
     const formData = new FormData();
     formData.append('file', file);
@@ -7323,9 +7377,20 @@ async function submitCreateForm() {
 
         let imageUrl = null;
         let videoUrl = null;
+        let docUrl = null;
 
         if (imageInput?.files[0]) imageUrl = await uploadFile(imageInput, 'image', setProgress);
         if (videoInput?.files[0]) videoUrl = await uploadFile(videoInput, 'video', setProgress);
+
+        // Upload document for community-services
+        const csDocFileInput = document.getElementById('createCsDocFile');
+        const csDocUrlHidden = document.getElementById('createCsDocUrl');
+        if (type === 'community-services' && csDocFileInput?.files[0]) {
+            docUrl = await uploadFile(csDocFileInput, 'document', setProgress);
+            if (csDocUrlHidden) csDocUrlHidden.value = docUrl;
+        } else if (type === 'community-services' && csDocUrlHidden?.value) {
+            docUrl = csDocUrlHidden.value;
+        }
 
         setProgress(85, 'Saving content…');
 
@@ -7351,7 +7416,8 @@ async function submitCreateForm() {
             'endowment-stats': '/content/endowment-stats',
             'endowment-campaigns': '/content/endowment-campaigns',
             'endowment-info': '/content/endowment-info',
-            conferences: '/admin/conferences'
+            conferences: '/admin/conferences',
+            'community-services': '/admin/community-services'
         };
         const endpoint = ENDPOINT_MAP[type] || '/content/news';
         
@@ -7412,6 +7478,17 @@ async function submitCreateForm() {
                 status: document.getElementById('createConfStatus')?.value || 'OPEN',
                 year: document.getElementById('createConfYear')?.value || null,
                 external_url: document.getElementById('createConfUrl')?.value || null
+            };
+        } else if (type === 'community-services') {
+            body = {
+                title,
+                description: desc,
+                start_date: document.getElementById('createCsDate')?.value || null,
+                display_date: document.getElementById('createCsDisplayDate')?.value || null,
+                location: document.getElementById('createCsLocation')?.value || null,
+                status: document.getElementById('createCsStatus')?.value || 'OPEN',
+                year: document.getElementById('createCsYear')?.value || null,
+                file_url: docUrl || document.getElementById('createCsDocUrl')?.value || null
             };
         } else if (type === 'event') {
             body = { 
@@ -11951,25 +12028,106 @@ function renderUpcomingCommunityServices(upcoming) {
         return;
     }
 
-    upcoming.forEach(cs => {
-        grid.innerHTML += `
-            <div class="conf-card">
-                <div class="conf-card-header">
-                    <span class="conf-card-status status-open">Upcoming</span>
-                    <h3 class="conf-card-title">${cs.title}</h3>
+    grid.innerHTML = upcoming.map(cs => {
+        const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : 'TBA');
+        const year = cs.year || (cs.start_date ? new Date(cs.start_date).getFullYear() : '');
+        const statusCls = (cs.status || '').toUpperCase() === 'OPEN' ? 'open' : 'closed';
+        const statusLbl = (cs.status || 'OPEN').toUpperCase();
+        return `
+        <div class="conf-card">
+            <div class="conf-card-top"></div>
+            <div class="conf-card-body">
+                <div class="conf-card-row">
+                    <span class="conf-year-chip">${year}</span>
+                    <span class="conf-badge-status ${statusCls}">${statusLbl}</span>
                 </div>
-                <div class="conf-card-body">
-                    ${cs.display_date ? `<div class="conf-detail"><i data-lucide="calendar-days"></i> <span>${cs.display_date}</span></div>` : ''}
-                    ${cs.location ? `<div class="conf-detail"><i data-lucide="map-pin"></i> <span>${cs.location}</span></div>` : ''}
-                    ${cs.year ? `<div class="conf-detail"><i data-lucide="tag"></i> <span>${cs.year}</span></div>` : ''}
-                    ${cs.description ? `<p class="conf-card-desc">${cs.description}</p>` : ''}
+                <h3>${cs.title}</h3>
+                <p>${cs.description || ''}</p>
+                <div class="conf-card-meta">
+                    <div><i data-lucide="calendar"></i>${dateStr}</div>
+                    <div><i data-lucide="map-pin"></i>${cs.location || 'TBA'}</div>
                 </div>
+                ${cs.file_url ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" class="conf-card-link"><i data-lucide="download"></i>Download</a>` : ''}
             </div>
-        `;
-    });
+        </div>`;
+    }).join('');
     lucide.createIcons();
 }
 
+// COMMUNITY SERVICE DOCUMENT UPLOAD HELPERS
+
+// ---- Create modal: document ----
+function handleCreateCsDocSelect(event) {
+    const file = event.target.files[0];
+    if (file) updateCreateCsDocPreview(file.name);
+}
+
+function handleCreateCsDocDrop(event) {
+    event.preventDefault();
+    const zone = document.getElementById('createCsDocDropZone');
+    if (zone) zone.classList.remove('drag-over');
+    const file = event.dataTransfer.files[0];
+    if (!file) return;
+    const input = document.getElementById('createCsDocFile');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    if (input) { input.files = dt.files; }
+    updateCreateCsDocPreview(file.name);
+}
+
+function updateCreateCsDocPreview(filename) {
+    const wrap = document.getElementById('createCsDocPreviewWrap');
+    if (wrap) {
+        wrap.innerHTML = `<i data-lucide="file-check" style="width:28px;height:28px;color:var(--iuea-maroon)"></i>
+            <p style="margin:0.3rem 0 0;font-size:0.85rem;color:var(--iuea-maroon);font-weight:600;">${filename}</p>
+            <p style="margin:0;font-size:0.75rem;color:var(--iuea-gray-light);">Ready to upload</p>`;
+        lucide.createIcons();
+    }
+}
+
+// ---- Edit modal: document ----
+function handleAdminEditCsDocSelect(event) {
+    const file = event.target.files[0];
+    if (file) updateAdminEditCsDocPreview(file.name);
+}
+
+function handleAdminEditCsDocDrop(event) {
+    event.preventDefault();
+    const zone = document.getElementById('adminEditCsDocDropZone');
+    if (zone) zone.classList.remove('drag-over');
+    const file = event.dataTransfer.files[0];
+    if (!file) return;
+    const input = document.getElementById('adminEditCsDocFile');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    if (input) { input.files = dt.files; }
+    updateAdminEditCsDocPreview(file.name);
+}
+
+function updateAdminEditCsDocPreview(filename) {
+    const wrap = document.getElementById('adminEditCsDocPreviewWrap');
+    if (wrap) {
+        wrap.innerHTML = `<i data-lucide="file-check" style="width:28px;height:28px;color:var(--iuea-maroon)"></i>
+            <p style="margin:0.3rem 0 0;font-size:0.85rem;color:var(--iuea-maroon);font-weight:600;">${filename}</p>
+            <p style="margin:0;font-size:0.75rem;color:var(--iuea-gray-light);">Ready to upload on save</p>`;
+        lucide.createIcons();
+    }
+}
+
+function clearAdminEditCsDoc() {
+    const hiddenEl = document.getElementById('adminEditCsDocUrl');
+    const currentWrap = document.getElementById('adminEditCsDocCurrentWrap');
+    const previewWrap = document.getElementById('adminEditCsDocPreviewWrap');
+    const fileInput = document.getElementById('adminEditCsDocFile');
+    if (hiddenEl) hiddenEl.value = '';
+    if (fileInput) fileInput.value = '';
+    if (currentWrap) currentWrap.style.display = 'none';
+    if (previewWrap) {
+        previewWrap.innerHTML = `<i data-lucide="upload-cloud" style="width:32px;height:32px;color:var(--iuea-gray-light)"></i>
+            <p style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--iuea-gray-light);">Click or drag a document to replace</p>`;
+        lucide.createIcons();
+    }
+}
 function renderPastCommunityServices(past) {
     const grid = document.getElementById('past-cs-grid');
     if (!grid) return;
@@ -11981,21 +12139,28 @@ function renderPastCommunityServices(past) {
         return;
     }
 
-    past.forEach(cs => {
-        grid.innerHTML += `
-            <div class="conf-card past">
-                <div class="conf-card-header">
-                    <span class="conf-card-status status-closed">Completed</span>
-                    <h3 class="conf-card-title">${cs.title}</h3>
+    grid.innerHTML = past.map(cs => {
+        const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : 'TBA');
+        const year = cs.year || (cs.start_date ? new Date(cs.start_date).getFullYear() : '');
+        const statusCls = (cs.status || '').toUpperCase() === 'OPEN' ? 'open' : 'closed';
+        const statusLbl = (cs.status || 'CLOSED').toUpperCase();
+        return `
+        <div class="conf-card past">
+            <div class="conf-card-top"></div>
+            <div class="conf-card-body">
+                <div class="conf-card-row">
+                    <span class="conf-year-chip">${year}</span>
+                    <span class="conf-badge-status ${statusCls}">${statusLbl}</span>
                 </div>
-                <div class="conf-card-body">
-                    ${cs.display_date ? `<div class="conf-detail"><i data-lucide="calendar-days"></i> <span>${cs.display_date}</span></div>` : ''}
-                    ${cs.location ? `<div class="conf-detail"><i data-lucide="map-pin"></i> <span>${cs.location}</span></div>` : ''}
-                    ${cs.year ? `<div class="conf-detail"><i data-lucide="tag"></i> <span>${cs.year}</span></div>` : ''}
-                    ${cs.description ? `<p class="conf-card-desc" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${cs.description}</p>` : ''}
+                <h3>${cs.title}</h3>
+                <p>${cs.description || ''}</p>
+                <div class="conf-card-meta">
+                    <div><i data-lucide="calendar"></i>${dateStr}</div>
+                    <div><i data-lucide="map-pin"></i>${cs.location || 'TBA'}</div>
                 </div>
+                ${cs.file_url ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" class="conf-card-link"><i data-lucide="download"></i>Download</a>` : ''}
             </div>
-        `;
-    });
+        </div>`;
+    }).join('');
     lucide.createIcons();
 }

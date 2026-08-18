@@ -49,3 +49,15 @@ async def upload_video(
 ):
     filename = _save_file(file, VIDEOS_DIR, ALLOWED_VIDEO_TYPES, MAX_VIDEO_SIZE)
     return {"url": f"/assets/videos/{filename}", "filename": filename}
+
+ALLOWED_DOCUMENT_TYPES = {"application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"}
+DOCUMENTS_DIR = os.path.join(FRONTEND_DIR, "documents")
+MAX_DOCUMENT_SIZE = 20 * 1024 * 1024 # 20 MB
+
+@router.post("/document")
+async def upload_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    filename = _save_file(file, DOCUMENTS_DIR, ALLOWED_DOCUMENT_TYPES, MAX_DOCUMENT_SIZE)
+    return {"url": f"/assets/documents/{filename}", "filename": filename}

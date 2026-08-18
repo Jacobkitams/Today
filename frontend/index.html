@@ -3804,6 +3804,52 @@
                             <input type="url" id="adminEditConfUrl" placeholder="https://...">
                         </div>
                     </div>
+                    <!-- ADMIN EDIT: COMMUNITY SERVICE EXTRAS -->
+                    <div id="adminEditCommunityServiceExtras" class="form-row" style="display:none; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Start Date</label>
+                            <input type="datetime-local" id="adminEditCsDate">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Display Date</label>
+                            <input type="text" id="adminEditCsDisplayDate" placeholder="e.g. Aug 25, 2026">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Location</label>
+                            <input type="text" id="adminEditCsLocation" placeholder="e.g. Kampala City">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Status</label>
+                            <select id="adminEditCsStatus">
+                                <option value="OPEN">Upcoming</option>
+                                <option value="CLOSED">Completed</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Year</label>
+                            <input type="text" id="adminEditCsYear" placeholder="e.g. 2026">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 100%;">
+                            <label><i data-lucide="file-text" style="width:14px;height:14px;vertical-align:middle;"></i> Attach Document (PDF, Word, TXT — max 20 MB)</label>
+                            <div id="adminEditCsDocCurrentWrap" style="display:none; margin-bottom:0.5rem;">
+                                <span style="font-size:0.85rem; color:var(--iuea-gray-light);">Current file: </span>
+                                <a id="adminEditCsDocCurrentLink" href="#" target="_blank" style="font-size:0.85rem; color:var(--iuea-maroon); font-weight:600;">View / Download</a>
+                                <button type="button" onclick="clearAdminEditCsDoc()" style="margin-left:0.5rem; font-size:0.8rem; background:none; border:none; color:red; cursor:pointer;">Remove</button>
+                            </div>
+                            <div class="upload-zone" id="adminEditCsDocDropZone" style="cursor:pointer;"
+                                 onclick="document.getElementById('adminEditCsDocFile').click()"
+                                 ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                                 ondragleave="this.classList.remove('drag-over')"
+                                 ondrop="handleAdminEditCsDocDrop(event)">
+                                <div id="adminEditCsDocPreviewWrap">
+                                    <i data-lucide="upload-cloud" style="width:32px;height:32px;color:var(--iuea-gray-light)"></i>
+                                    <p style="margin:0.4rem 0 0; font-size:0.85rem; color:var(--iuea-gray-light);">Click or drag a document to replace</p>
+                                </div>
+                            </div>
+                            <input type="file" id="adminEditCsDocFile" accept=".pdf,.doc,.docx,.txt" style="display:none" onchange="handleAdminEditCsDocSelect(event)">
+                            <input type="hidden" id="adminEditCsDocUrl">
+                        </div>
+                    </div>
                     <div id="adminEditEventExtras" class="form-row" style="display:none;">
                         <div class="form-group">
                             <label>Ticket Types</label>
@@ -3811,7 +3857,7 @@
                                 <option value="general">General (Free) Only</option>
                                 <option value="ordinary">Ordinary (Paid) Only</option>
                                 <option value="vip">VIP (Paid) Only</option>
-                                <option value="ordinary,vip">Both Ordinary & VIP</option>
+                                <option value="ordinary,vip">Both Ordinary &amp; VIP</option>
                             </select>
                         </div>
                     </div>
@@ -4006,6 +4052,47 @@
                         <div class="form-group" style="flex: 1 1 45%;">
                             <label>External URL</label>
                             <input type="url" id="createConfUrl" placeholder="https://...">
+                        </div>
+                    </div>
+                    <!-- COMMUNITY SERVICE EXTRAS (document upload + date/location/status) -->
+                    <div id="createCommunityServiceExtras" class="form-row" style="display:none; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Start Date</label>
+                            <input type="datetime-local" id="createCsDate">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Display Date</label>
+                            <input type="text" id="createCsDisplayDate" placeholder="e.g. Aug 25, 2026">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Location</label>
+                            <input type="text" id="createCsLocation" placeholder="e.g. Kampala City">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Status</label>
+                            <select id="createCsStatus">
+                                <option value="OPEN">Upcoming</option>
+                                <option value="CLOSED">Completed</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1 1 45%;">
+                            <label>Year</label>
+                            <input type="text" id="createCsYear" placeholder="e.g. 2026">
+                        </div>
+                        <div class="form-group" style="flex: 1 1 100%;">
+                            <label><i data-lucide="file-text" style="width:14px;height:14px;vertical-align:middle;"></i> Attach Document (PDF, Word, TXT — max 20 MB)</label>
+                            <div class="upload-zone" id="createCsDocDropZone" style="cursor:pointer;"
+                                 onclick="document.getElementById('createCsDocFile').click()"
+                                 ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                                 ondragleave="this.classList.remove('drag-over')"
+                                 ondrop="handleCreateCsDocDrop(event)">
+                                <div id="createCsDocPreviewWrap">
+                                    <i data-lucide="upload-cloud" style="width:32px;height:32px;color:var(--iuea-gray-light)"></i>
+                                    <p style="margin:0.4rem 0 0; font-size:0.85rem; color:var(--iuea-gray-light);">Click or drag a document here</p>
+                                </div>
+                            </div>
+                            <input type="file" id="createCsDocFile" accept=".pdf,.doc,.docx,.txt" style="display:none" onchange="handleCreateCsDocSelect(event)">
+                            <input type="hidden" id="createCsDocUrl">
                         </div>
                     </div>
                     <div id="createEventExtras" class="form-row" style="display:none;">
