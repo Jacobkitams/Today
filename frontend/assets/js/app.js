@@ -12039,7 +12039,7 @@ function renderUpcomingCommunityServices(upcoming) {
             <div class="conf-card-body">
                 <div class="conf-card-row">
                     <span class="conf-year-chip">${year}</span>
-                    <span class="conf-badge-status ${statusCls}">${statusLbl}</span>
+                    ${cs.file_url ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" class="conf-badge-status open" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.25rem; background:var(--iuea-maroon); color:#fff;"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</a>` : `<span class="conf-badge-status ${statusCls}">${statusLbl}</span>`}
                 </div>
                 <h3>${cs.title}</h3>
                 <p>${cs.description || ''}</p>
@@ -12047,7 +12047,6 @@ function renderUpcomingCommunityServices(upcoming) {
                     <div><i data-lucide="calendar"></i>${dateStr}</div>
                     <div><i data-lucide="map-pin"></i>${cs.location || 'TBA'}</div>
                 </div>
-                ${cs.file_url ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" class="conf-card-link"><i data-lucide="download"></i>Download</a>` : ''}
             </div>
         </div>`;
     }).join('');
@@ -12150,7 +12149,7 @@ function renderPastCommunityServices(past) {
             <div class="conf-card-body">
                 <div class="conf-card-row">
                     <span class="conf-year-chip">${year}</span>
-                    <span class="conf-badge-status ${statusCls}">${statusLbl}</span>
+                    ${cs.file_url ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" class="conf-badge-status open" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.25rem; background:var(--iuea-maroon); color:#fff;"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</a>` : `<span class="conf-badge-status ${statusCls}">${statusLbl}</span>`}
                 </div>
                 <h3>${cs.title}</h3>
                 <p>${cs.description || ''}</p>
@@ -12158,7 +12157,6 @@ function renderPastCommunityServices(past) {
                     <div><i data-lucide="calendar"></i>${dateStr}</div>
                     <div><i data-lucide="map-pin"></i>${cs.location || 'TBA'}</div>
                 </div>
-                ${cs.file_url ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" class="conf-card-link"><i data-lucide="download"></i>Download</a>` : ''}
             </div>
         </div>`;
     }).join('');
