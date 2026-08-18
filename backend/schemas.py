@@ -893,3 +893,26 @@ class ConferenceResponse(ConferenceBase):
 
     class Config:
         from_attributes = True
+
+
+class CommunityServiceBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    display_date: Optional[str] = None
+    location: Optional[str] = None
+    status: Optional[str] = "OPEN"
+    cover_image_url: Optional[str] = None
+
+class CommunityServiceCreate(CommunityServiceBase):
+    pass
+
+class CommunityServiceUpdate(CommunityServiceBase):
+    title: Optional[str] = None
+
+class CommunityServiceResponse(CommunityServiceBase):
+    id: int
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

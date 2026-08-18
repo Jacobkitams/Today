@@ -57,6 +57,7 @@
                     <a class="nav-dropdown-trigger" onclick="navigateTo('community')"><i data-lucide="landmark"></i> Community <i data-lucide="chevron-down" class="nav-dropdown-chevron"></i></a>
                     <div class="nav-dropdown-menu" id="communityDropdownMenu">
                         <a class="nav-dropdown-item" onclick="navigateTo('conference')"><i data-lucide="presentation"></i> Conference</a>
+                        <a class="nav-dropdown-item" onclick="navigateTo('community-service')"><i data-lucide="heart-handshake"></i> Community Service</a>
                         <a class="nav-dropdown-item" onclick="navigateTo('sports')"><i data-lucide="trophy"></i> Sports</a>
                     </div>
                 </div>
@@ -762,6 +763,79 @@
                 </div>
                 <div id="endowmentCampaignsAllGrid" class="content-grid cols-3"></div>
             </section>
+        </div>
+
+        <!-- COMMUNITY SERVICE PAGE -->
+        <div id="community-service" class="page-section">
+
+            <!-- Page Title Header -->
+            <div style="padding: 2rem 0 1rem 0;">
+                <h1 style="display: flex; align-items: center; gap: 0.5rem; color: var(--iuea-maroon); font-size: 2rem; margin-bottom: 0.5rem; font-weight: 800;">
+                    🤝 IUEA Community Service
+                </h1>
+                <p style="color: var(--iuea-gray-light); font-size: 1.05rem; margin-bottom: 0; font-weight: 400;">
+                    Giving back, driving impact, and building a better tomorrow
+                </p>
+            </div>
+
+            <!-- Hero Banner -->
+            <div class="conf-hero-banner" style="background: linear-gradient(135deg, #800000 0%, #a02020 100%);">
+                <div class="conf-hero-inner">
+                    <div class="conf-hero-left">
+                        <span class="conf-hero-eyebrow" style="color: #ffd700;">Impact Through Action</span>
+                        <h2 class="conf-hero-title">Community Service Initiatives</h2>
+                        <p class="conf-hero-sub">Explore our ongoing community outreach programs, volunteer opportunities, and past initiatives where IUEA students and staff made a real difference.</p>
+                        <div class="conf-hero-btns">
+                            <button class="conf-btn-primary" onclick="document.getElementById('cs-upcoming-section').scrollIntoView({behavior:'smooth'})" style="background-color: #ffd700; color: #800000;">
+                                <i data-lucide="calendar"></i> Upcoming Events
+                            </button>
+                            <button class="conf-btn-ghost" onclick="document.getElementById('cs-past-section').scrollIntoView({behavior:'smooth'})" style="border-color: rgba(255,255,255,0.3);">
+                                <i data-lucide="check-circle-2"></i> Our Impact
+                            </button>
+                        </div>
+                    </div>
+                    <div class="conf-hero-stats">
+                        <div class="conf-stat-box" style="background: rgba(255,255,255,0.1);">
+                            <i data-lucide="heart-handshake" style="color: #ffd700;"></i>
+                            <span class="conf-stat-num" id="cs-stat-total">—</span>
+                            <span class="conf-stat-lbl">Total Initiatives</span>
+                        </div>
+                        <div class="conf-stat-box" style="background: rgba(255,255,255,0.1);">
+                            <i data-lucide="calendar-clock" style="color: #ffd700;"></i>
+                            <span class="conf-stat-num" id="cs-stat-upcoming">—</span>
+                            <span class="conf-stat-lbl">Upcoming</span>
+                        </div>
+                        <div class="conf-stat-box" style="background: rgba(255,255,255,0.1);">
+                            <i data-lucide="award" style="color: #ffd700;"></i>
+                            <span class="conf-stat-num" id="cs-stat-past">—</span>
+                            <span class="conf-stat-lbl">Completed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Community Service -->
+            <section id="cs-upcoming-section" class="tab-section" style="padding-top: 2rem;">
+                <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📅 UPCOMING INITIATIVES</h2>
+                </div>
+                <div class="conf-grid" id="upcoming-cs-grid">
+                    <!-- Loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- Past Community Service -->
+            <section id="cs-past-section" class="tab-section" style="padding-top: 1rem; padding-bottom: 4rem;">
+                <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">🌟 COMPLETED PROJECTS</h2>
+                </div>
+                <div class="conf-grid" id="past-cs-grid">
+                    <!-- Loaded dynamically -->
+                </div>
+            </section>
+
         </div>
 
         <!-- CONFERENCE HUB PAGE -->

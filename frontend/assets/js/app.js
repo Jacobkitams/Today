@@ -828,6 +828,7 @@ function navigateTo(pageId) {
     if (pageId === 'research-areas-all') loadAllResearchAreasPage();
     if (pageId === 'publications-all') loadAllPublicationsPage();
     if (pageId === 'conference') loadConferencesPage();
+    if (pageId === 'community-service') loadCommunityServicesPage();
     if (pageId === 'research-labs-all') loadAllResearchLabsPage();
     if (pageId === 'community-news-all') loadAllCommunityNewsPage();
     if (pageId === 'community-committees-all') loadAllCommunityCommitteesPage();
@@ -3328,7 +3329,8 @@ const COMMUNITY_SUBMODULES = [
     { key: 'community-committees', label: 'Standing Committees', createLabel: 'Add Committee', endpoint: '/content/community?type=committee', createType: 'community-committees', icon: 'landmark' },
     { key: 'community-initiatives', label: 'Initiatives', createLabel: 'Add Initiative', endpoint: '/content/community?type=initiative', createType: 'community-initiatives', icon: 'target' },
     { key: 'community-reports', label: 'Reports', createLabel: 'Add Report', endpoint: '/content/community?type=report', createType: 'community-reports', icon: 'file-bar-chart' },
-    { key: 'conferences', label: 'Conferences', createLabel: 'Add Conference', endpoint: '/admin/conferences', createType: 'conferences', icon: 'mic' }
+    { key: 'conferences', label: 'Conferences', createLabel: 'Add Conference', endpoint: '/admin/conferences', createType: 'conferences', icon: 'mic' },
+    { key: 'community-services', label: 'Community Service', createLabel: 'Add Initiative', endpoint: '/admin/community-services', createType: 'community-services', icon: 'heart-handshake' }
 ];
 
 const COMMUNITY_VIRTUAL_TYPE_MAP = {
@@ -3410,7 +3412,8 @@ const ADMIN_MODULE_API_TYPES = {
     donations: 'donations', 'donation-tiers': 'donation-tiers',
     'endowment-stats': 'endowment-stats', 'endowment-campaigns': 'endowment-campaigns',
     'endowment-info': 'endowment-info',
-    conferences: 'conferences'
+    conferences: 'conferences',
+    'community-services': 'community-services'
 };
 
 const ADMIN_MODULE_LABELS = {
@@ -3421,6 +3424,7 @@ const ADMIN_MODULE_LABELS = {
     community: 'Community',
     'community-news': 'Community News', 'community-committees': 'Committee',
     'community-initiatives': 'Initiative', 'community-reports': 'Report', conferences: 'Conference',
+    'community-services': 'Community Service',
     techpark: 'Tech Park', 'tech-park': 'Facilities & Programs',
     donations: 'Donation', 'donation-tiers': 'Giving Tier',
     'endowment-stats': 'Impact Stat', 'endowment-campaigns': 'Campaign',
@@ -3702,6 +3706,19 @@ const CREATE_MODAL_CONFIG = {
         descLabel: 'Description',
         descPlaceholder: 'Describe the theme and focus…',
         submitLabel: 'Save Conference',
+        showMedia: false,
+        showVideo: false,
+        extraFields: 'conference'
+    },
+    'community-services': {
+        title: 'Add Community Service',
+        subtitle: 'Schedule an upcoming community service or add a past one.',
+        icon: 'heart-handshake',
+        titleLabel: 'Initiative Title',
+        titlePlaceholder: 'Enter the initiative name…',
+        descLabel: 'Description',
+        descPlaceholder: 'Describe the initiative and impact…',
+        submitLabel: 'Save Initiative',
         showMedia: false,
         showVideo: false,
         extraFields: 'conference'
@@ -4943,7 +4960,7 @@ function buildAdminTableHTML(moduleName, items) {
                             <div class="admin-table-actions">
                                 <button type="button" class="admin-table-action-btn" onclick="viewAdminContent('${moduleName}', ${item.id})"><i data-lucide="eye"></i> View</button>
                                 <button type="button" class="admin-table-action-btn" onclick="editAdminContent('${moduleName}', ${item.id})"><i data-lucide="pencil"></i> Edit</button>
-                                ${moduleName === 'events' ? `<button type="button" class="admin-table-action-btn" onclick="manageEventParticipants(${item.id}, '${escapeJsString(title)}')"><i data-lucide="users"></i> Participants</button>` : ''}
+
                                 <button type="button" class="admin-table-action-btn" onclick="deleteAdminContent('${moduleName}', ${item.id})"><i data-lucide="trash-2"></i> Delete</button>
                             </div>
                         </td>
@@ -11887,3 +11904,98 @@ function handleUserUpdatedEvent(payload) {
 
 // Start connection when script loads
 connectWebSocket();
+
+// COMMUNITY SERVICE HUB LOGIC
+async function loadCommunityServicesPage() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/content/community-services`);
+        if (!response.ok) throw new Error('Failed to fetch community services');
+        const services = await response.json();
+
+        // Separate upcoming vs past
+        // If status is OPEN, consider it upcoming. If CLOSED, past.
+        const upcoming = services.filter(c => c.status === 'OPEN');
+        const past = services.filter(c => c.status === 'CLOSED');
+
+        // Update stats
+        const statTotal = document.getElementById('cs-stat-total');
+        const statUpcoming = document.getElementById('cs-stat-upcoming');
+        const statPast = document.getElementById('cs-stat-past');
+        if (statTotal) statTotal.textContent = services.length;
+        if (statUpcoming) statUpcoming.textContent = upcoming.length;
+        if (statPast) statPast.textContent = past.length;
+
+        // Render grids
+        renderUpcomingCommunityServices(upcoming);
+        renderPastCommunityServices(past);
+
+    } catch (e) {
+        console.error('Error loading community services:', e);
+        const grid1 = document.getElementById('upcoming-cs-grid');
+        const grid2 = document.getElementById('past-cs-grid');
+        const errHtml = `<div class="conf-empty"><i data-lucide="wifi-off"></i><p>Could not load data. Please check your connection.</p></div>`;
+        if (grid1) grid1.innerHTML = errHtml;
+        if (grid2) grid2.innerHTML = errHtml;
+        lucide.createIcons();
+    }
+}
+
+function renderUpcomingCommunityServices(upcoming) {
+    const grid = document.getElementById('upcoming-cs-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (upcoming.length === 0) {
+        grid.innerHTML = `<div class="conf-empty" style="grid-column:1/-1;"><i data-lucide="calendar"></i><p style="font-weight:600; margin-bottom:0.25rem;">No Upcoming Initiatives</p><p style="font-size:0.9rem;">Check back soon for newly announced projects.</p></div>`;
+        lucide.createIcons();
+        return;
+    }
+
+    upcoming.forEach(cs => {
+        grid.innerHTML += `
+            <div class="conf-card">
+                <div class="conf-card-header">
+                    <span class="conf-card-status status-open">Upcoming</span>
+                    <h3 class="conf-card-title">${cs.title}</h3>
+                </div>
+                <div class="conf-card-body">
+                    ${cs.display_date ? `<div class="conf-detail"><i data-lucide="calendar-days"></i> <span>${cs.display_date}</span></div>` : ''}
+                    ${cs.location ? `<div class="conf-detail"><i data-lucide="map-pin"></i> <span>${cs.location}</span></div>` : ''}
+                    ${cs.year ? `<div class="conf-detail"><i data-lucide="tag"></i> <span>${cs.year}</span></div>` : ''}
+                    ${cs.description ? `<p class="conf-card-desc">${cs.description}</p>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    lucide.createIcons();
+}
+
+function renderPastCommunityServices(past) {
+    const grid = document.getElementById('past-cs-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (past.length === 0) {
+        grid.innerHTML = `<div class="conf-empty"><i data-lucide="archive"></i><p style="font-weight:600; margin-bottom:0.25rem;">No Completed Projects</p><p style="font-size:0.9rem;">Completed initiatives will appear here.</p></div>`;
+        lucide.createIcons();
+        return;
+    }
+
+    past.forEach(cs => {
+        grid.innerHTML += `
+            <div class="conf-card past">
+                <div class="conf-card-header">
+                    <span class="conf-card-status status-closed">Completed</span>
+                    <h3 class="conf-card-title">${cs.title}</h3>
+                </div>
+                <div class="conf-card-body">
+                    ${cs.display_date ? `<div class="conf-detail"><i data-lucide="calendar-days"></i> <span>${cs.display_date}</span></div>` : ''}
+                    ${cs.location ? `<div class="conf-detail"><i data-lucide="map-pin"></i> <span>${cs.location}</span></div>` : ''}
+                    ${cs.year ? `<div class="conf-detail"><i data-lucide="tag"></i> <span>${cs.year}</span></div>` : ''}
+                    ${cs.description ? `<p class="conf-card-desc" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${cs.description}</p>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    lucide.createIcons();
+}

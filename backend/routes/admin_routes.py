@@ -420,6 +420,7 @@ CONTENT_TYPE_MAP = {
     "publications": models.Publication,
     "research-labs": models.ResearchLab,
     "conferences": models.Conference,
+    "community-services": models.CommunityService,
 }
 
 MODEL_MAP = CONTENT_TYPE_MAP
@@ -778,3 +779,48 @@ def delete_conference(
     db.delete(conference)
     db.commit()
     return {"message": "Conference deleted"}
+
+# Community Service CRUD endpoints
+@router.post("/community-services", response_model=schemas.CommunityServiceResponse)
+def create_community_service(
+    data: schemas.CommunityServiceCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    community_service = models.CommunityService(**data.model_dump())
+    db.add(community_service)
+    db.commit()
+    db.refresh(community_service)
+    return community_service
+
+@router.put("/community-services/{service_id}", response_model=schemas.CommunityServiceResponse)
+def update_community_service(
+    service_id: int,
+    data: schemas.CommunityServiceUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    community_service = db.query(models.CommunityService).filter(models.CommunityService.id == service_id).first()
+    if not community_service:
+        raise HTTPException(status_code=404, detail="Community Service not found")
+
+    update_data = data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(community_service, key, value)
+
+    db.commit()
+    db.refresh(community_service)
+    return community_service
+
+@router.delete("/community-services/{service_id}")
+def delete_community_service(
+    service_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    community_service = db.query(models.CommunityService).filter(models.CommunityService.id == service_id).first()
+    if not community_service:
+        raise HTTPException(status_code=404, detail="Community Service not found")
+    db.delete(community_service)
+    db.commit()
+    return {"message": "Community Service deleted"}

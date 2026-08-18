@@ -1343,3 +1343,7 @@ def get_following_feed(
 def get_conferences(db: Session = Depends(get_db)):
     # Fetch all conferences, ordering by start_date ascending
     return db.query(models.Conference).order_by(models.Conference.start_date.asc()).all()
+
+@router.get("/community-services", response_model=List[schemas.CommunityServiceResponse])
+def get_community_services(db: Session = Depends(get_db)):
+    return db.query(models.CommunityService).order_by(models.CommunityService.start_date.asc()).all()

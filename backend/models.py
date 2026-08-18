@@ -429,3 +429,15 @@ class Conference(Base):
     year = Column(String(10), nullable=True)
     external_url = Column(String(255), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class CommunityService(Base):
+    __tablename__ = "community_services"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    start_date = Column(DateTime, nullable=True)
+    display_date = Column(String(100), nullable=True)
+    location = Column(String(255), nullable=True)
+    status = Column(String(50), default="OPEN") # e.g. "OPEN", "CLOSED"
+    cover_image_url = Column(String(500), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
