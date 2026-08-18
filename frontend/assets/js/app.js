@@ -12024,33 +12024,35 @@ function renderUpcomingCommunityServices(upcoming) {
 
     if (upcoming.length === 0) {
         grid.innerHTML = `<div class="conf-empty" style="grid-column:1/-1;"><i data-lucide="calendar"></i><p style="font-weight:600; margin-bottom:0.25rem;">No Upcoming Initiatives</p><p style="font-size:0.9rem;">Check back soon for newly announced projects.</p></div>`;
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         return;
     }
 
     grid.innerHTML = upcoming.map(cs => {
-        const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : 'TBA');
-        const year = cs.year || (cs.start_date ? new Date(cs.start_date).getFullYear() : '');
-        const statusCls = (cs.status || '').toUpperCase() === 'OPEN' ? 'open' : 'closed';
-        const statusLbl = (cs.status || 'OPEN').toUpperCase();
+        const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : null);
+        const imageUrl = resolveMediaUrl(cs.cover_image_url) || `https://picsum.photos/600/400?random=${cs.id}`;
+        const viewBtn = cs.file_url
+            ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.85rem;background:var(--iuea-maroon);color:#fff;border-radius:20px;font-size:0.78rem;font-weight:700;text-decoration:none;"><i data-lucide="eye" style="width:13px;height:13px;"></i> View Document</a>`
+            : '';
         return `
-        <div class="conf-card">
-            <div class="conf-card-top"></div>
-            <div class="conf-card-body">
-                <div class="conf-card-row">
-                    <span class="conf-year-chip">${year}</span>
-                    ${cs.file_url ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" class="conf-badge-status open" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.25rem; background:var(--iuea-maroon); color:#fff;"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</a>` : `<span class="conf-badge-status ${statusCls}">${statusLbl}</span>`}
-                </div>
+        <div class="modern-card" data-content-type="community-services" data-content-id="${cs.id}">
+            <div class="card-media">
+                <img class="card-image" src="${imageUrl}" alt="${cs.title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${cs.id}';this.style.opacity='1'">
+                <span class="card-badge" style="text-transform:capitalize">Community Service</span>
+            </div>
+            <div class="card-content">
                 <h3>${cs.title}</h3>
-                <p>${cs.description || ''}</p>
-                <div class="conf-card-meta">
-                    <div><i data-lucide="calendar"></i>${dateStr}</div>
-                    <div><i data-lucide="map-pin"></i>${cs.location || 'TBA'}</div>
+                <p>${truncateText(cs.description || '')}</p>
+                <div class="card-stats-row">
+                    ${dateStr ? statHTML('calendar', dateStr) : ''}
+                    ${cs.location ? statHTML('map-pin', cs.location) : ''}
+                    ${cs.year ? statHTML('tag', cs.year) : ''}
                 </div>
+                ${viewBtn}
             </div>
         </div>`;
     }).join('');
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // COMMUNITY SERVICE DOCUMENT UPLOAD HELPERS
@@ -12134,31 +12136,33 @@ function renderPastCommunityServices(past) {
 
     if (past.length === 0) {
         grid.innerHTML = `<div class="conf-empty"><i data-lucide="archive"></i><p style="font-weight:600; margin-bottom:0.25rem;">No Completed Projects</p><p style="font-size:0.9rem;">Completed initiatives will appear here.</p></div>`;
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         return;
     }
 
     grid.innerHTML = past.map(cs => {
-        const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : 'TBA');
-        const year = cs.year || (cs.start_date ? new Date(cs.start_date).getFullYear() : '');
-        const statusCls = (cs.status || '').toUpperCase() === 'OPEN' ? 'open' : 'closed';
-        const statusLbl = (cs.status || 'CLOSED').toUpperCase();
+        const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : null);
+        const imageUrl = resolveMediaUrl(cs.cover_image_url) || `https://picsum.photos/600/400?random=${cs.id}`;
+        const viewBtn = cs.file_url
+            ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.85rem;background:var(--iuea-maroon);color:#fff;border-radius:20px;font-size:0.78rem;font-weight:700;text-decoration:none;"><i data-lucide="eye" style="width:13px;height:13px;"></i> View Document</a>`
+            : '';
         return `
-        <div class="conf-card past">
-            <div class="conf-card-top"></div>
-            <div class="conf-card-body">
-                <div class="conf-card-row">
-                    <span class="conf-year-chip">${year}</span>
-                    ${cs.file_url ? `<a href="${resolveMediaUrl(cs.file_url)}" target="_blank" class="conf-badge-status open" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.25rem; background:var(--iuea-maroon); color:#fff;"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</a>` : `<span class="conf-badge-status ${statusCls}">${statusLbl}</span>`}
-                </div>
+        <div class="modern-card" data-content-type="community-services" data-content-id="${cs.id}">
+            <div class="card-media">
+                <img class="card-image" src="${imageUrl}" alt="${cs.title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${cs.id}';this.style.opacity='1'">
+                <span class="card-badge" style="text-transform:capitalize; background: #555;">Completed</span>
+            </div>
+            <div class="card-content">
                 <h3>${cs.title}</h3>
-                <p>${cs.description || ''}</p>
-                <div class="conf-card-meta">
-                    <div><i data-lucide="calendar"></i>${dateStr}</div>
-                    <div><i data-lucide="map-pin"></i>${cs.location || 'TBA'}</div>
+                <p>${truncateText(cs.description || '')}</p>
+                <div class="card-stats-row">
+                    ${dateStr ? statHTML('calendar', dateStr) : ''}
+                    ${cs.location ? statHTML('map-pin', cs.location) : ''}
+                    ${cs.year ? statHTML('tag', cs.year) : ''}
                 </div>
+                ${viewBtn}
             </div>
         </div>`;
     }).join('');
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
