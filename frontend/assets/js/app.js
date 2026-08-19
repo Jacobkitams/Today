@@ -6267,6 +6267,7 @@ function handleCardDetailBackdrop(event) {
 function handleModernCardDetailClick(event) {
     const card = event.target.closest('.modern-card[data-content-type][data-content-id]');
     if (!card || event.target.closest(CARD_DETAIL_INTERACTIVE_SELECTOR)) return;
+    if (card.dataset.contentType === 'community-services') return; // Handled by its own custom modal
     openCardDetailFromCard(card);
 }
 
