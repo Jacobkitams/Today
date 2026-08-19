@@ -11993,6 +11993,8 @@ async function loadCommunityServicesPage() {
         const response = await fetch(`${API_BASE_URL}/content/community-services`);
         if (!response.ok) throw new Error('Failed to fetch community services');
         const services = await response.json();
+        // Store globally so click handlers can look up full data
+        window._csCache = services;
 
         // Separate upcoming vs past
         // If status is OPEN, consider it upcoming. If CLOSED, past.
@@ -12010,6 +12012,8 @@ async function loadCommunityServicesPage() {
         // Render grids
         renderUpcomingCommunityServices(upcoming);
         renderPastCommunityServices(past);
+        // Attach click-to-detail on all CS cards
+        attachCsCardClicks();
 
     } catch (e) {
         console.error('Error loading community services:', e);
@@ -12040,14 +12044,14 @@ function renderUpcomingCommunityServices(upcoming) {
             ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.25rem 0.5rem;width:fit-content;background:transparent;border:1px solid var(--iuea-maroon);color:var(--iuea-maroon);border-radius:6px;font-size:0.75rem;font-weight:600;text-decoration:none;margin-top:0.75rem;transition:all 0.2s ease;" onmouseover="this.style.background='var(--iuea-maroon)';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='var(--iuea-maroon)';"><i data-lucide="download" style="width:14px;height:14px;"></i> Download</a>`
             : '';
         return `
-        <div class="modern-card" data-content-type="community-services" data-content-id="${cs.id}">
+        <div class="modern-card" data-content-type="community-services" data-content-id="${cs.id}" style="cursor:pointer;">
             <div class="card-media">
                 <img class="card-image" src="${imageUrl}" alt="${cs.title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${cs.id}';this.style.opacity='1'">
                 <span class="card-badge" style="text-transform:capitalize">Community Service</span>
             </div>
             <div class="card-content">
                 <h3>${cs.title}</h3>
-                <p>${cs.description || ''}</p>
+                <p style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${cs.description || ''}</p>
                 <div class="card-stats-row">
                     ${dateStr ? statHTML('calendar', dateStr) : ''}
                     ${cs.location ? statHTML('map-pin', cs.location) : ''}
@@ -12058,6 +12062,71 @@ function renderUpcomingCommunityServices(upcoming) {
         </div>`;
     }).join('');
     if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// COMMUNITY SERVICE DETAIL MODAL
+
+function attachCsCardClicks() {
+    const grids = [
+        document.getElementById('upcoming-cs-grid'),
+        document.getElementById('past-cs-grid'),
+    ].filter(Boolean);
+    grids.forEach(grid => {
+        grid.querySelectorAll('.modern-card[data-content-type="community-services"]').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (e.target.closest('a, button')) return; // let download/links work normally
+                const id = parseInt(this.dataset.contentId);
+                const cs = (window._csCache || []).find(c => c.id === id);
+                if (cs) openCsDetailModal(cs);
+            });
+        });
+    });
+}
+
+function openCsDetailModal(cs) {
+    const modal = document.getElementById('csDetailModal');
+    if (!modal) return;
+    const imageUrl = resolveMediaUrl(cs.cover_image_url) || `https://picsum.photos/600/400?random=${cs.id}`;
+    const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : null);
+    const isCompleted = cs.status && cs.status.toUpperCase() === 'CLOSED';
+
+    document.getElementById('csDetailMedia').innerHTML =
+        `<img class="card-detail-media-el" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(cs.title)}" loading="lazy" style="opacity:0;transition:opacity .4s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${cs.id}';this.style.opacity='1'">`;
+    document.getElementById('csDetailBadge').textContent = isCompleted ? 'Completed' : 'Community Service';
+    document.getElementById('csDetailTitle').textContent = cs.title || '';
+    document.getElementById('csDetailDescription').textContent = cs.description || 'No description available.';
+
+    const metaItems = [
+        dateStr ? `<span><i data-lucide="calendar" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i>${escapeHtml(dateStr)}</span>` : '',
+        cs.location ? `<span><i data-lucide="map-pin" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i>${escapeHtml(cs.location)}</span>` : '',
+        cs.year ? `<span><i data-lucide="tag" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i>${escapeHtml(cs.year)}</span>` : '',
+    ].filter(Boolean).join('');
+    const metaEl = document.getElementById('csDetailMeta');
+    metaEl.innerHTML = metaItems;
+    metaEl.style.display = metaItems ? 'flex' : 'none';
+    metaEl.style.flexWrap = 'wrap';
+    metaEl.style.gap = '0.75rem';
+    metaEl.style.marginBottom = '1rem';
+    metaEl.style.color = 'var(--iuea-gray-light)';
+    metaEl.style.fontSize = '0.85rem';
+
+    const dlDiv = document.getElementById('csDetailDownload');
+    dlDiv.innerHTML = cs.file_url
+        ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 1.1rem;background:var(--iuea-maroon);color:#fff;border-radius:8px;font-size:0.85rem;font-weight:600;text-decoration:none;"><i data-lucide="download" style="width:15px;height:15px;"></i> Download Document</a>`
+        : '';
+
+    modal.setAttribute('aria-hidden', 'false');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function closeCsDetailModal() {
+    const modal = document.getElementById('csDetailModal');
+    if (!modal) return;
+    modal.setAttribute('aria-hidden', 'true');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 // COMMUNITY SERVICE DOCUMENT UPLOAD HELPERS
@@ -12152,14 +12221,14 @@ function renderPastCommunityServices(past) {
             ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.25rem 0.5rem;width:fit-content;background:transparent;border:1px solid var(--iuea-maroon);color:var(--iuea-maroon);border-radius:6px;font-size:0.75rem;font-weight:600;text-decoration:none;margin-top:0.75rem;transition:all 0.2s ease;" onmouseover="this.style.background='var(--iuea-maroon)';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='var(--iuea-maroon)';"><i data-lucide="download" style="width:14px;height:14px;"></i> Download</a>`
             : '';
         return `
-        <div class="modern-card" data-content-type="community-services" data-content-id="${cs.id}">
+        <div class="modern-card" data-content-type="community-services" data-content-id="${cs.id}" style="cursor:pointer;">
             <div class="card-media">
                 <img class="card-image" src="${imageUrl}" alt="${cs.title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${cs.id}';this.style.opacity='1'">
                 <span class="card-badge" style="text-transform:capitalize; background: #555;">Completed</span>
             </div>
             <div class="card-content">
                 <h3>${cs.title}</h3>
-                <p>${cs.description || ''}</p>
+                <p style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${cs.description || ''}</p>
                 <div class="card-stats-row">
                     ${dateStr ? statHTML('calendar', dateStr) : ''}
                     ${cs.location ? statHTML('map-pin', cs.location) : ''}

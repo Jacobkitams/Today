@@ -4214,6 +4214,21 @@
         </div>
     </div>
 
+    <!-- Community Service Detail Modal -->
+    <div id="csDetailModal" class="detail-modal" onclick="if(event.target.id==='csDetailModal') closeCsDetailModal()" aria-hidden="true">
+        <div class="card-detail-box" role="dialog" aria-labelledby="csDetailTitle" aria-modal="true" style="max-width:660px;">
+            <div class="card-detail-media" id="csDetailMedia"></div>
+            <div class="card-detail-content">
+                <button type="button" class="close-modal card-detail-close" onclick="closeCsDetailModal()" aria-label="Close"><i data-lucide="x"></i></button>
+                <span class="card-detail-badge" id="csDetailBadge">Community Service</span>
+                <h2 id="csDetailTitle"></h2>
+                <div class="card-detail-meta" id="csDetailMeta"></div>
+                <p id="csDetailDescription" class="card-detail-description" style="white-space:pre-wrap;"></p>
+                <div id="csDetailDownload" style="margin-top:1rem;"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Event Registration Modal -->
     <div id="eventRegistrationModal" class="detail-modal" onclick="if(event.target.id === 'eventRegistrationModal') closeEventRegistrationModal()" aria-hidden="true">
         <div class="comment-modal-box" role="dialog" aria-labelledby="eventRegistrationTitle" aria-modal="true" style="max-width:500px">
@@ -4538,7 +4553,7 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.js?v=59"></script>
+    <script src="assets/js/app.js?v=60"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
