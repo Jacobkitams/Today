@@ -6556,14 +6556,14 @@ nav {
     white-space: normal;
 }
 
-/* CS detail modal: description scrolls when content is long */
+/* CS detail modal: fix height so grid cells are constrained and content can scroll */
+#csDetailModal .card-detail-box {
+    height: min(88vh, 720px);
+}
 #csDetailModal .card-detail-content {
-    overflow-y: visible;
+    overflow-y: auto;
 }
 #csDetailModal .card-detail-description {
-    max-height: 38vh;
-    overflow-y: auto;
-    padding-right: 0.4rem;
     white-space: pre-wrap;
 }
 
