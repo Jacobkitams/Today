@@ -12116,8 +12116,7 @@ function openCsDetailModal(cs) {
         : '';
 
     modal.setAttribute('aria-hidden', 'false');
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    modal.classList.add('show');
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
@@ -12125,8 +12124,7 @@ function closeCsDetailModal() {
     const modal = document.getElementById('csDetailModal');
     if (!modal) return;
     modal.setAttribute('aria-hidden', 'true');
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
+    modal.classList.remove('show');
 }
 
 // COMMUNITY SERVICE DOCUMENT UPLOAD HELPERS
