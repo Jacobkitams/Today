@@ -12037,7 +12037,7 @@ function renderUpcomingCommunityServices(upcoming) {
         const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : null);
         const imageUrl = resolveMediaUrl(cs.cover_image_url) || `https://picsum.photos/600/400?random=${cs.id}`;
         const viewBtn = cs.file_url
-            ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.4rem 1rem;background:transparent;border:1px solid var(--iuea-maroon);color:var(--iuea-maroon);border-radius:6px;font-size:0.75rem;font-weight:600;text-decoration:none;margin-top:0.75rem;transition:all 0.2s ease;" onmouseover="this.style.background='var(--iuea-maroon)';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='var(--iuea-maroon)';"><i data-lucide="download" style="width:14px;height:14px;"></i> Download</a>`
+            ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.25rem 0.5rem;width:fit-content;background:transparent;border:1px solid var(--iuea-maroon);color:var(--iuea-maroon);border-radius:6px;font-size:0.75rem;font-weight:600;text-decoration:none;margin-top:0.75rem;transition:all 0.2s ease;" onmouseover="this.style.background='var(--iuea-maroon)';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='var(--iuea-maroon)';"><i data-lucide="download" style="width:14px;height:14px;"></i> Download</a>`
             : '';
         return `
         <div class="modern-card" data-content-type="community-services" data-content-id="${cs.id}">
@@ -12149,7 +12149,7 @@ function renderPastCommunityServices(past) {
         const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : null);
         const imageUrl = resolveMediaUrl(cs.cover_image_url) || `https://picsum.photos/600/400?random=${cs.id}`;
         const viewBtn = cs.file_url
-            ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.4rem 1rem;background:transparent;border:1px solid var(--iuea-maroon);color:var(--iuea-maroon);border-radius:6px;font-size:0.75rem;font-weight:600;text-decoration:none;margin-top:0.75rem;transition:all 0.2s ease;" onmouseover="this.style.background='var(--iuea-maroon)';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='var(--iuea-maroon)';"><i data-lucide="download" style="width:14px;height:14px;"></i> Download</a>`
+            ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.25rem 0.5rem;width:fit-content;background:transparent;border:1px solid var(--iuea-maroon);color:var(--iuea-maroon);border-radius:6px;font-size:0.75rem;font-weight:600;text-decoration:none;margin-top:0.75rem;transition:all 0.2s ease;" onmouseover="this.style.background='var(--iuea-maroon)';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='var(--iuea-maroon)';"><i data-lucide="download" style="width:14px;height:14px;"></i> Download</a>`
             : '';
         return `
         <div class="modern-card" data-content-type="community-services" data-content-id="${cs.id}">
