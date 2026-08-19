@@ -11997,10 +11997,10 @@ async function loadCommunityServicesPage() {
         // Store globally so click handlers can look up full data
         window._csCache = services;
 
-        // Separate upcoming vs past
-        // If status is OPEN, consider it upcoming. If CLOSED, past.
-        const upcoming = services.filter(c => c.status === 'OPEN');
-        const past = services.filter(c => c.status === 'CLOSED');
+        // Separate upcoming vs past, sort newest first
+        const sortNewest = (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        const upcoming = services.filter(c => c.status === 'OPEN').sort(sortNewest);
+        const past = services.filter(c => c.status === 'CLOSED').sort(sortNewest);
 
         // Update stats
         const statTotal = document.getElementById('cs-stat-total');
