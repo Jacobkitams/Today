@@ -5508,8 +5508,6 @@ function populateAdminEditForm(moduleName, item) {
                 csDocCurrentWrap.style.display = 'none';
             }
         }
-        // Load existing cover image into the image preview
-        adminEditExistingImageUrl = item.cover_image_url || null;
     } else if (moduleName === 'endowment-campaigns') {
         titleEl.value = item.title || '';
         descEl.value = item.description || '';
@@ -5603,10 +5601,12 @@ function buildAdminEditBody(moduleName) {
         body.location = document.getElementById('adminEditCsLocation')?.value || null;
         body.status = document.getElementById('adminEditCsStatus')?.value || 'OPEN';
         body.year = document.getElementById('adminEditCsYear')?.value || null;
+        if (body.image) {
+            body.cover_image_url = body.image;
+            delete body.image;
+        }
         const csDocUrl = document.getElementById('adminEditCsDocUrl')?.value || null;
         if (csDocUrl) body.file_url = csDocUrl;
-        const csImage = document.getElementById('adminEditImage')?.value.trim();
-        if (csImage) body.cover_image_url = csImage;
     } else if (moduleName === 'events') {
         body.title = document.getElementById('adminEditTitle').value.trim();
         body.description = document.getElementById('adminEditDesc').value.trim();

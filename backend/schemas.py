@@ -601,6 +601,8 @@ class AdminContentUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     image: Optional[str] = None
+    cover_image_url: Optional[str] = None
+    file_url: Optional[str] = None
     video: Optional[str] = None
     status: Optional[str] = None
     date: Optional[str] = None
