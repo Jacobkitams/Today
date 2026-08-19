@@ -12047,7 +12047,7 @@ function renderUpcomingCommunityServices(upcoming) {
             </div>
             <div class="card-content">
                 <h3>${cs.title}</h3>
-                <p>${truncateText(cs.description || '')}</p>
+                <p>${cs.description || ''}</p>
                 <div class="card-stats-row">
                     ${dateStr ? statHTML('calendar', dateStr) : ''}
                     ${cs.location ? statHTML('map-pin', cs.location) : ''}
@@ -12159,7 +12159,7 @@ function renderPastCommunityServices(past) {
             </div>
             <div class="card-content">
                 <h3>${cs.title}</h3>
-                <p>${truncateText(cs.description || '')}</p>
+                <p>${cs.description || ''}</p>
                 <div class="card-stats-row">
                     ${dateStr ? statHTML('calendar', dateStr) : ''}
                     ${cs.location ? statHTML('map-pin', cs.location) : ''}
