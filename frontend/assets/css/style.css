@@ -9113,9 +9113,7 @@ body.app-offline .offline-admin-notice {
 
 
 
-    .simple-footer {
-        display: none !important;
-    }
+
 
     .footer-bottom {
         flex-direction: column;
