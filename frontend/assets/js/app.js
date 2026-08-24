@@ -898,6 +898,339 @@ function navigateToInnovationStartups() {
     }, 120);
 }
 
+/* =========================================================================
+   INNOVATION 3D ROBOT SHOWCASE
+   -------------------------------------------------------------------------
+   A small, self-contained, procedurally-built Three.js robot for the
+   Featured Innovations panel. Three.js is only fetched from CDN the first
+   time the panel actually scrolls into view (IntersectionObserver), and
+   the render loop pauses whenever it scrolls back out — so pages that never
+   visit Innovation never pay for it, and it never burns GPU/battery while
+   off-screen. Respects prefers-reduced-motion and fails silently (fallback
+   gradient, no crash) if WebGL isn't available.
+   ========================================================================= */
+let _threeJsLoadPromise = null;
+function loadThreeJS() {
+    if (window.THREE) return Promise.resolve(window.THREE);
+    if (_threeJsLoadPromise) return _threeJsLoadPromise;
+    _threeJsLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/three@0.160.0/build/three.min.js';
+        script.async = true;
+        script.onload = () => (window.THREE ? resolve(window.THREE) : reject(new Error('THREE failed to attach')));
+        script.onerror = () => reject(new Error('Failed to load three.js'));
+        document.head.appendChild(script);
+    });
+    return _threeJsLoadPromise;
+}
+
+function buildInnovationRobot(THREE, stage) {
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let renderer;
+    try {
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    } catch (e) {
+        stage.classList.add('is-fallback');
+        return;
+    }
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+    camera.position.set(0, 0.4, 7.5);
+
+    const setSize = () => {
+        const w = stage.clientWidth || 1;
+        const h = stage.clientHeight || 1;
+        renderer.setSize(w, h);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+    };
+
+    renderer.domElement.setAttribute('aria-hidden', 'true');
+    stage.appendChild(renderer.domElement);
+    setSize();
+
+    // ---- Lighting (Studio Specular Setup for Glossy Black Metal) ----
+    scene.add(new THREE.AmbientLight(0x1e2028, 1.4));
+    
+    // Top Key light for glossy specular reflections
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
+    keyLight.position.set(1.5, 4.5, 3.5);
+    scene.add(keyLight);
+    
+    // Left Rim light (cool studio tone)
+    const rimLightLeft = new THREE.DirectionalLight(0x88aaff, 2.2);
+    rimLightLeft.position.set(-4, 3, -2);
+    scene.add(rimLightLeft);
+
+    // Right Rim light (sharp specular outline)
+    const rimLightRight = new THREE.DirectionalLight(0xffffff, 1.8);
+    rimLightRight.position.set(3.5, 2, -2.5);
+    scene.add(rimLightRight);
+
+    // Fill light from bottom
+    const fillLight = new THREE.PointLight(0x3a4055, 3, 10);
+    fillLight.position.set(0, -2, 3);
+    scene.add(fillLight);
+
+    // ---- Materials (Figure AI Glossy Jet-Black Humanoid) ----
+    const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0x0c0d10,
+        metalness: 0.88,
+        roughness: 0.18
+    });
+    const visorMat = new THREE.MeshStandardMaterial({
+        color: 0x050507,
+        metalness: 0.95,
+        roughness: 0.05
+    });
+    const jointMat = new THREE.MeshStandardMaterial({
+        color: 0x181920,
+        metalness: 0.9,
+        roughness: 0.3
+    });
+    const eyeMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0xffffff,
+        emissiveIntensity: 2.8,
+        roughness: 0.1
+    });
+    const accentMat = new THREE.MeshStandardMaterial({
+        color: 0x222530,
+        metalness: 0.75,
+        roughness: 0.35
+    });
+
+    const robot = new THREE.Group();
+
+    // --- HEAD & VISOR ---
+    const headGroup = new THREE.Group();
+    headGroup.position.y = 1.62;
+
+    // Dome helmet structure
+    const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.48, 24, 24), bodyMat);
+    helmet.scale.set(0.92, 1.08, 0.95);
+    headGroup.add(helmet);
+
+    // Smooth Curved Front Visor
+    const visor = new THREE.Mesh(new THREE.SphereGeometry(0.44, 24, 24, 0, Math.PI * 2, 0, Math.PI * 0.55), visorMat);
+    visor.rotation.x = Math.PI * 0.1;
+    visor.position.set(0, 0.02, 0.06);
+    visor.scale.set(0.9, 1.02, 0.92);
+    headGroup.add(visor);
+
+    // Dual Glowing Horizontal LED Eye Slits
+    [-0.14, 0.14].forEach((x) => {
+        const eye = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.028, 0.04), eyeMat);
+        eye.position.set(x, 0.04, 0.41);
+        headGroup.add(eye);
+    });
+
+    robot.add(headGroup);
+
+    // --- NECK ---
+    const neckGroup = new THREE.Group();
+    neckGroup.position.y = 1.15;
+    const neckBase = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.22, 16), jointMat);
+    neckGroup.add(neckBase);
+    const neckRing = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.03, 12, 24), accentMat);
+    neckRing.rotation.x = Math.PI / 2;
+    neckGroup.add(neckRing);
+    robot.add(neckGroup);
+
+    // --- TORSO / CHEST (Broad V-Tapered Upper Body) ---
+    const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.44, 0.85, 16), bodyMat);
+    chest.position.y = 0.65;
+    chest.scale.set(1.15, 1.0, 0.75); // Flattener depth, wider chest
+    robot.add(chest);
+
+    // Chest Armor Plate Detail
+    const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.45, 0.08), accentMat);
+    chestPlate.position.set(0, 0.72, 0.26);
+    robot.add(chestPlate);
+
+    // Waist Segment Rings
+    [-0.05, -0.22, -0.38].forEach((yPos, idx) => {
+        const waistRing = new THREE.Mesh(new THREE.CylinderGeometry(0.38 - idx * 0.02, 0.36 - idx * 0.02, 0.12, 16), idx % 2 === 0 ? jointMat : bodyMat);
+        waistRing.position.y = yPos;
+        waistRing.scale.set(1.05, 1.0, 0.8);
+        robot.add(waistRing);
+    });
+
+    // --- PELVIS / HIPS ---
+    const pelvis = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.28, 0.45), bodyMat);
+    pelvis.position.y = -0.58;
+    robot.add(pelvis);
+
+    // --- SHOULDERS & ARMS ---
+    const armGroup = { left: new THREE.Group(), right: new THREE.Group() };
+    [-1, 1].forEach((side) => {
+        const g = side < 0 ? armGroup.left : armGroup.right;
+        g.position.set(0.74 * side, 0.92, 0);
+
+        // Shoulder Ball Joint
+        const shoulderBall = new THREE.Mesh(new THREE.SphereGeometry(0.2, 18, 18), jointMat);
+        g.add(shoulderBall);
+
+        // Shoulder Armor Cap (Puldron)
+        const shoulderCap = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.6), bodyMat);
+        shoulderCap.position.set(0.04 * side, 0.04, 0);
+        g.add(shoulderCap);
+
+        // Upper Arm
+        const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.11, 0.52, 14), bodyMat);
+        upperArm.position.set(0, -0.35, 0);
+        g.add(upperArm);
+
+        // Elbow Joint Hinge
+        const elbowJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.22, 14), jointMat);
+        elbowJoint.rotation.z = Math.PI / 2;
+        elbowJoint.position.set(0, -0.65, 0);
+        g.add(elbowJoint);
+
+        // Forearm Armor
+        const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.09, 0.5, 14), bodyMat);
+        forearm.position.set(0, -0.98, 0);
+        g.add(forearm);
+
+        // Hand / Wrist
+        const wrist = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 12), jointMat);
+        wrist.position.set(0, -1.26, 0);
+        g.add(wrist);
+
+        const handPalm = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.14, 0.06), bodyMat);
+        handPalm.position.set(0, -1.36, 0.02);
+        g.add(handPalm);
+
+        // Fingers
+        [-0.035, 0, 0.035].forEach((fX) => {
+            const finger = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.1, 0.025), accentMat);
+            finger.position.set(fX, -1.46, 0.02);
+            g.add(finger);
+        });
+
+        robot.add(g);
+    });
+
+    // --- LEGS ---
+    [-1, 1].forEach((side) => {
+        const x = 0.26 * side;
+        const legGroup = new THREE.Group();
+        legGroup.position.set(x, -0.68, 0);
+
+        // Hip Ball Joint
+        const hipJoint = new THREE.Mesh(new THREE.SphereGeometry(0.17, 16, 16), jointMat);
+        legGroup.add(hipJoint);
+
+        // Thigh
+        const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.13, 0.65, 14), bodyMat);
+        thigh.position.set(0, -0.4, 0);
+        legGroup.add(thigh);
+
+        // Mechanical Knee Joint Assembly
+        const kneeJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.24, 14), jointMat);
+        kneeJoint.rotation.z = Math.PI / 2;
+        kneeJoint.position.set(0, -0.78, 0);
+        legGroup.add(kneeJoint);
+
+        // Shin / Lower Leg
+        const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.1, 0.62, 14), bodyMat);
+        shin.position.set(0, -1.15, 0);
+        legGroup.add(shin);
+
+        // Ankle & Foot Boot
+        const foot = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.36), bodyMat);
+        foot.position.set(0, -1.5, 0.08);
+        legGroup.add(foot);
+
+        robot.add(legGroup);
+    });
+
+    robot.position.y = -0.1;
+    scene.add(robot);
+
+    // ---- Interaction: gentle mouse-parallax tilt ----
+    let targetRotX = 0, targetRotY = 0;
+    const onPointerMove = (e) => {
+        const rect = stage.getBoundingClientRect();
+        const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+        targetRotY = nx * 0.35;
+        targetRotX = ny * 0.15;
+    };
+    stage.addEventListener('mousemove', onPointerMove);
+    stage.addEventListener('mouseleave', () => { targetRotX = 0; targetRotY = 0; });
+
+    // ---- Animation loop (paused while off-screen) ----
+    let rafId = null;
+    let running = false;
+    const clock = new THREE.Clock();
+
+    function renderStaticFrame() {
+        renderer.render(scene, camera);
+        stage.classList.add('is-ready');
+    }
+
+    function tick() {
+        const t = clock.getElapsedTime();
+        robot.position.y = -0.15 + Math.sin(t * 1.1) * 0.06;
+        robot.rotation.y += (targetRotY + Math.sin(t * 0.35) * 0.25 - robot.rotation.y) * 0.04;
+        robot.rotation.x += (targetRotX - robot.rotation.x) * 0.04;
+        armGroup.left.rotation.z = 0.15 + Math.sin(t * 1.4) * 0.05;
+        armGroup.right.rotation.z = -0.15 - Math.sin(t * 1.4 + 0.4) * 0.05;
+        eyeMat.emissiveIntensity = 1.1 + Math.sin(t * 2.2) * 0.4;
+        renderer.render(scene, camera);
+        stage.classList.add('is-ready');
+        if (running) rafId = requestAnimationFrame(tick);
+    }
+
+    function play() {
+        if (running || prefersReducedMotion) { renderStaticFrame(); return; }
+        running = true;
+        rafId = requestAnimationFrame(tick);
+    }
+    function pause() {
+        running = false;
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = null;
+    }
+
+    const resizeObserver = new ResizeObserver(() => { setSize(); if (!running) renderStaticFrame(); });
+    resizeObserver.observe(stage);
+
+    const visibilityObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => (entry.isIntersecting ? play() : pause()));
+    }, { threshold: 0.15 });
+    visibilityObserver.observe(stage);
+}
+
+let _innovationRobotInitStarted = false;
+function initInnovationRobotIfNeeded() {
+    if (_innovationRobotInitStarted) return;
+    const stage = document.getElementById('innovationRobotStage');
+    if (!stage) return;
+    _innovationRobotInitStarted = true;
+    loadThreeJS()
+        .then((THREE) => buildInnovationRobot(THREE, stage))
+        .catch(() => stage.classList.add('is-fallback'));
+}
+
+(function setupInnovationRobotLazyLoad() {
+    const stage = document.getElementById('innovationRobotStage');
+    if (!stage || !('IntersectionObserver' in window)) return;
+    const trigger = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                initInnovationRobotIfNeeded();
+                trigger.disconnect();
+            }
+        });
+    }, { rootMargin: '250px' });
+    trigger.observe(stage);
+})();
+
 function showAdminTab(tabId, btn) {
     const dash = document.getElementById('admin-dashboard');
     if (!dash) return;
