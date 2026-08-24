@@ -935,9 +935,13 @@ function buildInnovationRobot(THREE, stage) {
         return;
     }
 
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
+
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-    camera.position.set(0, 0.4, 7.5);
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    camera.position.set(0, 1.2, 7); // placeholder — refit to the robot's actual bounding box below
 
     const setSize = () => {
         const w = stage.clientWidth || 1;
@@ -952,44 +956,83 @@ function buildInnovationRobot(THREE, stage) {
     stage.appendChild(renderer.domElement);
     setSize();
 
-    // ---- Lighting (Studio Specular Setup for Glossy Black Metal) ----
-    scene.add(new THREE.AmbientLight(0x1e2028, 1.4));
-    
-    // Top Key light for glossy specular reflections
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
-    keyLight.position.set(1.5, 4.5, 3.5);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // ---- Studio environment map (drives the glossy specular reflections —
+    // a handful of soft "softbox" panels around the robot, baked into a
+    // small PMREM cubemap; core three.js only, no extra CDN fetch needed) ----
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const envScene = new THREE.Scene();
+    const panelGeo = new THREE.PlaneGeometry(1, 1);
+    const addPanel = (color, w, h, x, y, z, rx, ry) => {
+        const mesh = new THREE.Mesh(panelGeo, new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
+        mesh.scale.set(w, h, 1);
+        mesh.position.set(x, y, z);
+        mesh.rotation.set(rx, ry, 0);
+        envScene.add(mesh);
+    };
+    addPanel(0x6b6558, 2.2, 2, 0, 2, -6, 0, 0);            // warm key softbox, front-top (narrow strip, not a wall)
+    addPanel(0x8a6a35, 1.8, 3, 6, 1, 1, 0, -Math.PI / 2.3); // gold rim, right
+    addPanel(0x445075, 1.4, 2.4, -6, 0, 0, 0, Math.PI / 2.2); // cool rim, left
+    addPanel(0x18181a, 8, 8, 0, -6, 0, Math.PI / 2, 0);    // soft dark bounce, below
+    const envRT = pmrem.fromScene(envScene, 0.03);
+    scene.environment = envRT.texture;
+    pmrem.dispose();
+
+    // ---- Lighting (premium product-shot rig: soft fill + key + gold rim) ----
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+    // Key light — front-upper, casts the shadow, gives the main specular pop
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    keyLight.position.set(3, 5, 4);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(1024, 1024);
+    keyLight.shadow.camera.near = 1;
+    keyLight.shadow.camera.far = 15;
+    keyLight.shadow.camera.left = -2.5;
+    keyLight.shadow.camera.right = 2.5;
+    keyLight.shadow.camera.top = 2.5;
+    keyLight.shadow.camera.bottom = -2.5;
+    keyLight.shadow.bias = -0.0015;
     scene.add(keyLight);
-    
-    // Left Rim light (cool studio tone)
-    const rimLightLeft = new THREE.DirectionalLight(0x88aaff, 2.2);
-    rimLightLeft.position.set(-4, 3, -2);
-    scene.add(rimLightLeft);
 
-    // Right Rim light (sharp specular outline)
-    const rimLightRight = new THREE.DirectionalLight(0xffffff, 1.8);
-    rimLightRight.position.set(3.5, 2, -2.5);
-    scene.add(rimLightRight);
+    // Gold rim light from behind/side — the glowing edge that separates the
+    // robot from the dark background; matches the site's --iuea-gold accent.
+    const rimLight = new THREE.DirectionalLight(0xcba052, 2);
+    rimLight.position.set(-3, 2, -4);
+    scene.add(rimLight);
 
-    // Fill light from bottom
-    const fillLight = new THREE.PointLight(0x3a4055, 3, 10);
-    fillLight.position.set(0, -2, 3);
+    // Soft low-intensity fill so the shadow side never reads as pure black
+    const fillLight = new THREE.PointLight(0x3a4055, 1.4, 10);
+    fillLight.position.set(0, -1, 3);
     scene.add(fillLight);
 
     // ---- Materials (Figure AI Glossy Jet-Black Humanoid) ----
-    const bodyMat = new THREE.MeshStandardMaterial({
+    // MeshPhysicalMaterial + clearcoat on the two most visible surfaces gives
+    // that automotive-paint double-highlight sheen; the rest stay on the
+    // cheaper MeshStandardMaterial since the difference isn't visible on them.
+    const bodyMat = new THREE.MeshPhysicalMaterial({
         color: 0x0c0d10,
         metalness: 0.88,
-        roughness: 0.18
+        roughness: 0.18,
+        envMapIntensity: 1.6,
+        clearcoat: 1,
+        clearcoatRoughness: 0.12
     });
-    const visorMat = new THREE.MeshStandardMaterial({
+    const visorMat = new THREE.MeshPhysicalMaterial({
         color: 0x050507,
         metalness: 0.95,
-        roughness: 0.05
+        roughness: 0.05,
+        envMapIntensity: 2,
+        clearcoat: 1,
+        clearcoatRoughness: 0.06
     });
     const jointMat = new THREE.MeshStandardMaterial({
         color: 0x181920,
         metalness: 0.9,
-        roughness: 0.3
+        roughness: 0.3,
+        envMapIntensity: 1.4
     });
     const eyeMat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
@@ -1000,7 +1043,8 @@ function buildInnovationRobot(THREE, stage) {
     const accentMat = new THREE.MeshStandardMaterial({
         color: 0x222530,
         metalness: 0.75,
-        roughness: 0.35
+        roughness: 0.35,
+        envMapIntensity: 1.4
     });
 
     const robot = new THREE.Group();
@@ -1065,10 +1109,16 @@ function buildInnovationRobot(THREE, stage) {
     robot.add(pelvis);
 
     // --- SHOULDERS & ARMS ---
+    // Rest pose leans the arms slightly out from the torso and forward —
+    // set here (not just in the animation loop) so even a static render
+    // (prefers-reduced-motion) shows a relaxed stance, not arms pinned flush.
+    const ARM_REST_Z = 0.16;
+    const ARM_REST_X = 0.12;
     const armGroup = { left: new THREE.Group(), right: new THREE.Group() };
     [-1, 1].forEach((side) => {
         const g = side < 0 ? armGroup.left : armGroup.right;
         g.position.set(0.74 * side, 0.92, 0);
+        g.rotation.set(ARM_REST_X, 0, side < 0 ? ARM_REST_Z : -ARM_REST_Z);
 
         // Shoulder Ball Joint
         const shoulderBall = new THREE.Mesh(new THREE.SphereGeometry(0.2, 18, 18), jointMat);
@@ -1149,7 +1199,46 @@ function buildInnovationRobot(THREE, stage) {
     });
 
     robot.position.y = -0.1;
+    robot.traverse((obj) => {
+        if (obj.isMesh) {
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+        }
+    });
     scene.add(robot);
+
+    // ---- Camera: fit to the robot's actual bounding box, don't guess ----
+    // Measures the built geometry directly so head-to-feet + extended arms
+    // always fit inside the canvas with breathing room, regardless of any
+    // future tweaks to the model's proportions.
+    const box = new THREE.Box3().setFromObject(robot);
+    const boxSize = new THREE.Vector3();
+    const boxCenter = new THREE.Vector3();
+    box.getSize(boxSize);
+    box.getCenter(boxCenter);
+
+    const PADDING = 0.78; // fraction of the frame the robot should fill (leaves ~22% margin)
+    function fitCameraToRobot() {
+        const fovRad = camera.fov * (Math.PI / 180);
+        const distanceForHeight = (boxSize.y / 2) / Math.tan(fovRad / 2) / PADDING;
+        const horizontalFovRad = 2 * Math.atan(Math.tan(fovRad / 2) * (camera.aspect || 1));
+        const distanceForWidth = (boxSize.x / 2) / Math.tan(horizontalFovRad / 2) / PADDING;
+        const fitDistance = Math.max(distanceForHeight, distanceForWidth);
+        camera.position.set(boxCenter.x, boxCenter.y, boxCenter.z + fitDistance);
+        camera.lookAt(boxCenter);
+        camera.updateProjectionMatrix();
+    }
+    fitCameraToRobot();
+
+    // ---- Ground contact shadow ----
+    const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(boxSize.x * 4, boxSize.x * 4),
+        new THREE.ShadowMaterial({ opacity: 0.35 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = box.min.y;
+    ground.receiveShadow = true;
+    scene.add(ground);
 
     // ---- Interaction: gentle mouse-parallax tilt ----
     let targetRotX = 0, targetRotY = 0;
@@ -1157,8 +1246,11 @@ function buildInnovationRobot(THREE, stage) {
         const rect = stage.getBoundingClientRect();
         const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-        targetRotY = nx * 0.35;
-        targetRotX = ny * 0.15;
+        // Clamped conservatively — the camera is snug-fit to the robot's
+        // bounding box (see fitCameraToRobot), so rotation has to stay small
+        // enough that extremities (hands, feet) never swing out of frame.
+        targetRotY = nx * 0.22;
+        targetRotX = ny * 0.1;
     };
     stage.addEventListener('mousemove', onPointerMove);
     stage.addEventListener('mouseleave', () => { targetRotX = 0; targetRotY = 0; });
@@ -1176,10 +1268,10 @@ function buildInnovationRobot(THREE, stage) {
     function tick() {
         const t = clock.getElapsedTime();
         robot.position.y = -0.15 + Math.sin(t * 1.1) * 0.06;
-        robot.rotation.y += (targetRotY + Math.sin(t * 0.35) * 0.25 - robot.rotation.y) * 0.04;
+        robot.rotation.y += (targetRotY + Math.sin(t * 0.35) * 0.14 - robot.rotation.y) * 0.04;
         robot.rotation.x += (targetRotX - robot.rotation.x) * 0.04;
-        armGroup.left.rotation.z = 0.15 + Math.sin(t * 1.4) * 0.05;
-        armGroup.right.rotation.z = -0.15 - Math.sin(t * 1.4 + 0.4) * 0.05;
+        armGroup.left.rotation.z = ARM_REST_Z + Math.sin(t * 1.4) * 0.05;
+        armGroup.right.rotation.z = -ARM_REST_Z - Math.sin(t * 1.4 + 0.4) * 0.05;
         eyeMat.emissiveIntensity = 1.1 + Math.sin(t * 2.2) * 0.4;
         renderer.render(scene, camera);
         stage.classList.add('is-ready');
@@ -1197,7 +1289,7 @@ function buildInnovationRobot(THREE, stage) {
         rafId = null;
     }
 
-    const resizeObserver = new ResizeObserver(() => { setSize(); if (!running) renderStaticFrame(); });
+    const resizeObserver = new ResizeObserver(() => { setSize(); fitCameraToRobot(); if (!running) renderStaticFrame(); });
     resizeObserver.observe(stage);
 
     const visibilityObserver = new IntersectionObserver((entries) => {

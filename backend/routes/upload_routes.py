@@ -1,12 +1,56 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+import io
 import uuid
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from PIL import Image, ImageOps
 from auth import get_current_user
 from models import User
 
 router = APIRouter()
+
+# ---------------------------------------------------------------------------
+# Image compression
+# ---------------------------------------------------------------------------
+# Uploaded photos come straight off phones/cameras and can be 10-15 MB each.
+# Downscale + recompress on the way in so pages don't ship multi-megabyte
+# images to every visitor. Animated images are left untouched so we don't
+# silently strip their animation.
+# ---------------------------------------------------------------------------
+MAX_IMAGE_DIMENSION = 1920  # px, longest side
+JPEG_QUALITY = 82
+
+def _compress_image(content: bytes, ext: str) -> tuple[bytes, str]:
+    """Resize + recompress image bytes. Returns (new_bytes, new_ext).
+    Falls back to the original content/ext untouched on any failure
+    (corrupt file, unsupported format, animated GIF/WebP, ...) so an
+    upload never hard-fails because of this step."""
+    try:
+        img = Image.open(io.BytesIO(content))
+        if getattr(img, "is_animated", False):
+            return content, ext
+
+        img = ImageOps.exif_transpose(img)  # honor camera rotation before dropping EXIF
+        has_alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
+
+        img.thumbnail((MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION), Image.LANCZOS)
+
+        buf = io.BytesIO()
+        if has_alpha:
+            img.convert("RGBA").save(buf, format="PNG", optimize=True)
+            new_ext = ".png"
+        else:
+            img.convert("RGB").save(buf, format="JPEG", quality=JPEG_QUALITY, optimize=True)
+            new_ext = ".jpg"
+
+        new_bytes = buf.getvalue()
+        # Only use the recompressed version if it's actually smaller.
+        if len(new_bytes) < len(content):
+            return new_bytes, new_ext
+        return content, ext
+    except Exception:
+        return content, ext
 
 # Base path to the frontend assets folder
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "assets")
@@ -27,12 +71,16 @@ def _save_file(upload: UploadFile, dest_dir: str, allowed_types: set, max_size: 
             pass
         else:
             raise HTTPException(status_code=400, detail=f"Unsupported file type: {upload.content_type} (ext: {ext})")
-    filename = f"{uuid.uuid4().hex}{ext}"
-    dest_path = os.path.join(dest_dir, filename)
     content = upload.file.read()
     if len(content) > max_size:
         limit_mb = max_size // (1024 * 1024)
         raise HTTPException(status_code=413, detail=f"File too large. Maximum size is {limit_mb} MB.")
+
+    if dest_dir == IMAGES_DIR:
+        content, ext = _compress_image(content, ext)
+
+    filename = f"{uuid.uuid4().hex}{ext}"
+    dest_path = os.path.join(dest_dir, filename)
     os.makedirs(dest_dir, exist_ok=True)
     with open(dest_path, "wb") as f:
         f.write(content)
