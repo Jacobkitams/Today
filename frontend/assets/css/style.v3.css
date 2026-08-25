@@ -2025,7 +2025,7 @@ nav {
     grid-template-columns: 1fr 1fr;
     align-items: center;
     gap: 2rem;
-    background: radial-gradient(120% 140% at 15% 10%, #2a1f1a 0%, #17120f 45%, #100d0c 100%);
+    background: radial-gradient(120% 140% at 15% 10%, #2e0d10 0%, #1a0709 45%, #0f0405 100%);
     border-radius: var(--radius-lg);
     padding: 3rem;
     margin-bottom: 2.5rem;
@@ -2038,8 +2038,8 @@ nav {
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(60% 80% at 85% 20%, rgba(203, 160, 82, 0.14) 0%, transparent 60%),
-        radial-gradient(50% 60% at 100% 100%, rgba(128, 0, 0, 0.18) 0%, transparent 60%);
+        radial-gradient(60% 80% at 85% 20%, rgba(128, 0, 0, 0.28) 0%, transparent 60%),
+        radial-gradient(50% 60% at 100% 100%, rgba(128, 0, 0, 0.2) 0%, transparent 60%);
     z-index: -1;
 }
 
