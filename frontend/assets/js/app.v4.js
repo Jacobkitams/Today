@@ -1221,7 +1221,7 @@ function buildInnovationRobot(THREE, stage) {
     box.getSize(boxSize);
     box.getCenter(boxCenter);
 
-    const PADDING = 0.78; // fraction of the frame the robot should fill (leaves ~22% margin)
+    const PADDING = 0.92; // fraction of the frame the robot should fill (leaves ~8% margin)
     function fitCameraToRobot() {
         const fovRad = camera.fov * (Math.PI / 180);
         const distanceForHeight = (boxSize.y / 2) / Math.tan(fovRad / 2) / PADDING;
@@ -1253,8 +1253,8 @@ function buildInnovationRobot(THREE, stage) {
         // Clamped conservatively — the camera is snug-fit to the robot's
         // bounding box (see fitCameraToRobot), so rotation has to stay small
         // enough that extremities (hands, feet) never swing out of frame.
-        targetRotY = nx * 0.22;
-        targetRotX = ny * 0.1;
+        targetRotY = nx * 0.15;
+        targetRotX = ny * 0.07;
     };
     stage.addEventListener('mousemove', onPointerMove);
     stage.addEventListener('mouseleave', () => { targetRotX = 0; targetRotY = 0; });
@@ -1272,7 +1272,7 @@ function buildInnovationRobot(THREE, stage) {
     function tick() {
         const t = clock.getElapsedTime();
         robot.position.y = -0.15 + Math.sin(t * 1.1) * 0.06;
-        robot.rotation.y += (targetRotY + Math.sin(t * 0.35) * 0.14 - robot.rotation.y) * 0.04;
+        robot.rotation.y += (targetRotY + Math.sin(t * 0.35) * 0.09 - robot.rotation.y) * 0.04;
         robot.rotation.x += (targetRotX - robot.rotation.x) * 0.04;
         armGroup.left.rotation.z = ARM_REST_Z + Math.sin(t * 1.4) * 0.05;
         armGroup.right.rotation.z = -ARM_REST_Z - Math.sin(t * 1.4 + 0.4) * 0.05;
