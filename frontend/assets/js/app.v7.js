@@ -1118,7 +1118,7 @@ function buildInnovationRobot(THREE, stage) {
     // (prefers-reduced-motion) shows a relaxed stance, not arms pinned flush.
     const ARM_REST_Z = 0.16;
     const ARM_REST_X = 0.12;
-    const ARM_WAVE_RAISE = 1.1; // extra radians the right arm swings up into on hover (the "wave")
+    const ARM_OPEN_MAX = 0.85; // radians both arms swing open to at the peak of the idle cycle
     const armGroup = { left: new THREE.Group(), right: new THREE.Group() };
     [-1, 1].forEach((side) => {
         const g = side < 0 ? armGroup.left : armGroup.right;
@@ -1216,11 +1216,22 @@ function buildInnovationRobot(THREE, stage) {
     // Measures the built geometry directly so head-to-feet + extended arms
     // always fit inside the canvas with breathing room, regardless of any
     // future tweaks to the model's proportions.
+    //
+    // The arms swing open on their own as part of the idle animation now
+    // (not just on hover), so the fit has to account for that widest pose,
+    // not the arms-down resting one — otherwise they'd clip the frame edges
+    // every cycle. Pose them at their max opening, measure, then reset.
+    armGroup.left.rotation.z = ARM_REST_Z + ARM_OPEN_MAX;
+    armGroup.right.rotation.z = -ARM_REST_Z - ARM_OPEN_MAX;
+    robot.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(robot);
     const boxSize = new THREE.Vector3();
     const boxCenter = new THREE.Vector3();
     box.getSize(boxSize);
     box.getCenter(boxCenter);
+    armGroup.left.rotation.z = ARM_REST_Z;
+    armGroup.right.rotation.z = -ARM_REST_Z;
+    robot.updateMatrixWorld(true);
 
     const PADDING = 0.92; // fraction of the frame the robot should fill (leaves ~8% margin)
     function fitCameraToRobot() {
@@ -1314,14 +1325,19 @@ function buildInnovationRobot(THREE, stage) {
         robot.rotation.y += ((targetRotY + Math.sin(idlePhase * 0.35) * 0.09) * leanBoost - robot.rotation.y) * 0.04;
         robot.rotation.x += (targetRotX * leanBoost - robot.rotation.x) * 0.04;
 
-        // Arms: normal idle sway on both, plus the right arm swings up into
-        // a raised "wave" on hover, with a small wrist wiggle while raised.
-        armGroup.left.rotation.z = ARM_REST_Z + Math.sin(idlePhase * 1.4) * 0.05 + hoverAmount * ARM_WAVE_RAISE;
-        armGroup.right.rotation.z = -ARM_REST_Z - Math.sin(idlePhase * 1.4 + 0.4) * 0.05 - hoverAmount * ARM_WAVE_RAISE;
-        // Wrist wiggle on both arms while raised — opposite phase so they
-        // don't move as a perfect mirror image, which reads more alive.
-        armGroup.left.rotation.x = ARM_REST_X + hoverAmount * Math.sin(elapsed * 6 + Math.PI) * 0.15;
-        armGroup.right.rotation.x = ARM_REST_X + hoverAmount * Math.sin(elapsed * 6) * 0.15;
+        // Arms: a slow, always-running open/close breathing cycle — plays on
+        // its own, nobody has to hover for the robot to move. Hovering just
+        // adds on top via Math.max, so the two never add up past ARM_OPEN_MAX
+        // (the pose the camera fit above was measured against).
+        const armOpenCycle = (Math.sin(idlePhase * 0.35) + 1) / 2; // 0..1, ~18s open-close period
+        const armOpenAmount = Math.max(armOpenCycle, hoverAmount) * ARM_OPEN_MAX;
+        armGroup.left.rotation.z = ARM_REST_Z + Math.sin(idlePhase * 1.4) * 0.05 + armOpenAmount;
+        armGroup.right.rotation.z = -ARM_REST_Z - Math.sin(idlePhase * 1.4 + 0.4) * 0.05 - armOpenAmount;
+        // Wrist wiggle scales with the same amount — most noticeable near
+        // the top of the open cycle or while hovering. Opposite phase on
+        // each arm so they don't move as a perfect mirror image.
+        armGroup.left.rotation.x = ARM_REST_X + armOpenAmount * Math.sin(elapsed * 6 + Math.PI) * 0.15;
+        armGroup.right.rotation.x = ARM_REST_X + armOpenAmount * Math.sin(elapsed * 6) * 0.15;
 
         // Head look-at — smoothly turns toward the cursor while hovering,
         // eases back to facing forward the moment the cursor leaves.
