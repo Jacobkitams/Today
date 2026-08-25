@@ -1118,11 +1118,13 @@ function buildInnovationRobot(THREE, stage) {
     // (prefers-reduced-motion) shows a relaxed stance, not arms pinned flush.
     const ARM_REST_Z = 0.16;
     const ARM_REST_X = 0.12;
-    // Kept modest on purpose: past ~0.4 rad the swing, combined with the
-    // arms' static forward tilt (ARM_REST_X), rotates the forearm/hand
-    // behind the torso from the camera's viewpoint instead of out to the
-    // side where it reads correctly.
-    const ARM_OPEN_MAX = 0.32; // radians both arms swing open to at the peak of the idle cycle
+    // A wide, clearly-visible "open arms" swing. Past ~0.4 rad this used to
+    // rotate the forearm/hand behind the torso -- caused by ARM_REST_X's
+    // static forward tilt compounding with the Z-axis swing, not by the
+    // swing angle itself. Fixed at the source below (the tilt eases to 0 as
+    // the arms open, keeping the sweep in a flat plane the camera can see),
+    // so this can be a proper "arms out" pose instead of a token sway.
+    const ARM_OPEN_MAX = 1.25; // radians both arms swing open to at the peak of the idle cycle
     const armGroup = { left: new THREE.Group(), right: new THREE.Group() };
     [-1, 1].forEach((side) => {
         const g = side < 0 ? armGroup.left : armGroup.right;
@@ -1225,16 +1227,16 @@ function buildInnovationRobot(THREE, stage) {
     // (not just on hover), so the fit has to account for that widest pose,
     // not the arms-down resting one — otherwise they'd clip the frame edges
     // every cycle. Pose them at their max opening, measure, then reset.
-    armGroup.left.rotation.z = ARM_REST_Z + ARM_OPEN_MAX;
-    armGroup.right.rotation.z = -ARM_REST_Z - ARM_OPEN_MAX;
+    armGroup.left.rotation.set(0, 0, ARM_REST_Z + ARM_OPEN_MAX);
+    armGroup.right.rotation.set(0, 0, -ARM_REST_Z - ARM_OPEN_MAX);
     robot.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(robot);
     const boxSize = new THREE.Vector3();
     const boxCenter = new THREE.Vector3();
     box.getSize(boxSize);
     box.getCenter(boxCenter);
-    armGroup.left.rotation.z = ARM_REST_Z;
-    armGroup.right.rotation.z = -ARM_REST_Z;
+    armGroup.left.rotation.set(ARM_REST_X, 0, ARM_REST_Z);
+    armGroup.right.rotation.set(ARM_REST_X, 0, -ARM_REST_Z);
     robot.updateMatrixWorld(true);
 
     const PADDING = 0.92; // fraction of the frame the robot should fill (leaves ~8% margin)
@@ -1335,13 +1337,18 @@ function buildInnovationRobot(THREE, stage) {
         // (the pose the camera fit above was measured against).
         const armOpenCycle = (Math.sin(idlePhase * 0.35) + 1) / 2; // 0..1, ~18s open-close period
         const armOpenAmount = Math.max(armOpenCycle, hoverAmount) * ARM_OPEN_MAX;
+        const openFraction = armOpenAmount / ARM_OPEN_MAX; // 0..1, how open right now
         armGroup.left.rotation.z = ARM_REST_Z + Math.sin(idlePhase * 1.4) * 0.05 + armOpenAmount;
         armGroup.right.rotation.z = -ARM_REST_Z - Math.sin(idlePhase * 1.4 + 0.4) * 0.05 - armOpenAmount;
-        // Wrist wiggle scales with the same amount — most noticeable near
-        // the top of the open cycle or while hovering. Opposite phase on
-        // each arm so they don't move as a perfect mirror image.
-        armGroup.left.rotation.x = ARM_REST_X + armOpenAmount * Math.sin(elapsed * 6 + Math.PI) * 0.15;
-        armGroup.right.rotation.x = ARM_REST_X + armOpenAmount * Math.sin(elapsed * 6) * 0.15;
+        // The forward lean (ARM_REST_X) is what bent the wide-open sweep
+        // behind the torso — it tilts the plane the Z-rotation sweeps
+        // through. Easing it to 0 as the arms open keeps that plane flat
+        // and facing the camera, so the swing can go wide without curving
+        // out of sight. Wrist wiggle stays small so it can't reintroduce
+        // the same problem.
+        const armRestXNow = ARM_REST_X * (1 - openFraction);
+        armGroup.left.rotation.x = armRestXNow + armOpenAmount * Math.sin(elapsed * 6 + Math.PI) * 0.05;
+        armGroup.right.rotation.x = armRestXNow + armOpenAmount * Math.sin(elapsed * 6) * 0.05;
 
         // Head look-at — smoothly turns toward the cursor while hovering,
         // eases back to facing forward the moment the cursor leaves.

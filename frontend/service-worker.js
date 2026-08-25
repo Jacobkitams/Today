@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'v18';
+const CACHE_VERSION = 'v19';
 const STATIC_CACHE = `iuea-today-static-${CACHE_VERSION}`;
 const API_CACHE = `iuea-today-api-${CACHE_VERSION}`;
 
@@ -18,7 +18,7 @@ const SHELL_ASSETS = [
   'offline.html',
   'manifest.json',
   'assets/css/style.v3.css',
-  'assets/js/app.v8.js',
+  'assets/js/app.v9.js',
   'assets/images/03c66843ee4a48f0aa4811a78f911497.jpg',
   'assets/images/048edd175c234412b2132be97206b25d.jpg',
   'assets/images/04ffe21aa3b44dd09fd52de5e0538854.jpg',
