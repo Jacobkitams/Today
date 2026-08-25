@@ -1316,8 +1316,11 @@ function buildInnovationRobot(THREE, stage) {
 
         // Arms: normal idle sway on both, plus the right arm swings up into
         // a raised "wave" on hover, with a small wrist wiggle while raised.
-        armGroup.left.rotation.z = ARM_REST_Z + Math.sin(idlePhase * 1.4) * 0.05;
+        armGroup.left.rotation.z = ARM_REST_Z + Math.sin(idlePhase * 1.4) * 0.05 + hoverAmount * ARM_WAVE_RAISE;
         armGroup.right.rotation.z = -ARM_REST_Z - Math.sin(idlePhase * 1.4 + 0.4) * 0.05 - hoverAmount * ARM_WAVE_RAISE;
+        // Wrist wiggle on both arms while raised — opposite phase so they
+        // don't move as a perfect mirror image, which reads more alive.
+        armGroup.left.rotation.x = ARM_REST_X + hoverAmount * Math.sin(elapsed * 6 + Math.PI) * 0.15;
         armGroup.right.rotation.x = ARM_REST_X + hoverAmount * Math.sin(elapsed * 6) * 0.15;
 
         // Head look-at — smoothly turns toward the cursor while hovering,
