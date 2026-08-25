@@ -973,7 +973,7 @@ function buildInnovationRobot(THREE, stage) {
         envScene.add(mesh);
     };
     addPanel(0x6b6558, 2.2, 2, 0, 2, -6, 0, 0);            // warm key softbox, front-top (narrow strip, not a wall)
-    addPanel(0x8a6a35, 1.8, 3, 6, 1, 1, 0, -Math.PI / 2.3); // gold rim, right
+    addPanel(0x8a2a2a, 1.8, 3, 6, 1, 1, 0, -Math.PI / 2.3); // red/maroon rim, right
     addPanel(0x445075, 1.4, 2.4, -6, 0, 0, 0, Math.PI / 2.2); // cool rim, left
     addPanel(0x18181a, 8, 8, 0, -6, 0, Math.PI / 2, 0);    // soft dark bounce, below
     const envRT = pmrem.fromScene(envScene, 0.03);
@@ -997,9 +997,9 @@ function buildInnovationRobot(THREE, stage) {
     keyLight.shadow.bias = -0.0015;
     scene.add(keyLight);
 
-    // Gold rim light from behind/side — the glowing edge that separates the
-    // robot from the dark background; matches the site's --iuea-gold accent.
-    const rimLight = new THREE.DirectionalLight(0xcba052, 2);
+    // Red/maroon rim light from behind/side — the glowing edge that separates
+    // the robot from the dark background; matches the site's --iuea-maroon.
+    const rimLight = new THREE.DirectionalLight(0x800000, 2.6);
     rimLight.position.set(-3, 2, -4);
     scene.add(rimLight);
 
@@ -1013,26 +1013,28 @@ function buildInnovationRobot(THREE, stage) {
     // that automotive-paint double-highlight sheen; the rest stay on the
     // cheaper MeshStandardMaterial since the difference isn't visible on them.
     const bodyMat = new THREE.MeshPhysicalMaterial({
-        color: 0x0c0d10,
-        metalness: 0.88,
-        roughness: 0.18,
-        envMapIntensity: 1.6,
+        color: 0xe9e9ec,
+        metalness: 0.5,
+        roughness: 0.22,
+        envMapIntensity: 1.4,
         clearcoat: 1,
         clearcoatRoughness: 0.12
     });
+    // Visor stays dark — the contrast is what reads as a "face" against a
+    // white body (same reason most white consumer robots keep a dark visor).
     const visorMat = new THREE.MeshPhysicalMaterial({
-        color: 0x050507,
-        metalness: 0.95,
-        roughness: 0.05,
-        envMapIntensity: 2,
+        color: 0x0a0a0c,
+        metalness: 0.9,
+        roughness: 0.08,
+        envMapIntensity: 1.6,
         clearcoat: 1,
         clearcoatRoughness: 0.06
     });
     const jointMat = new THREE.MeshStandardMaterial({
-        color: 0x181920,
-        metalness: 0.9,
-        roughness: 0.3,
-        envMapIntensity: 1.4
+        color: 0xc7c7cc,
+        metalness: 0.55,
+        roughness: 0.32,
+        envMapIntensity: 1.2
     });
     const eyeMat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
@@ -1040,11 +1042,13 @@ function buildInnovationRobot(THREE, stage) {
         emissiveIntensity: 2.8,
         roughness: 0.1
     });
+    // Site's actual brand red/maroon (--iuea-maroon), not the earlier gold —
+    // used for the joints' shaded accent trim and to tint the rim light below.
     const accentMat = new THREE.MeshStandardMaterial({
-        color: 0x222530,
-        metalness: 0.75,
-        roughness: 0.35,
-        envMapIntensity: 1.4
+        color: 0x800000,
+        metalness: 0.55,
+        roughness: 0.3,
+        envMapIntensity: 1.2
     });
 
     const robot = new THREE.Group();
