@@ -1350,10 +1350,15 @@ function buildInnovationRobot(THREE, stage) {
         armGroup.left.rotation.x = armRestXNow + armOpenAmount * Math.sin(elapsed * 6 + Math.PI) * 0.05;
         armGroup.right.rotation.x = armRestXNow + armOpenAmount * Math.sin(elapsed * 6) * 0.05;
 
-        // Head look-at — smoothly turns toward the cursor while hovering,
-        // eases back to facing forward the moment the cursor leaves.
-        const targetHeadRotY = isHovering ? mouseX * 0.3 : 0;
-        const targetHeadRotX = isHovering ? -mouseY * 0.2 : 0;
+        // Head: turns to track the cursor while hovering; otherwise looks
+        // around on its own — two mismatched sine periods so it reads as
+        // idle scanning ("checking what's going on") rather than a robotic
+        // side-to-side wag. Whichever target is active, it's still lerped
+        // in, so hover <-> ambient is always a smooth hand-off, never a snap.
+        const lookAroundY = Math.sin(idlePhase * 0.22) * 0.35 + Math.sin(idlePhase * 0.53 + 1.3) * 0.12;
+        const lookAroundX = Math.sin(idlePhase * 0.17 + 0.7) * 0.12;
+        const targetHeadRotY = isHovering ? mouseX * 0.3 : lookAroundY;
+        const targetHeadRotX = isHovering ? -mouseY * 0.2 : lookAroundX;
         headGroup.rotation.y += (targetHeadRotY - headGroup.rotation.y) * 0.08;
         headGroup.rotation.x += (targetHeadRotX - headGroup.rotation.x) * 0.08;
 
