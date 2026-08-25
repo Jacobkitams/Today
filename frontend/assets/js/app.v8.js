@@ -1118,7 +1118,11 @@ function buildInnovationRobot(THREE, stage) {
     // (prefers-reduced-motion) shows a relaxed stance, not arms pinned flush.
     const ARM_REST_Z = 0.16;
     const ARM_REST_X = 0.12;
-    const ARM_OPEN_MAX = 0.85; // radians both arms swing open to at the peak of the idle cycle
+    // Kept modest on purpose: past ~0.4 rad the swing, combined with the
+    // arms' static forward tilt (ARM_REST_X), rotates the forearm/hand
+    // behind the torso from the camera's viewpoint instead of out to the
+    // side where it reads correctly.
+    const ARM_OPEN_MAX = 0.32; // radians both arms swing open to at the peak of the idle cycle
     const armGroup = { left: new THREE.Group(), right: new THREE.Group() };
     [-1, 1].forEach((side) => {
         const g = side < 0 ? armGroup.left : armGroup.right;
