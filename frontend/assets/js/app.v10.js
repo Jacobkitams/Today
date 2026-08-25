@@ -1338,8 +1338,8 @@ function buildInnovationRobot(THREE, stage) {
         const armOpenCycle = (Math.sin(idlePhase * 0.35) + 1) / 2; // 0..1, ~18s open-close period
         const armOpenAmount = Math.max(armOpenCycle, hoverAmount) * ARM_OPEN_MAX;
         const openFraction = armOpenAmount / ARM_OPEN_MAX; // 0..1, how open right now
-        armGroup.left.rotation.z = ARM_REST_Z + Math.sin(idlePhase * 1.4) * 0.05 + armOpenAmount;
-        armGroup.right.rotation.z = -ARM_REST_Z - Math.sin(idlePhase * 1.4 + 0.4) * 0.05 - armOpenAmount;
+        armGroup.left.rotation.z = ARM_REST_Z + Math.sin(idlePhase * 1.4) * 0.05 - armOpenAmount;
+        armGroup.right.rotation.z = -ARM_REST_Z - Math.sin(idlePhase * 1.4 + 0.4) * 0.05 + armOpenAmount;
         // The forward lean (ARM_REST_X) is what bent the wide-open sweep
         // behind the torso — it tilts the plane the Z-rotation sweeps
         // through. Easing it to 0 as the arms open keeps that plane flat
