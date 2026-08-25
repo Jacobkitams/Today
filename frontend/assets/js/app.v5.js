@@ -1118,6 +1118,7 @@ function buildInnovationRobot(THREE, stage) {
     // (prefers-reduced-motion) shows a relaxed stance, not arms pinned flush.
     const ARM_REST_Z = 0.16;
     const ARM_REST_X = 0.12;
+    const ARM_WAVE_RAISE = 1.1; // extra radians the right arm swings up into on hover (the "wave")
     const armGroup = { left: new THREE.Group(), right: new THREE.Group() };
     [-1, 1].forEach((side) => {
         const g = side < 0 ? armGroup.left : armGroup.right;
@@ -1244,25 +1245,50 @@ function buildInnovationRobot(THREE, stage) {
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // ---- Interaction: gentle mouse-parallax tilt ----
+    // ---- Interaction: mouse-parallax tilt + hover reactions ----
+    // Raycasting happens on mousemove (not every render frame) — cheap
+    // enough at mouse-event rates, and keeps the render loop itself doing
+    // nothing extra when the cursor hasn't moved.
+    const raycaster = new THREE.Raycaster();
+    const mouseNDC = new THREE.Vector2();
     let targetRotX = 0, targetRotY = 0;
+    let mouseX = 0, mouseY = 0; // normalized -1..1, drives the head look-at
+    let isHovering = false;
+
     const onPointerMove = (e) => {
         const rect = stage.getBoundingClientRect();
         const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+        mouseX = nx;
+        mouseY = ny;
+
         // Clamped conservatively — the camera is snug-fit to the robot's
         // bounding box (see fitCameraToRobot), so rotation has to stay small
         // enough that extremities (hands, feet) never swing out of frame.
         targetRotY = nx * 0.15;
         targetRotX = ny * 0.07;
+
+        mouseNDC.set(nx, -ny); // three.js raycaster convention: +Y is up
+        raycaster.setFromCamera(mouseNDC, camera);
+        isHovering = raycaster.intersectObject(robot, true).length > 0;
     };
-    stage.addEventListener('mousemove', onPointerMove);
-    stage.addEventListener('mouseleave', () => { targetRotX = 0; targetRotY = 0; });
+    const onPointerLeave = () => {
+        targetRotX = 0;
+        targetRotY = 0;
+        isHovering = false;
+    };
 
     // ---- Animation loop (paused while off-screen) ----
     let rafId = null;
     let running = false;
     const clock = new THREE.Clock();
+    let elapsed = 0;   // running total, advanced by delta so hover can vary its rate
+    let idlePhase = 0; // separate phase accumulator for the idle bob/sway — advancing
+                        // this faster on hover speeds the idle motion up without a
+                        // phase jump (deriving speed straight from `elapsed` would snap)
+    let hoverAmount = 0; // 0..1, lerped toward isHovering — drives every hover reaction
+    const HOVER_SCALE = new THREE.Vector3(1.05, 1.05, 1.05);
+    const REST_SCALE = new THREE.Vector3(1, 1, 1);
 
     function renderStaticFrame() {
         renderer.render(scene, camera);
@@ -1270,13 +1296,41 @@ function buildInnovationRobot(THREE, stage) {
     }
 
     function tick() {
-        const t = clock.getElapsedTime();
-        robot.position.y = -0.15 + Math.sin(t * 1.1) * 0.06;
-        robot.rotation.y += (targetRotY + Math.sin(t * 0.35) * 0.09 - robot.rotation.y) * 0.04;
-        robot.rotation.x += (targetRotX - robot.rotation.x) * 0.04;
-        armGroup.left.rotation.z = ARM_REST_Z + Math.sin(t * 1.4) * 0.05;
-        armGroup.right.rotation.z = -ARM_REST_Z - Math.sin(t * 1.4 + 0.4) * 0.05;
-        eyeMat.emissiveIntensity = 1.1 + Math.sin(t * 2.2) * 0.4;
+        const dt = clock.getDelta();
+        elapsed += dt;
+
+        // Single source of truth for "how hovered" we are right now — every
+        // reaction below reads this instead of the raw isHovering boolean,
+        // so nothing snaps: it all eases in over ~0.3-0.4s and back out again.
+        hoverAmount += ((isHovering ? 1 : 0) - hoverAmount) * 0.08;
+        idlePhase += dt * (1 + hoverAmount * 0.8); // idle motion speeds up to 1.8x on hover
+
+        // Idle bob — a little taller as well as faster while hovering
+        robot.position.y = -0.15 + Math.sin(idlePhase * 1.1) * (0.06 * (1 + hoverAmount * 0.6));
+
+        // Base parallax + idle look-around sway; boosted on hover so the
+        // whole figure leans toward the cursor a bit more noticeably.
+        const leanBoost = 1 + hoverAmount * 0.6;
+        robot.rotation.y += ((targetRotY + Math.sin(idlePhase * 0.35) * 0.09) * leanBoost - robot.rotation.y) * 0.04;
+        robot.rotation.x += (targetRotX * leanBoost - robot.rotation.x) * 0.04;
+
+        // Arms: normal idle sway on both, plus the right arm swings up into
+        // a raised "wave" on hover, with a small wrist wiggle while raised.
+        armGroup.left.rotation.z = ARM_REST_Z + Math.sin(idlePhase * 1.4) * 0.05;
+        armGroup.right.rotation.z = -ARM_REST_Z - Math.sin(idlePhase * 1.4 + 0.4) * 0.05 - hoverAmount * ARM_WAVE_RAISE;
+        armGroup.right.rotation.x = ARM_REST_X + hoverAmount * Math.sin(elapsed * 6) * 0.15;
+
+        // Head look-at — smoothly turns toward the cursor while hovering,
+        // eases back to facing forward the moment the cursor leaves.
+        const targetHeadRotY = isHovering ? mouseX * 0.3 : 0;
+        const targetHeadRotX = isHovering ? -mouseY * 0.2 : 0;
+        headGroup.rotation.y += (targetHeadRotY - headGroup.rotation.y) * 0.08;
+        headGroup.rotation.x += (targetHeadRotX - headGroup.rotation.x) * 0.08;
+
+        // Whole-figure scale pop — reads as "noticing you".
+        robot.scale.lerp(isHovering ? HOVER_SCALE : REST_SCALE, 0.08);
+
+        eyeMat.emissiveIntensity = 1.1 + Math.sin(elapsed * 2.2) * 0.4;
         renderer.render(scene, camera);
         stage.classList.add('is-ready');
         if (running) rafId = requestAnimationFrame(tick);
@@ -1285,10 +1339,17 @@ function buildInnovationRobot(THREE, stage) {
     function play() {
         if (running || prefersReducedMotion) { renderStaticFrame(); return; }
         running = true;
+        // Only listen for hover while actually visible and animating —
+        // no raycasting work happens while the panel is off-screen.
+        stage.addEventListener('mousemove', onPointerMove);
+        stage.addEventListener('mouseleave', onPointerLeave);
         rafId = requestAnimationFrame(tick);
     }
     function pause() {
         running = false;
+        stage.removeEventListener('mousemove', onPointerMove);
+        stage.removeEventListener('mouseleave', onPointerLeave);
+        onPointerLeave(); // don't leave it mid-gesture if the panel scrolls away
         if (rafId) cancelAnimationFrame(rafId);
         rafId = null;
     }
