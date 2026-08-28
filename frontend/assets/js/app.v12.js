@@ -1156,20 +1156,33 @@ function buildInnovationRobot(THREE, stage) {
         forearm.position.set(0, -0.98, 0);
         g.add(forearm);
 
-        // Hand / Wrist
+        // Wrist joint
         const wrist = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 12), jointMat);
         wrist.position.set(0, -1.26, 0);
         g.add(wrist);
 
-        const handPalm = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.14, 0.06), bodyMat);
-        handPalm.position.set(0, -1.36, 0.02);
-        g.add(handPalm);
+        // Thin accent cuff marking where the hand attaches — same visual
+        // language as the neck ring, ties the design together.
+        const wristCuff = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.018, 10, 20), accentMat);
+        wristCuff.rotation.x = Math.PI / 2;
+        wristCuff.position.set(0, -1.32, 0);
+        g.add(wristCuff);
 
-        // Fingers
-        [-0.035, 0, 0.035].forEach((fX) => {
-            const finger = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.1, 0.025), accentMat);
-            finger.position.set(fX, -1.46, 0.02);
-            g.add(finger);
+        // Hand — a single clearly-sized rounded mitt rather than individual
+        // fingers, which at this render scale (robot ~250-350px tall) shrink
+        // to a couple of pixels and disappear entirely. This reads as an
+        // actual hand from normal viewing distance instead of nothing.
+        const hand = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), bodyMat);
+        hand.scale.set(0.85, 1.2, 0.75);
+        hand.position.set(0, -1.5, 0.01);
+        g.add(hand);
+
+        // Knuckle ridges — subtle hand-like texture without relying on
+        // individual fingers being legible.
+        [-0.05, 0, 0.05].forEach((fX) => {
+            const knuckle = new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 10), jointMat);
+            knuckle.position.set(fX, -1.4, 0.1);
+            g.add(knuckle);
         });
 
         robot.add(g);
