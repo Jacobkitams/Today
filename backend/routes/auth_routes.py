@@ -39,6 +39,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = models.User(
         email=user.email,
         name=user.name,
+        phone=user.phone,
         hashed_password=hashed_password,
         role=signup_role
     )
@@ -85,7 +86,9 @@ def update_me(
         current_user.hashed_password = auth.get_password_hash(user_update.password)
     if user_update.profile_picture is not None:
         current_user.profile_picture = user_update.profile_picture
-    
+    if user_update.phone is not None:
+        current_user.phone = user_update.phone
+
     db.commit()
     db.refresh(current_user)
     

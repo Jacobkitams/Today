@@ -8232,6 +8232,7 @@ function showSignUp() {
         <div class="auth-modal-body">
             <div class="form-group"><label for="signupName">Full Name</label><input type="text" id="signupName" placeholder="Your full name" autocomplete="name"></div>
             <div class="form-group"><label for="signupEmail">Email</label><input type="email" id="signupEmail" placeholder="you@iuea.ac.ug" autocomplete="email"></div>
+            <div class="form-group"><label for="signupPhone">Phone Number</label><input type="tel" id="signupPhone" placeholder="+256 700 000 000" autocomplete="tel"></div>
             <div class="form-group">
                 <label for="signupPassword">Password</label>
                 <div class="pw-toggle-wrap">
@@ -8283,9 +8284,10 @@ async function signUp() {
     }
     const name = document.getElementById('signupName').value.trim();
     const email = document.getElementById('signupEmail').value.trim();
+    const phone = document.getElementById('signupPhone').value.trim();
     const password = document.getElementById('signupPassword').value;
-    if (!name || !email || !password) { showToast('Please fill all fields', 'error'); return; }
-    const res = await apiPost('/auth/signup', { name, email, password, role: 'registered_user' }, false);
+    if (!name || !email || !phone || !password) { showToast('Please fill all fields', 'error'); return; }
+    const res = await apiPost('/auth/signup', { name, email, phone, password, role: 'registered_user' }, false);
     if (res.ok) {
         showToast('Account created! Please sign in.');
         restoreSignIn();

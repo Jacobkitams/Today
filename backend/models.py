@@ -11,6 +11,7 @@ class User(Base):
     role = Column(String(50), default="registered_user")
     is_active = Column(Boolean, default=True)
     profile_picture = Column(String(255), nullable=True)
+    phone = Column(String(30), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class News(Base):
