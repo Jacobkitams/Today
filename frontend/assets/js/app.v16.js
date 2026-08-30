@@ -799,6 +799,15 @@ function navigateTo(pageId) {
     const link = document.querySelector(`.nav-links a[onclick="navigateTo('${pageId}')"]`);
     if (link) link.classList.add('active-nav');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Keep the URL in sync with the current page so a refresh (or a copied
+    // link) lands back here instead of resetting to home. boot() already
+    // reads this same `?page=` param via handleShareDeepLink() on load —
+    // this was the only missing half of that mechanism.
+    try {
+        const url = pageId === 'home' ? window.location.pathname : `${window.location.pathname}?page=${encodeURIComponent(pageId)}`;
+        window.history.replaceState({ page: pageId }, '', url);
+    } catch (e) { /* ignore — e.g. sandboxed embed without history access */ }
     if (document.getElementById('navLinks').classList.contains('open')) toggleMobileNav();
 
     // Toggle public chrome visibility
