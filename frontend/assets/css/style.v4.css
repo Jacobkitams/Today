@@ -4704,6 +4704,14 @@ nav {
     text-overflow: ellipsis;
     margin-top: 1px;
 }
+.ud-user-phone {
+    font-size: 0.85rem;
+    color: #475569;
+    white-space: nowrap;
+}
+.ud-user-phone-empty {
+    color: #cbd5e1;
+}
 
 /* ── Role Select ── */
 .role-select {

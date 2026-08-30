@@ -3652,6 +3652,7 @@ async function loadAdminUsers() {
                             </div>
                         </div>
                     </td>
+                    <td><span class="ud-user-phone">${u.phone ? escapeHtml(u.phone) : '<span class="ud-user-phone-empty">—</span>'}</span></td>
                     <td>
                         <select class="role-select" onchange="updateUserRole(${u.id}, this.value)">
                             ${selectableRolesForUser(u.role).map(r =>
