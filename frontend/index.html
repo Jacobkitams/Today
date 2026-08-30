@@ -3,6 +3,24 @@
 
 <head>
     <meta charset="UTF-8">
+    <!-- Deep-link restore, step 1 of 2: if the URL asks for a page other
+         than Home, hide the whole document instantly -- before the parser
+         even reaches the (hardcoded-active) #home markup further down, so
+         nothing ever paints Home for a deep-linked page. Step 2 (the
+         reveal, once the right page-section is actually active) is the
+         inline script placed right after the page-section markup in body.
+         Failsafe timeout in case that second script never runs. -->
+    <script>
+        (function () {
+            try {
+                var p = new URLSearchParams(location.search).get('page');
+                if (p && p !== 'home') {
+                    document.documentElement.style.visibility = 'hidden';
+                    setTimeout(function () { document.documentElement.style.visibility = ''; }, 2000);
+                }
+            } catch (e) { /* ignore -- worst case, Home flashes as before */ }
+        })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IUEA Today | International University of East Africa</title>
     <link rel="manifest" href="manifest.json">
@@ -4000,7 +4018,12 @@
          navigateTo() call (via handleShareDeepLink, once boot() resolves)
          still runs afterwards as the authoritative pass that applies auth
          guards and loads page-specific data; this is purely a same-tick
-         visual pre-empt so refreshing lands on the right page instantly. -->
+         visual pre-empt so refreshing lands on the right page instantly.
+
+         Step 2 of 2: the <head> script hid the whole document the instant
+         it saw a non-home ?page=; this reveals it again, but only after
+         the correct page-section is already active -- so nothing between
+         here and there is ever visible, not even for a frame. -->
     <script>
         (function () {
             try {
@@ -4021,6 +4044,9 @@
                     if (applyBtn) applyBtn.style.display = 'none';
                 }
             } catch (e) { /* ignore — app.js's own navigateTo() will still fix things up */ }
+            finally {
+                document.documentElement.style.visibility = '';
+            }
         })();
     </script>
 
