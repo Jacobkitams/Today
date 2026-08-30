@@ -24,6 +24,7 @@ class UserResponse(UserBase):
     role: str
     is_active: bool
     profile_picture: Optional[str] = None
+    notify_on_publish: bool = False
     created_at: Optional[datetime] = None
     class Config:
         from_attributes = True
@@ -33,6 +34,9 @@ class UserRoleUpdate(BaseModel):
 
 class UserStatusUpdate(BaseModel):
     is_active: bool
+
+class UserNotifyUpdate(BaseModel):
+    notify_on_publish: bool
 
 class PublicUserProfile(BaseModel):
     id: int

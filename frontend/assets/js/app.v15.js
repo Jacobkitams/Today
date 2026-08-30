@@ -3660,6 +3660,12 @@ async function loadAdminUsers() {
                             ).join('')}
                         </select>
                     </td>
+                    <td>
+                        <label class="ud-notify-switch" title="Email + WhatsApp alert when new content is published">
+                            <input type="checkbox" ${u.notify_on_publish ? 'checked' : ''} onchange="toggleUserNotify(${u.id}, this.checked)">
+                            <span class="ud-notify-switch-track"></span>
+                        </label>
+                    </td>
                     <td><span class="status-badge ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
                     <td>
                         <div class="ud-actions">
@@ -3720,6 +3726,18 @@ async function toggleUserStatus(userId, currentStatus) {
     const res = await apiPut(`/admin/users/${userId}/status`, { is_active: !currentStatus });
     if (res.ok) { showToast(`User ${!currentStatus ? 'activated' : 'deactivated'}`); loadAdminUsers(); }
     else showToast('Failed to update status', 'error');
+}
+
+async function toggleUserNotify(userId, enabled) {
+    const res = await apiPut(`/admin/users/${userId}/notify`, { notify_on_publish: enabled });
+    if (res.ok) {
+        showToast(enabled ? 'Publish notifications enabled for user' : 'Publish notifications disabled for user');
+        const cached = _adminUsersCache.find(u => u.id === userId);
+        if (cached) cached.notify_on_publish = enabled;
+    } else {
+        showToast('Failed to update notification setting', 'error');
+        loadAdminUsers(); // revert the checkbox to the real state
+    }
 }
 
 // Store users data for the edit modal

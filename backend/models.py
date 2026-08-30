@@ -12,6 +12,9 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     profile_picture = Column(String(255), nullable=True)
     phone = Column(String(30), nullable=True)
+    # Admin-controlled: when true, this user gets an email + WhatsApp message
+    # every time content is published (see notifications_service.notify_subscribers_of_new_content).
+    notify_on_publish = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class News(Base):

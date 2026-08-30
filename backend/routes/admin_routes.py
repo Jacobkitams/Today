@@ -273,6 +273,15 @@ def update_user_status(user_id: int, data: schemas.UserStatusUpdate, db: Session
     db.commit()
     return {"message": f"User {'activated' if data.is_active else 'deactivated'}"}
 
+@router.put("/users/{user_id}/notify")
+def update_user_notify(user_id: int, data: schemas.UserNotifyUpdate, db: Session = Depends(get_db), current_user: User = Depends(require_super_admin)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.notify_on_publish = data.notify_on_publish
+    db.commit()
+    return {"message": f"Publish notifications {'enabled' if data.notify_on_publish else 'disabled'} for user"}
+
 @router.put("/users/{user_id}")
 def update_user(user_id: int, data: schemas.UserUpdate, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: User = Depends(require_super_admin)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -520,14 +529,16 @@ def delete_admin_content(content_type: str, content_id: int, db: Session = Depen
     return {"message": "Content deleted"}
 
 @router.put("/content/{content_type}/{content_id}/approve")
-def approve_content(content_type: str, content_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_admin)):
+def approve_content(content_type: str, content_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: User = Depends(require_admin)):
     _, item = _get_content_item(content_type, content_id, db)
     item.status = "approved"
     if hasattr(item, "updated_at"):
         item.updated_at = datetime.now(timezone.utc)
     db.commit()
     author_id = getattr(item, "author_id", None)
-    notifications_service.notify_content_status(db, author_id, content_type, _activity_title(item, content_type), "approved")
+    title = _activity_title(item, content_type)
+    notifications_service.notify_content_status(db, author_id, content_type, title, "approved")
+    notifications_service.notify_subscribers_of_new_content(db, background_tasks, content_type, title)
     db.commit()
     return {"message": "Content approved"}
 
@@ -691,6 +702,7 @@ def delete_innovation_admin_item(
 def approve_innovation_admin_item(
     content_type: str,
     content_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_innovation_admin),
 ):
@@ -708,6 +720,7 @@ def approve_innovation_admin_item(
     author_id = getattr(item, "author_id", None)
     title = _activity_title(item, content_type)
     notifications_service.notify_content_status(db, author_id, content_type, title, "approved")
+    notifications_service.notify_subscribers_of_new_content(db, background_tasks, content_type, title)
     db.commit()
     return {"message": "Approved"}
 

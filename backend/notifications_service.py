@@ -5,10 +5,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from typing import Optional
 
+from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session
 
 import models
 from models import User
+import external_notifications
 
 ADMIN_ROLES = ["super_admin", "content_editor", "admin", "marketing_admin"]
 
@@ -154,6 +156,42 @@ def notify_content_status(
             f'"{title}" was rejected. You may revise and resubmit.',
             link,
         )
+
+
+def notify_subscribers_of_new_content(
+    db: Session,
+    background_tasks: BackgroundTasks,
+    content_type: str,
+    title: str,
+) -> None:
+    """Email + WhatsApp everyone the admin has opted in to publish alerts.
+
+    Fires once content is approved (goes live) -- not on submission. Actual
+    sending happens in the background so approving content in the admin
+    panel doesn't wait on email/WhatsApp round-trips; see
+    external_notifications.py for what "sending" does before real API
+    credentials are configured (logs + no-ops instead of failing).
+    """
+    subscribers = db.query(User).filter(
+        User.notify_on_publish == True,  # noqa: E712
+        User.is_active == True,  # noqa: E712
+    ).all()
+    if not subscribers:
+        return
+
+    label = CONTENT_TYPE_LABELS.get(content_type, content_type.replace("-", " ").title())
+    subject = f"New {label} on IUEA Today: {title}"
+    message = f'IUEA Today just published a new {label}: "{title}". Check it out: https://today.iuea.ac.ug'
+
+    for user in subscribers:
+        if user.email:
+            background_tasks.add_task(
+                external_notifications.send_email_notification, user.email, subject, message
+            )
+        if user.phone:
+            background_tasks.add_task(
+                external_notifications.send_whatsapp_notification, user.phone, message
+            )
 
 
 def notify_new_message(db: Session, recipient: User, sender: User, body: str) -> None:
