@@ -1476,10 +1476,6 @@ function showAdminTab(tabId, btn) {
     if (tabId === 'overview') {
         setTimeout(initAdminCharts, 50);
     }
-    if (tabId === 'analytics') {
-        const period = document.getElementById('analyticsPeriodSelect')?.value || '30d';
-        loadAdminAnalytics(period).then(() => setTimeout(initAnalyticsCharts, 50));
-    }
     if (tabId === 'messages') {
         initMessaging('admin');
     }
@@ -3396,14 +3392,6 @@ async function loadAdminStats() {
         if (pendingBadge) pendingBadge.textContent = stats.pending_content;
         const kanbanPending = document.getElementById('kanban-pending-count');
         if (kanbanPending) kanbanPending.textContent = stats.pending_content;
-    }
-
-    const analyticsTab = document.getElementById('admin-tab-analytics');
-    if (analyticsTab?.classList.contains('active')) {
-        const period = document.getElementById('analyticsPeriodSelect')?.value || '30d';
-        await loadAdminAnalytics(period);
-        destroyAnalyticsCharts();
-        setTimeout(initAnalyticsCharts, 50);
     }
 }
 

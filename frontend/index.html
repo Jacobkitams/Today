@@ -2354,8 +2354,6 @@
                                 id="nav-pending-badge">0</span></button>
                         <button class="admin-nav-btn" onclick="showAdminTab('users', this)" id="sidebarUsersBtn"><i
                                 data-lucide="users"></i> Users</button>
-                        <button class="admin-nav-btn" onclick="showAdminTab('analytics', this)"><i
-                                data-lucide="bar-chart-2"></i> Analytics</button>
                         <button class="admin-nav-btn" onclick="showAdminTab('messages', this)"><i
                                 data-lucide="message-circle"></i> Messages <span class="nav-badge nav-badge-unread"
                                 id="nav-messages-badge" style="display:none">0</span></button>
@@ -2687,175 +2685,6 @@
                             <div class="pagination-controls">
                                 <button disabled><i data-lucide="chevron-left"></i></button>
                                 <button><i data-lucide="chevron-right"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ANALYTICS TAB -->
-                <div id="admin-tab-analytics" class="admin-tab-content">
-                    <div class="admin-panel-header">
-                        <div>
-                            <h3>Platform Analytics</h3>
-                            <p id="analyticsPeriodLabel">IUEA Today engagement, content pipeline, and system health.</p>
-                        </div>
-                        <div class="admin-filters">
-                            <button type="button" class="btn-outline-small" id="analyticsExportBtn" onclick="exportAnalyticsCsv()">
-                                <i data-lucide="download"></i> Export CSV
-                            </button>
-                            <select class="admin-select" id="analyticsPeriodSelect" onchange="onAnalyticsPeriodChange(this.value)">
-                                <option value="30d" selected>Last 30 Days</option>
-                                <option value="year">This Year</option>
-                                <option value="all">All Time</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- KPI Cards -->
-                    <div class="admin-stats-grid admin-analytics-kpi">
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Total Users</span>
-                                <div class="stat-icon-wrap bg-blue"><i data-lucide="users"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-users">—</div>
-                            <div class="stat-trend positive" id="analytics-users-sub"><span id="analytics-active-users">—</span> active accounts</div>
-                        </div>
-                        <div class="admin-stat-card-pro warning">
-                            <div class="stat-header">
-                                <span class="stat-title">Pending Approvals</span>
-                                <div class="stat-icon-wrap bg-red"><i data-lucide="clock"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-pending">—</div>
-                            <div class="stat-trend negative"><i data-lucide="alert-circle"></i> Awaiting review</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Approved Content</span>
-                                <div class="stat-icon-wrap bg-green"><i data-lucide="check-circle"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-approved">—</div>
-                            <div class="stat-trend positive" id="analytics-rejected-sub"><span id="analytics-rejected">—</span> rejected</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">News & Events</span>
-                                <div class="stat-icon-wrap bg-maroon"><i data-lucide="newspaper"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-news-events">—</div>
-                            <div class="stat-trend positive" id="analytics-news-events-sub">Published stories & calendar items</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Innovation Hub</span>
-                                <div class="stat-icon-wrap bg-gold"><i data-lucide="lightbulb"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-innovation-hub">—</div>
-                            <div class="stat-trend positive" id="analytics-innovation-hub-sub">Innovations, startups & alumni</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Engagement</span>
-                                <div class="stat-icon-wrap bg-purple"><i data-lucide="heart"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-engagement">—</div>
-                            <div class="stat-trend positive" id="analytics-engagement-sub"><span id="analytics-likes">—</span> likes · <span id="analytics-comments">—</span> comments</div>
-                        </div>
-                        <div class="admin-stat-card-pro">
-                            <div class="stat-header">
-                                <span class="stat-title">Publications</span>
-                                <div class="stat-icon-wrap bg-teal"><i data-lucide="book-open"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-publications">—</div>
-                            <div class="stat-trend positive">Research & academic output</div>
-                        </div>
-                        <div class="admin-stat-card-pro" id="analytics-health-card">
-                            <div class="stat-header">
-                                <span class="stat-title">System Health</span>
-                                <div class="stat-icon-wrap bg-green" id="analytics-health-icon"><i data-lucide="activity"></i></div>
-                            </div>
-                            <div class="stat-value" id="analytics-health-status">—</div>
-                            <div class="stat-trend positive" id="analytics-health-sub">Checking services…</div>
-                        </div>
-                    </div>
-
-                    <!-- Charts & Panels -->
-                    <div class="admin-analytics-layout">
-                        <div class="admin-analytics-primary">
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>Content by Module</h3>
-                                    <span class="analytics-panel-meta" id="analyticsContentMeta">Across all submission types</span>
-                                </div>
-                                <div class="chart-container analytics-chart-container">
-                                    <canvas id="analyticsContentByTypeChart"></canvas>
-                                </div>
-                            </div>
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>Approval Pipeline</h3>
-                                    <span class="analytics-panel-meta">Pending · Approved · Rejected</span>
-                                </div>
-                                <div class="chart-container analytics-chart-container analytics-chart-container--sm">
-                                    <canvas id="analyticsApprovalPipelineChart"></canvas>
-                                </div>
-                                <div class="analytics-pipeline-legend" id="analyticsPipelineLegend"></div>
-                            </div>
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>User Roles Distribution</h3>
-                                    <span class="analytics-panel-meta">Registered platform accounts</span>
-                                </div>
-                                <div class="chart-container analytics-chart-container analytics-chart-container--sm">
-                                    <canvas id="analyticsUserRolesChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="admin-analytics-sidebar">
-                            <div class="admin-panel">
-                                <div class="panel-header">
-                                    <h3>Recent Platform Activity</h3>
-                                    <button type="button" class="admin-table-action-btn" onclick="loadAdminAnalytics(document.getElementById('analyticsPeriodSelect').value)">
-                                        <i data-lucide="refresh-cw"></i> Refresh
-                                    </button>
-                                </div>
-                                <div class="activity-feed" id="analyticsActivityFeed">
-                                    <div class="admin-empty-state" style="padding:1.5rem 0;">
-                                        <p style="color:#64748b;margin:0;">Loading activity…</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="admin-panel admin-system-panel">
-                                <div class="panel-header">
-                                    <h3>System Information</h3>
-                                    <span class="analytics-status-dot analytics-status-dot--online" id="analyticsApiDot" title="API status"></span>
-                                </div>
-                                <dl class="admin-system-info">
-                                    <div class="admin-system-info-row">
-                                        <dt>API Status</dt>
-                                        <dd id="analytics-api-status">—</dd>
-                                    </div>
-                                    <div class="admin-system-info-row">
-                                        <dt>Database</dt>
-                                        <dd id="analytics-db-status">—</dd>
-                                    </div>
-                                    <div class="admin-system-info-row">
-                                        <dt>API Version</dt>
-                                        <dd id="analytics-api-version">—</dd>
-                                    </div>
-                                    <div class="admin-system-info-row">
-                                        <dt>Last Updated</dt>
-                                        <dd id="analytics-last-updated">—</dd>
-                                    </div>
-                                    <div class="admin-system-info-row">
-                                        <dt>Backend URL</dt>
-                                        <dd class="admin-system-info-mono" id="analytics-api-url">—</dd>
-                                    </div>
-                                    <div class="admin-system-info-row">
-                                        <dt>Data Period</dt>
-                                        <dd id="analytics-data-period">—</dd>
-                                    </div>
-                                </dl>
                             </div>
                         </div>
                     </div>
@@ -4644,7 +4473,7 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.v17.js"></script>
+    <script src="assets/js/app.v18.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
