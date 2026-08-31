@@ -4029,6 +4029,14 @@
             try {
                 var pageId = new URLSearchParams(window.location.search).get('page');
                 if (!pageId || pageId === 'home') return;
+                // Dashboards need a real, verified session — this script runs
+                // before app.js has had any chance to check one. A saved
+                // token is only a *plausible* session (it could still be
+                // expired/invalid, which navigateTo()'s own guard catches
+                // once boot() actually verifies it) — but with no token at
+                // all, there is certainly no session, so never optimistically
+                // reveal a dashboard's content to an anonymous visitor.
+                if (pageId.endsWith('-dashboard') && !localStorage.getItem('jwt_token')) return;
                 var target = document.getElementById(pageId);
                 if (!target || !target.classList.contains('page-section')) return;
                 document.querySelectorAll('.page-section.active').forEach(function (s) { s.classList.remove('active'); });
@@ -4636,7 +4644,7 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.v16.js"></script>
+    <script src="assets/js/app.v17.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

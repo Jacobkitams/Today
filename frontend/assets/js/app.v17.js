@@ -760,6 +760,11 @@ function navigateTo(pageId) {
     'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role))) {
         showToast('Access denied.', 'error');
         showAuthModal();
+        // The deep-link restore script (index.html) may have already shown
+        // this dashboard optimistically before auth was known — denying
+        // access here must actually hide it, not just pop a dismissible
+        // modal on top of a still-visible admin panel.
+        if (pageId !== 'home') navigateTo('home');
         return;
     }
 
@@ -767,6 +772,7 @@ function navigateTo(pageId) {
     if (isRoleDash && !currentUser) {
         showToast('Please sign in first.', 'error');
         showAuthModal();
+        if (pageId !== 'home') navigateTo('home');
         return;
     }
 
