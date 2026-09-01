@@ -801,6 +801,7 @@ FORM_SUBMISSION_TYPES = [
     "community_join",
     "research_join",
     "startup_join",
+    "request_info",
 ]
 
 FORM_SUBMISSION_STATUSES = ["pending", "reviewed", "approved", "rejected"]

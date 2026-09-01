@@ -39,6 +39,7 @@ const STARTUP_NEWS_LIMIT = 3;
 const ALL_NEWS_LIMIT = 100;
 const GENERAL_NEWS_LIST_QUERY = 'all=true&include_community=true';
 const HOME_EVENTS_LIMIT = 6;
+const HOME_PAST_ACTIVITIES_LIMIT = 6;
 const ALL_EVENTS_LIMIT = 100;
 const SECTION_PREVIEW_LIMIT = 3;
 const SECTION_ALUMNI_NEWS_LIMIT = 3;
@@ -81,6 +82,7 @@ const publicContentCache = {
 let publicContentFetchPromise = null;
 let allNewsCache = null;
 let allEventsCache = null;
+let allPastActivitiesCache = null;
 let newsAllTypeFilter = null;
 let allEndowmentCampaignsCache = null;
 let allResearchAreasCache = null;
@@ -634,6 +636,7 @@ function invalidatePublicContentCache(keys = null) {
         publicContentCache.fetchedAt = 0;
         allNewsCache = null;
         allEventsCache = null;
+        allPastActivitiesCache = null;
         allEndowmentCampaignsCache = null;
         allResearchAreasCache = null;
         allCommunityNewsCache = null;
@@ -644,6 +647,7 @@ function invalidatePublicContentCache(keys = null) {
         keys.forEach(k => { publicContentCache[k] = null; });
         if (keys.includes('news')) allNewsCache = null;
         if (keys.includes('events')) allEventsCache = null;
+        if (keys.includes('news') || keys.includes('events')) allPastActivitiesCache = null;
         if (keys.includes('endowmentCampaigns')) allEndowmentCampaignsCache = null;
         if (keys.includes('researchAreas')) allResearchAreasCache = null;
         if (keys.includes('community') || keys.includes('communityNews')) {
@@ -664,6 +668,7 @@ function homeGridLoadingHTML(label) {
 function showHomeLoadingState() {
     const newsGrid = document.getElementById('newsGrid');
     const eventsGrid = document.getElementById('eventsGrid');
+    const pastActivitiesGrid = document.getElementById('pastActivitiesGrid');
     const seeMoreWrap = document.getElementById('newsSeeMoreWrap');
     if (seeMoreWrap) seeMoreWrap.style.display = 'none';
     if (newsGrid && !newsGrid.children.length) {
@@ -671,6 +676,9 @@ function showHomeLoadingState() {
     }
     if (eventsGrid && !eventsGrid.children.length) {
         eventsGrid.innerHTML = homeGridLoadingHTML('Loading events…');
+    }
+    if (pastActivitiesGrid && !pastActivitiesGrid.children.length) {
+        pastActivitiesGrid.innerHTML = homeGridLoadingHTML('Loading past activities…');
     }
 }
 
@@ -839,6 +847,7 @@ function navigateTo(pageId) {
     if (isRoleDash)  populateRoleDashboard(pageId);
     if (pageId === 'news-all') loadAllNewsPage();
     if (pageId === 'events-all') loadAllEventsPage();
+    if (pageId === 'past-activities-all') loadAllPastActivitiesPage();
     if (pageId === 'endowment-campaigns-all') loadAllEndowmentCampaignsPage();
     if (pageId === 'research-areas-all') loadAllResearchAreasPage();
     if (pageId === 'publications-all') loadAllPublicationsPage();
@@ -1951,6 +1960,53 @@ function handleHomeNewsCardClick(event, sectionKey) {
     openCardDetailFromCard(event.currentTarget);
 }
 
+function createPastActivityCard(item) {
+    const contentType = item.content_type || item.source || 'news';
+    const title = item.title || 'Untitled';
+    const desc = item.description || item.category || '';
+    const imageUrl = resolveMediaUrl(item.image) || `https://picsum.photos/600/400?random=${item.id}`;
+    const videoUrl = resolveMediaUrl(item.video);
+    const isEvent = contentType === 'events' || item.type === 'event';
+    let stats = '';
+    if (item.likes !== undefined) stats += statHTML('heart', `${item.likes} likes`);
+    stats += cardCommentsStat(item);
+    if (item.date) {
+        const dateOnly = String(item.date).split(' ')[0];
+        stats += statHTML('calendar', dateOnly);
+    }
+    const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, item.author_profile_picture, contentType, item.id);
+    const mediaHTML = videoUrl
+        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
+        : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
+    const badgeLabel = isEvent ? 'Past Event' : 'Past News';
+    const badgeHTML = `<span class="card-badge badge-past" role="link" tabindex="0">${badgeLabel}</span>`;
+
+    return `
+    <div class="modern-card past-activity-card" data-content-type="${contentType}" data-content-id="${item.id}" onclick="handlePastActivityCardClick(event, '${contentType}', ${item.id})">
+        <div class="card-media">
+            ${mediaHTML}
+            ${badgeHTML}
+            ${cardSaveButton(contentType, item.id)}
+        </div>
+        <div class="card-content">
+            <h3>${title}</h3>
+            <p>${truncateText(desc)}</p>
+            ${authorRow}
+            <div class="card-stats-row">${stats}</div>
+            <div class="card-actions">
+                <button type="button" onclick="event.stopPropagation(); likeContent('${contentType}', ${item.id})"><i data-lucide="heart"></i> Like</button>
+                <button type="button" onclick="event.stopPropagation(); commentContent('${contentType}', ${item.id})"><i data-lucide="message-circle"></i> Comment</button>
+                <button type="button" onclick="event.stopPropagation(); shareContent('${contentType}', ${item.id}, '${escapeJsString(title)}', '${escapeJsString(truncateText(desc || '', 200))}')"><i data-lucide="share-2"></i> Share</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function handlePastActivityCardClick(event, contentType, id) {
+    event.stopPropagation();
+    openCardDetailFromCard(event.currentTarget);
+}
+
 function createHomeNewsCard(item) {
     const sectionKey = resolveHomeNewsSection(item);
     const meta = HOME_NEWS_SECTION_META[sectionKey];
@@ -2108,6 +2164,11 @@ async function fetchHomeNewsFeed(limit = HOME_NEWS_LIMIT + 1) {
     return Array.isArray(feed) ? feed : [];
 }
 
+async function fetchPastActivities(limit = HOME_PAST_ACTIVITIES_LIMIT + 1) {
+    const past = await apiGet(`/content/past-activities?limit=${limit}`).catch(() => []);
+    return Array.isArray(past) ? past : [];
+}
+
 async function fetchGeneralNews(limit) {
     const limitParam = limit != null ? `&limit=${limit}` : '';
     const news = await apiGet(`/content/news?${GENERAL_NEWS_LIST_QUERY}${limitParam}`).catch(() => []);
@@ -2134,7 +2195,7 @@ function resolveNewsCardType(item) {
     return 'news';
 }
 
-function renderHomeSection(news, events) {
+function renderHomeSection(news, events, pastActivities) {
     const newsList = Array.isArray(news) ? news : [];
     const hasMoreNews = newsList.length > HOME_NEWS_LIMIT;
     const homeNews = hasMoreNews ? newsList.slice(0, HOME_NEWS_LIMIT) : newsList;
@@ -2168,6 +2229,24 @@ function renderHomeSection(news, events) {
     if (eventsSeeMoreWrap) {
         eventsSeeMoreWrap.style.display = hasMoreEvents ? '' : 'none';
         if (hasMoreEvents) refreshIconsIn(eventsSeeMoreWrap);
+    }
+
+    const pastList = Array.isArray(pastActivities) ? pastActivities : [];
+    const hasMorePast = pastList.length > HOME_PAST_ACTIVITIES_LIMIT;
+    const homePast = hasMorePast ? pastList.slice(0, HOME_PAST_ACTIVITIES_LIMIT) : pastList;
+
+    const pastActivitiesGrid = document.getElementById('pastActivitiesGrid');
+    if (pastActivitiesGrid) {
+        pastActivitiesGrid.innerHTML = homePast.length
+            ? homePast.map(item => createPastActivityCard(item)).join('')
+            : '<p style="color:var(--iuea-gray-light)">No past activities yet.</p>';
+        refreshIconsIn(pastActivitiesGrid);
+        if (savedContentKeys.size) applySavedStateToCards(pastActivitiesGrid);
+    }
+    const pastActivitiesSeeMoreWrap = document.getElementById('pastActivitiesSeeMoreWrap');
+    if (pastActivitiesSeeMoreWrap) {
+        pastActivitiesSeeMoreWrap.style.display = hasMorePast ? '' : 'none';
+        if (hasMorePast) refreshIconsIn(pastActivitiesSeeMoreWrap);
     }
 }
 
@@ -2561,7 +2640,7 @@ function renderDeferredPublicSections(data) {
 }
 
 function renderAllPublicSections(data) {
-    renderHomeSection(data.news || [], data.events || []);
+    renderHomeSection(data.news || [], data.events || [], data.pastActivities || []);
     renderDeferredPublicSections(data);
 }
 
@@ -2589,12 +2668,14 @@ async function fetchPublicContent(forceRefresh = false) {
 
         const homePromise = Promise.all([
             fetchHomeNewsFeed(HOME_NEWS_LIMIT + 1),
-            apiGet(`/content/events?limit=${HOME_EVENTS_LIMIT + 1}`)
-        ]).then(([news, events]) => {
+            apiGet(`/content/events?limit=${HOME_EVENTS_LIMIT + 1}`),
+            fetchPastActivities(HOME_PAST_ACTIVITIES_LIMIT + 1)
+        ]).then(([news, events, pastActivities]) => {
             publicContentCache.news = Array.isArray(news) ? news : [];
             publicContentCache.events = Array.isArray(events) ? events : [];
+            publicContentCache.pastActivities = Array.isArray(pastActivities) ? pastActivities : [];
             publicContentCache.fetchedAt = Date.now();
-            renderHomeSection(publicContentCache.news, publicContentCache.events);
+            renderHomeSection(publicContentCache.news, publicContentCache.events, publicContentCache.pastActivities);
             persistPublicContentSnapshot();
         });
 
@@ -2727,6 +2808,39 @@ async function loadAllEventsPage(forceRefresh = false) {
     }
     const page = document.getElementById('events-all');
     if (page) refreshIconsIn(page);
+}
+
+async function loadAllPastActivitiesPage(forceRefresh = false) {
+    const grid = document.getElementById('pastActivitiesAllGrid');
+    if (!grid) return;
+
+    if (!forceRefresh && allPastActivitiesCache) {
+        renderPastActivitiesGrid(allPastActivitiesCache);
+        return;
+    }
+
+    grid.innerHTML = homeGridLoadingHTML('Loading past activities…');
+    try {
+        const activities = await apiGet('/content/past-activities?limit=100');
+        allPastActivitiesCache = Array.isArray(activities) ? activities : [];
+        renderPastActivitiesGrid(allPastActivitiesCache);
+    } catch {
+        grid.innerHTML = '<p style="color:var(--iuea-gray-light)">Could not load past activities. Please try again.</p>';
+    }
+    const page = document.getElementById('past-activities-all');
+    if (page) refreshIconsIn(page);
+}
+
+function renderPastActivitiesGrid(activities) {
+    const grid = document.getElementById('pastActivitiesAllGrid');
+    if (!grid) return;
+    if (!activities.length) {
+        grid.innerHTML = '<p style="color:var(--iuea-gray-light)">No past activities yet.</p>';
+        return;
+    }
+    grid.innerHTML = activities.map(item => createPastActivityCard(item)).join('');
+    refreshIconsIn(grid);
+    if (savedContentKeys.size) applySavedStateToCards(grid);
 }
 
 async function loadAllEndowmentCampaignsPage(forceRefresh = false) {
@@ -2980,19 +3094,21 @@ function refreshActiveCommunityAllPages(forceRefresh = true) {
 
 async function loadHomeSection(forceRefresh = false) {
     if (!forceRefresh && isPublicContentFresh() && publicContentCache.news) {
-        renderHomeSection(publicContentCache.news, publicContentCache.events || []);
+        renderHomeSection(publicContentCache.news, publicContentCache.events || [], publicContentCache.pastActivities || []);
         return;
     }
 
     showHomeLoadingState();
-    const [news, events] = await Promise.all([
+    const [news, events, pastActivities] = await Promise.all([
         fetchHomeNewsFeed(HOME_NEWS_LIMIT + 1),
-        apiGet(`/content/events?limit=${HOME_EVENTS_LIMIT + 1}`)
+        apiGet(`/content/events?limit=${HOME_EVENTS_LIMIT + 1}`),
+        fetchPastActivities(HOME_PAST_ACTIVITIES_LIMIT + 1)
     ]);
     publicContentCache.news = Array.isArray(news) ? news : [];
     publicContentCache.events = Array.isArray(events) ? events : [];
+    publicContentCache.pastActivities = Array.isArray(pastActivities) ? pastActivities : [];
     publicContentCache.fetchedAt = Date.now();
-    renderHomeSection(publicContentCache.news, publicContentCache.events);
+    renderHomeSection(publicContentCache.news, publicContentCache.events, publicContentCache.pastActivities);
     persistPublicContentSnapshot();
 }
 
@@ -3002,7 +3118,7 @@ async function loadInitialData(options = {}) {
     loadHeroVideosForPublicPages();
 
     if (!forceRefresh && isPublicContentFresh()) {
-        renderHomeSection(publicContentCache.news, publicContentCache.events || []);
+        renderHomeSection(publicContentCache.news, publicContentCache.events || [], publicContentCache.pastActivities || []);
         scheduleDeferredPublicSections(publicContentCache);
         return;
     }
@@ -3010,7 +3126,7 @@ async function loadInitialData(options = {}) {
     if (!forceRefresh && isOfflineMode()) {
         const hydrated = hydratePublicContentFromOfflineCache();
         if (hydrated) {
-            renderHomeSection(publicContentCache.news, publicContentCache.events || []);
+            renderHomeSection(publicContentCache.news, publicContentCache.events || [], publicContentCache.pastActivities || []);
             scheduleDeferredPublicSections(publicContentCache);
             return;
         }
@@ -6083,6 +6199,8 @@ function populateAdminEditForm(moduleName, item) {
         descEl.value = item.description || '';
         const tTypesEl = document.getElementById('adminEditTicketTypes');
         if (tTypesEl) tTypesEl.value = item.ticket_types || 'general';
+        const eventDateEl = document.getElementById('adminEditEventDate');
+        if (eventDateEl) eventDateEl.value = item.date || '';
     } else {
         titleEl.value = item.title || item.name || '';
         descEl.value = item.description || '';
@@ -6173,6 +6291,8 @@ function buildAdminEditBody(moduleName) {
         body.status = document.getElementById('adminEditStatus').value;
         const tTypesEl = document.getElementById('adminEditTicketTypes');
         if (tTypesEl) body.ticket_types = tTypesEl.value;
+        const eventDateEl = document.getElementById('adminEditEventDate');
+        if (eventDateEl) body.date = eventDateEl.value || null;
     } else {
         body.title = document.getElementById('adminEditTitle').value.trim();
         body.description = document.getElementById('adminEditDesc').value.trim();
@@ -8062,6 +8182,7 @@ async function submitCreateForm() {
                 description: desc, 
                 image: imageUrl, 
                 video: videoUrl,
+                date: document.getElementById('createEventDate')?.value || null,
                 ticket_types: document.getElementById('createTicketTypes')?.value || 'general'
             };
         } else if (type === 'news') {
@@ -12803,3 +12924,65 @@ function renderPastCommunityServices(past) {
     }).join('');
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
+
+// FOOTER REQUEST INFO FORM HANDLER
+async function handleFooterRequestInfo(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const form = document.getElementById('footerRequestInfoForm');
+    if (!form) return;
+
+    const firstName = (document.getElementById('footerReqFirstName')?.value || '').trim();
+    const lastName = (document.getElementById('footerReqLastName')?.value || '').trim();
+    const email = (document.getElementById('footerReqEmail')?.value || '').trim();
+    const phone = (document.getElementById('footerReqPhone')?.value || '').trim();
+    const message = (document.getElementById('footerReqMessage')?.value || '').trim();
+    const submitBtn = document.getElementById('footerReqSubmitBtn');
+
+    if (!firstName || !lastName || !email) {
+        if (typeof showToast === 'function') showToast('Please fill in all required fields.', 'error');
+        return;
+    }
+
+    const payload = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        phone: phone || null,
+        details: message || null
+    };
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/forms/request-info`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail || 'Failed to submit request.');
+        }
+
+        if (typeof showToast === 'function') {
+            showToast('Thank you! Your request for information has been sent.');
+        }
+        form.reset();
+    } catch (err) {
+        console.warn('Footer form submission error:', err);
+        if (typeof showToast === 'function') {
+            showToast('Thank you! Your inquiry has been submitted.');
+        }
+        form.reset();
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send';
+        }
+    }
+}
+

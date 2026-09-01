@@ -145,6 +145,20 @@ def submit_startup_join(item: schemas.FormSubmissionCreate, db: Session = Depend
     return _submission_to_response(submission, db)
 
 
+@router.post("/request-info", response_model=schemas.FormSubmissionResponse)
+def submit_request_info(item: schemas.FormSubmissionCreate, db: Session = Depends(get_db)):
+    submission = _create_submission(
+        db,
+        "request_info",
+        first_name=item.first_name,
+        last_name=item.last_name,
+        email=item.email,
+        phone=item.phone,
+        details=item.details,
+    )
+    return _submission_to_response(submission, db)
+
+
 @router.post("/donation-pledge", response_model=schemas.FormSubmissionResponse)
 def submit_donation_pledge(item: schemas.DonationPledgeCreate, db: Session = Depends(get_db)):
     first_name = (item.first_name or item.name or "").strip()

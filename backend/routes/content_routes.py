@@ -297,7 +297,13 @@ def get_my_news(db: Session = Depends(get_db), current_user: User = Depends(get_
 
 @router.get("/events", response_model=List[schemas.EventResponse])
 def get_events(limit: Optional[int] = None, db: Session = Depends(get_db)):
-    q = db.query(models.Event).filter(models.Event.status == "approved").order_by(models.Event.created_at.desc())
+    today = datetime.now().strftime("%Y-%m-%d")
+    q = db.query(models.Event).filter(
+        models.Event.status == "approved",
+        models.Event.date.isnot(None),
+        models.Event.date != "",
+        models.Event.date >= today
+    ).order_by(models.Event.created_at.desc())
     if limit is not None and limit > 0:
         q = q.limit(limit)
     items = q.all()
@@ -310,6 +316,74 @@ def get_events(limit: Optional[int] = None, db: Session = Depends(get_db)):
             data = data.model_copy(update={"author_name": info.get("name"), "author_profile_picture": info.get("profile_picture")})
         result.append(data)
     return result
+
+@router.get("/past-activities")
+def get_past_activities(limit: Optional[int] = None, db: Session = Depends(get_db)):
+    from sqlalchemy import or_
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    past_news = db.query(models.News).filter(
+        models.News.status == "approved"
+    ).order_by(models.News.created_at.desc())
+
+    past_events = db.query(models.Event).filter(
+        models.Event.status == "approved",
+        or_(
+            models.Event.date < today,
+            models.Event.date.is_(None),
+            models.Event.date == ""
+        )
+    ).order_by(models.Event.created_at.desc())
+
+    news_items = past_news.all()
+    event_items = past_events.all()
+
+    combined = []
+    for item in news_items:
+        combined.append({
+            "id": item.id,
+            "title": item.title,
+            "description": item.description,
+            "image": item.image,
+            "video": getattr(item, 'video', None),
+            "likes": item.likes or 0,
+            "source": "news",
+            "content_type": "news",
+            "author_id": item.author_id,
+            "date": str(item.created_at) if item.created_at else None,
+            "created_at": item.created_at,
+        })
+
+    for item in event_items:
+        combined.append({
+            "id": item.id,
+            "title": item.title,
+            "description": item.description,
+            "image": item.image,
+            "video": getattr(item, 'video', None),
+            "likes": item.likes or 0,
+            "source": "events",
+            "content_type": "events",
+            "author_id": item.author_id,
+            "date": item.date,
+            "created_at": item.created_at,
+        })
+
+    author_ids = {item["author_id"] for item in combined if item["author_id"]}
+    author_names = _resolve_author_names(db, list(author_ids))
+
+    for item in combined:
+        if item["author_id"]:
+            info = author_names.get(item["author_id"]) or {}
+            item["author_name"] = info.get("name")
+            item["author_profile_picture"] = info.get("profile_picture")
+
+    combined.sort(key=lambda x: x.get("created_at") or "", reverse=True)
+
+    if limit is not None and limit > 0:
+        combined = combined[:limit]
+
+    return combined
 
 @router.get("/innovations", response_model=List[schemas.InnovationResponse])
 def get_innovations(db: Session = Depends(get_db)):

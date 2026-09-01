@@ -210,6 +210,19 @@
                 </div>
             </section>
 
+            <section class="tab-section" style="padding-top: 1rem;">
+                <div class="custom-section-heading" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 3px; height: 20px; background-color: var(--iuea-maroon);"></div>
+                    <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--iuea-maroon); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">📜 PAST ACTIVITIES</h2>
+                </div>
+                <div id="pastActivitiesGrid" class="content-grid cols-3 section-news-grid"></div>
+                <div class="section-footer" id="pastActivitiesSeeMoreWrap" style="display:none">
+                    <a href="#" class="see-more-link" onclick="navigateTo('past-activities-all'); return false;">
+                        See more <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+            </section>
+
             <section class="tab-section" style="padding-top: 2rem; padding-bottom: 4rem;">
                 <div style="background: linear-gradient(135deg, #a62121 0%, #700000 100%); color: white; padding: 3rem 2rem; border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(128,0,0,0.15);">
                     <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: white;">Ready to Make an Impact?</h3>
@@ -675,6 +688,21 @@
                     <p>All summits, homecomings, and campus gatherings across IUEA.</p>
                 </div>
                 <div id="eventsAllGrid" class="content-grid cols-3"></div>
+            </section>
+        </div>
+
+        <!-- ALL PAST ACTIVITIES PAGE -->
+        <div id="past-activities-all" class="page-section">
+            <section class="tab-section news-all-page">
+                <a class="news-back-link" href="#" onclick="navigateTo('home'); return false;">
+                    <i data-lucide="arrow-left"></i> Back to Home
+                </a>
+                <div class="section-intro">
+                    <span class="eyebrow">Archive</span>
+                    <h2>Past Activities</h2>
+                    <p>Historical news, posts, and events from IUEA.</p>
+                </div>
+                <div id="pastActivitiesAllGrid" class="content-grid cols-3"></div>
             </section>
         </div>
 
@@ -3716,6 +3744,10 @@
                     </div>
                     <div id="adminEditEventExtras" class="form-row" style="display:none;">
                         <div class="form-group">
+                            <label>Event Date</label>
+                            <input type="date" id="adminEditEventDate">
+                        </div>
+                        <div class="form-group">
                             <label>Ticket Types</label>
                             <select id="adminEditTicketTypes">
                                 <option value="general">General (Free) Only</option>
@@ -4006,6 +4038,10 @@
                         </div>
                     </div>
                     <div id="createEventExtras" class="form-row" style="display:none;">
+                        <div class="form-group">
+                            <label>Event Date</label>
+                            <input type="date" id="createEventDate">
+                        </div>
                         <div class="form-group">
                             <label>Ticket Types</label>
                             <select id="createTicketTypes">
@@ -4321,70 +4357,109 @@
     <a href="https://iuea.ac.ug/" target="_blank" rel="noopener noreferrer" id="fixedApplyBtn" class="fixed-apply-btn">🎓 Apply to IUEA Now</a>
 
     <footer class="site-footer">
-        <div class="container footer-columns">
-            <div class="footer-col footer-col-links">
-                <img id="publicFooterLogo" src="assets/images/iuea-logo.png" alt="IUEA Logo" class="footer-logo">
-                <h4>Quick Links</h4>
-                <div class="footer-links-grid">
-                    <nav aria-label="Platform links">
-                        <a href="#" onclick="navigateTo('home'); return false;">Home</a>
-                        <a href="#" onclick="navigateTo('innovation'); return false;">Innovations</a>
-                        <a href="#" onclick="navigateToInnovationStartups(); return false;">Startups</a>
-                        <a href="#" onclick="navigateTo('research'); return false;">Research</a>
-                    </nav>
-                    <nav aria-label="Community links">
-                        <a href="#" onclick="navigateTo('community'); return false;">Community</a>
-                        <a href="#" onclick="navigateTo('alumni'); return false;">Alumni Network</a>
-                        <a href="#" onclick="navigateTo('events-all'); return false;">Events</a>
-                        <a href="#" onclick="navigateTo('endowment'); return false;">Endowment Fund</a>
-                        <a href="#" onclick="navigateTo('techpark'); return false;">Tech Park</a>
-                    </nav>
+        <div class="footer-main-wrap">
+            <div class="container footer-columns-grid">
+                <!-- Column 1: About Us -->
+                <div class="footer-col footer-col-about">
+                    <h3 class="footer-col-title">About Us</h3>
+                    <p class="footer-about-text">
+                        The International University of East Africa (IUEA) is a private University licensed by the Uganda National Council for Higher Education (NCHE).
+                    </p>
                 </div>
-            </div>
 
-            <div class="footer-col footer-col-contact">
-                <h4>Contact</h4>
-                <p><i data-lucide="map-pin"></i> <span id="footerContactAddress">Kansanga, Kampala, Uganda</span></p>
-                <p><i data-lucide="mail"></i> <a id="footerContactEmail" href="mailto:info@iuea.ac.ug">info@iuea.ac.ug</a></p>
-                <p id="footerContactPhoneWrap"><i data-lucide="phone"></i> <span id="footerContactPhone">+256 700 000 000</span></p>
-                <div class="footer-socials" id="footerSocialIcons">
-                    <a href="https://www.facebook.com/IUEAUganda/" id="footerFacebook" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    </a>
-                    <a href="https://x.com/iuea_uganda" id="footerTwitter" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    </a>
-                    <a href="https://ug.linkedin.com/school/international-university-of-east-africa-iuea-/?original_referer=https%3A%2F%2Fwww.linkedin.com%2F" id="footerLinkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                    </a>
-                    <a href="https://www.instagram.com/iuea_uganda/" id="footerInstagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                    </a>
-                    <a href="https://www.youtube.com/channel/UC9rcgz7vmK8MGruEbcDWdbA" id="footerYoutube" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                    </a>
+                <!-- Column 2: Request Info Form -->
+                <div class="footer-col footer-col-request">
+                    <h3 class="footer-col-title">Request Info</h3>
+                    <form id="footerRequestInfoForm" class="footer-request-form" onsubmit="handleFooterRequestInfo(event)">
+                        <div class="footer-form-group">
+                            <input type="text" id="footerReqFirstName" name="firstName" class="footer-form-input" placeholder="First Name *" required autocomplete="given-name">
+                        </div>
+                        <div class="footer-form-group">
+                            <input type="text" id="footerReqLastName" name="lastName" class="footer-form-input" placeholder="Last Name *" required autocomplete="family-name">
+                        </div>
+                        <div class="footer-form-group">
+                            <input type="email" id="footerReqEmail" name="email" class="footer-form-input" placeholder="Email *" required autocomplete="email">
+                        </div>
+                        <div class="footer-form-group footer-phone-group">
+                            <div class="footer-phone-flag-wrap" aria-hidden="true">
+                                <svg viewBox="0 0 24 16" width="22" height="15" class="ug-flag-svg" focusable="false">
+                                    <rect width="24" height="2.67" y="0" fill="#000000"/>
+                                    <rect width="24" height="2.67" y="2.67" fill="#FCDC04"/>
+                                    <rect width="24" height="2.67" y="5.34" fill="#D90000"/>
+                                    <rect width="24" height="2.67" y="8.01" fill="#000000"/>
+                                    <rect width="24" height="2.67" y="10.68" fill="#FCDC04"/>
+                                    <rect width="24" height="2.67" y="13.35" fill="#D90000"/>
+                                    <circle cx="12" cy="8" r="3.2" fill="#FFFFFF"/>
+                                    <circle cx="12" cy="8" r="1.6" fill="#111111"/>
+                                </svg>
+                            </div>
+                            <input type="tel" id="footerReqPhone" name="phone" class="footer-form-input footer-phone-input" placeholder="+256 0712 345678" autocomplete="tel">
+                        </div>
+                        <div class="footer-form-group">
+                            <textarea id="footerReqMessage" name="message" class="footer-form-input footer-form-textarea" placeholder="Message" rows="3"></textarea>
+                        </div>
+                        <button type="submit" id="footerReqSubmitBtn" class="footer-submit-btn">Send</button>
+                    </form>
                 </div>
-            </div>
 
-            <div class="footer-col footer-col-map">
-                <h4>Find Us</h4>
-                <div class="footer-map-embed">
-                    <iframe
-                        src="https://www.google.com/maps?q=International+University+of+East+Africa,+Kansanga,+Kampala,+Uganda&output=embed"
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade"
-                        title="IUEA campus location map"></iframe>
+                <!-- Column 3: Quick Links -->
+                <div class="footer-col footer-col-links">
+                    <h3 class="footer-col-title">Quick Links</h3>
+                    <ul class="footer-quick-links" aria-label="Quick Links">
+                        <li><a href="#" onclick="navigateTo('home'); return false;"><span class="chevron" aria-hidden="true">&#8250;</span> Home</a></li>
+                        <li><a href="#" onclick="navigateTo('innovation'); return false;"><span class="chevron" aria-hidden="true">&#8250;</span> Innovation</a></li>
+                        <li><a href="#" onclick="navigateTo('alumni'); return false;"><span class="chevron" aria-hidden="true">&#8250;</span> Alumni</a></li>
+                        <li><a href="#" onclick="navigateTo('endowment'); return false;"><span class="chevron" aria-hidden="true">&#8250;</span> Endowment</a></li>
+                        <li><a href="#" onclick="navigateTo('community'); return false;"><span class="chevron" aria-hidden="true">&#8250;</span> Community</a></li>
+                        <li><a href="#" onclick="navigateTo('conference'); return false;"><span class="chevron" aria-hidden="true">&#8250;</span> Conference</a></li>
+                        <li><a href="#" onclick="navigateTo('community-service'); return false;"><span class="chevron" aria-hidden="true">&#8250;</span> Community Service</a></li>
+                        <li><a href="#" onclick="navigateTo('sports'); return false;"><span class="chevron" aria-hidden="true">&#8250;</span> Sports</a></li>
+                        <li><a href="#" onclick="navigateTo('research'); return false;"><span class="chevron" aria-hidden="true">&#8250;</span> Research</a></li>
+                        <li><a href="#" onclick="navigateTo('techpark'); return false;"><span class="chevron" aria-hidden="true">&#8250;</span> Tech Park</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: Our Contact Details -->
+                <div class="footer-col footer-col-contact">
+                    <h3 class="footer-col-title">Our Contact Details</h3>
+                    <ul class="footer-contact-list" aria-label="Contact Information">
+                        <li class="footer-contact-item">
+                            <span class="footer-contact-icon" aria-hidden="true"><i data-lucide="map-pin"></i></span>
+                            <div class="footer-contact-text" id="footerContactAddress">
+                                Plot No. 1112/1121, Kansanga<br>
+                                Ggaba Rd, P.O.Box 35502,<br>
+                                Kampala, Uganda
+                            </div>
+                        </li>
+                        <li class="footer-contact-item" id="footerContactPhoneWrap">
+                            <span class="footer-contact-icon" aria-hidden="true"><i data-lucide="phone"></i></span>
+                            <div class="footer-contact-text">
+                                Toll-Free : 800 335 335 / Mobile<br>
+                                &amp; WhatsApp : (+256) 705 722<br>
+                                300 / E-mail : <a href="mailto:Info@iuea.ac.ug" id="footerContactEmail">Info@iuea.ac.ug</a>
+                            </div>
+                        </li>
+                        <li class="footer-contact-item">
+                            <span class="footer-contact-icon" aria-hidden="true"><i data-lucide="mail"></i></span>
+                            <div class="footer-contact-text">
+                                <a href="mailto:apply@iuea.ac.ug">apply@iuea.ac.ug</a>
+                            </div>
+                        </li>
+                        <li class="footer-contact-item">
+                            <span class="footer-contact-icon" aria-hidden="true"><i data-lucide="clock"></i></span>
+                            <div class="footer-contact-text">
+                                8.00 AM &ndash; 5.00 PM
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
 
-        <div class="footer-bottom">
-            <div class="container footer-bottom-inner">
-                <p id="footerCopyright">&copy; 2026 International University of East Africa. All rights reserved.</p>
-                <nav class="footer-legal" aria-label="Legal links">
-                    <a href="#" onclick="return false;">Privacy Policy</a>
-                    <a href="#" onclick="return false;">Terms of Service</a>
-                </nav>
+        <!-- Deep Maroon Bottom Bar -->
+        <div class="footer-bottom-bar">
+            <div class="container footer-bottom-content">
+                <p id="footerCopyright">&copy; 2025 International University Of East Africa / Certified By The Uganda National Council For Higher Education</p>
             </div>
         </div>
     </footer>
