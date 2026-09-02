@@ -8478,14 +8478,9 @@ function updateUIForUser() {
         if (display) display.textContent = displayName;
         
         if (avatarImg && avatarIcon) {
-            if (currentUser.profile_picture) {
-                avatarImg.src = resolveMediaUrl(currentUser.profile_picture);
-                avatarImg.classList.remove('hidden');
-                avatarIcon.classList.add('hidden');
-            } else {
-                avatarImg.classList.add('hidden');
-                avatarIcon.classList.remove('hidden');
-            }
+            avatarImg.src = currentUser.profile_picture ? resolveMediaUrl(currentUser.profile_picture) : getInitialsAvatarSvgUrl(currentUser.name, currentUser.id);
+            avatarImg.classList.remove('hidden');
+            avatarIcon.classList.add('hidden');
         }
 
         const sidebarAvatars = [
@@ -8504,14 +8499,9 @@ function updateUIForUser() {
             const imgEl = document.getElementById(img);
             const iconEl = document.getElementById(icon);
             if (imgEl && iconEl) {
-                if (currentUser.profile_picture) {
-                    imgEl.src = resolveMediaUrl(currentUser.profile_picture);
-                    imgEl.classList.remove('hidden');
-                    iconEl.classList.add('hidden');
-                } else {
-                    imgEl.classList.add('hidden');
-                    iconEl.classList.remove('hidden');
-                }
+                imgEl.src = currentUser.profile_picture ? resolveMediaUrl(currentUser.profile_picture) : getInitialsAvatarSvgUrl(currentUser.name, currentUser.id);
+                imgEl.classList.remove('hidden');
+                iconEl.classList.add('hidden');
             }
         });
 
@@ -10956,6 +10946,28 @@ async function makeDonation() {
     }
 }
 
+function getInitialsAvatarSvgUrl(name, id) {
+    const safeName = (name || 'User').trim();
+    const initials = safeName.substring(0, 2).toUpperCase();
+    const numId = parseInt(id) || 1;
+    const gradients = [
+        ['#6366f1','#8b5cf6'],['#0ea5e9','#6366f1'],['#f59e0b','#ef4444'],
+        ['#10b981','#0ea5e9'],['#ec4899','#8b5cf6'],['#f97316','#f59e0b']
+    ];
+    const [c1, c2] = gradients[numId % gradients.length];
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+        <defs>
+            <linearGradient id="g${numId}" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${c1};stop-opacity:1" />
+                <stop offset="100%" style="stop-color:${c2};stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <circle cx="40" cy="40" r="40" fill="url(#g${numId})" />
+        <text x="50%" y="50%" font-family="sans-serif" font-size="32" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="central">${initials}</text>
+    </svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+}
+
 function populateProfileForm(prefix) {
     const nameInput = document.getElementById(`${prefix}ProfileName`);
     const emailInput = document.getElementById(`${prefix}ProfileEmail`);
@@ -10963,8 +10975,8 @@ function populateProfileForm(prefix) {
     if (nameInput) nameInput.value = currentUser?.name || '';
     if (emailInput) emailInput.value = currentUser?.email || '';
     if (picPreview) {
-        picPreview.src = currentUser?.profile_picture ? resolveMediaUrl(currentUser.profile_picture) : 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2021v-2a4%204%200%200%200-4-4H8a4%204%200%200%200-4%204v2%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%227%22%20r%3D%224%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E';
-        picPreview.style.padding = currentUser?.profile_picture ? '0' : '10px';
+        picPreview.src = currentUser?.profile_picture ? resolveMediaUrl(currentUser.profile_picture) : getInitialsAvatarSvgUrl(currentUser?.name, currentUser?.id);
+        picPreview.style.padding = '0';
     }
 }
 
@@ -10987,6 +10999,12 @@ function previewProfilePicture(input, prefix = 'ru') {
             }
         };
         reader.readAsDataURL(input.files[0]);
+    } else {
+        const preview = document.getElementById(`${prefix}ProfilePicturePreview`);
+        if (preview) {
+            preview.src = currentUser?.profile_picture ? resolveMediaUrl(currentUser.profile_picture) : getInitialsAvatarSvgUrl(currentUser?.name, currentUser?.id);
+            preview.style.padding = '0';
+        }
     }
 }
 
