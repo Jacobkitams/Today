@@ -23,7 +23,7 @@
                 <a href="index.html">Home</a>
                 <a href="about.html">About Us</a>
                 <a href="journals.html">Journals</a>
-                <a href="news.html" class="active">News & Updates</a>
+                <a href="news.html" class="active">News &amp; Updates</a>
                 <a href="contact.html">Contact Us</a>
             </nav>
             <div class="nav-actions">
@@ -33,70 +33,294 @@
         </div>
     </header>
 
+    <!-- Page Hero -->
     <section class="page-hero">
         <div class="container">
-            <span class="page-hero-eyebrow"><i class="ph ph-megaphone"></i> Announcements & Calls for Papers</span>
-            <h1 data-reveal>News & Updates</h1>
-            <p data-reveal data-reveal-delay="120">Journal calls, editorial notices, and publishing news from IUEA
-                Journals.</p>
+            <span class="page-hero-eyebrow"><i class="ph ph-megaphone"></i> Editorial Announcements &amp; Calls</span>
+            <h1 data-reveal>News &amp; Updates</h1>
+            <p data-reveal data-reveal-delay="120">Official calls for manuscripts, special issue invitations, editorial board notices, and academic publishing milestones from IUEA Journals.</p>
         </div>
     </section>
 
-    <section class="news-section">
+    <!-- News & Updates Hub -->
+    <section class="news-hub-section">
         <div class="container">
-            <div class="news-grid">
-                <div class="news-card" data-reveal data-reveal-delay="0">
-                    <div class="news-img">
-                        <i class="ph ph-newspaper" style="font-size: 5rem; color: #ccc;"></i>
-                        <span class="news-tag">IUEA-B&amp;M UPDATES</span>
-                    </div>
-                    <div class="news-content">
-                        <div class="news-meta">
-                            <span><i class="ph ph-calendar-blank"></i> 4 months ago</span>
-                            <span><i class="ph ph-eye"></i> 40 reads</span>
+
+            <!-- 1. FEATURED UPDATE (Top Spotlight Card) -->
+            <div class="featured-update-wrapper" data-reveal>
+                <article class="featured-update-card">
+                    <div class="featured-update-content">
+                        <div class="featured-badges">
+                            <span class="badge-featured"><i class="ph ph-sparkle"></i> FEATURED CALL</span>
+                            <span class="badge-journal badge-bm">IUEA-B&amp;M EDITION</span>
                         </div>
-                        <h3>CALL FOR MANUSCRIPTS (BUSINESS &amp; MANAGEMENT EDITION)</h3>
-                        <p>Dear researchers, scholars, and authors. The IUEA Journal of Business and Management is an
-                            open access, peer-reviewed journal that aims to publish contemporary research...</p>
-                        <a href="submit.html" class="btn btn-pill">Submit your manuscript <i
-                                class="ph ph-arrow-right"></i></a>
+                        <h2>Call for Manuscripts: Contemporary Perspectives in Business, Technology &amp; Sustainable Growth</h2>
+                        <p>The IUEA Journal of Business and Management invites original empirical research, systematic reviews, and policy-relevant case studies for its upcoming peer-reviewed volume. We welcome cross-disciplinary scholarship shaping modern commerce across Africa and emerging global markets.</p>
+                        
+                        <div class="update-meta-row">
+                            <span><i class="ph ph-calendar-blank"></i> March 2025</span>
+                            <span><i class="ph ph-eye"></i> 184 reads</span>
+                            <span><i class="ph ph-clock"></i> 4 min read</span>
+                            <span class="meta-deadline"><i class="ph ph-hourglass-high"></i> Deadline: June 30, 2025</span>
+                        </div>
+
+                        <div class="featured-actions">
+                            <a href="submit.html" class="btn btn-accent"><i class="ph ph-upload-simple"></i> Submit Manuscript</a>
+                            <a href="#update-grid" class="btn btn-outline-white">Browse All Dispatches <i class="ph ph-arrow-down"></i></a>
+                        </div>
                     </div>
+
+                    <!-- Visual Graphic Plate with Acronym Watermark (No Clipart!) -->
+                    <div class="featured-update-visual" aria-hidden="true">
+                        <div class="visual-watermark">B&amp;M</div>
+                        <div class="visual-seal">
+                            <div class="seal-icon"><i class="ph ph-chart-line-up"></i></div>
+                            <span class="seal-vol">VOL. 8 &middot; ISSUE 1</span>
+                            <span class="seal-freq">Biannual &middot; Open Access</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- 2. FILTER BAR -->
+            <div class="news-filter-wrapper" id="update-grid" data-reveal data-reveal-delay="100">
+                <div class="filter-header">
+                    <div class="filter-heading">
+                        <span class="filter-eyebrow">BROWSE BY JOURNAL</span>
+                        <h3>All Editorial Dispatches</h3>
+                    </div>
+                    <span class="filter-live-counter" id="filterLiveCounter">Showing <strong id="visibleCount">6</strong> of <strong id="totalCount">8</strong> updates</span>
                 </div>
-                <div class="news-card" data-reveal data-reveal-delay="150">
-                    <div class="news-img">
-                        <i class="ph ph-newspaper" style="font-size: 5rem; color: #ccc;"></i>
-                        <span class="news-tag">IUEA-S&amp;T UPDATES</span>
-                    </div>
-                    <div class="news-content">
-                        <div class="news-meta">
-                            <span><i class="ph ph-calendar-blank"></i> 4 months ago</span>
-                            <span><i class="ph ph-eye"></i> 39 reads</span>
-                        </div>
-                        <h3>CALL FOR MANUSCRIPTS (SCIENCE &amp; TECH EDITION)</h3>
-                        <p>The International Journal of Science and Technology is an open access, peer-reviewed journal
-                            that aims to publish contemporary and novel research in applied sciences...</p>
-                        <a href="submit.html" class="btn btn-pill">Submit your manuscript <i
-                                class="ph ph-arrow-right"></i></a>
-                    </div>
-                </div>
-                <div class="news-card" data-reveal data-reveal-delay="300">
-                    <div class="news-img">
-                        <i class="ph ph-newspaper" style="font-size: 5rem; color: #ccc;"></i>
-                        <span class="news-tag">IUEA-LAW UPDATES</span>
-                    </div>
-                    <div class="news-content">
-                        <div class="news-meta">
-                            <span><i class="ph ph-calendar-blank"></i> 4 months ago</span>
-                            <span><i class="ph ph-eye"></i> 56 reads</span>
-                        </div>
-                        <h3>CALL FOR MANUSCRIPTS (LAW EDITION)</h3>
-                        <p>Back to announcements: IUEA Law Journal is the official journal of the Faculty of Law,
-                            International University of East Africa...</p>
-                        <a href="submit.html" class="btn btn-pill">Submit your manuscript <i
-                                class="ph ph-arrow-right"></i></a>
-                    </div>
+
+                <div class="filter-pills-bar" role="tablist" aria-label="Filter updates by journal">
+                    <button type="button" class="filter-pill active" data-filter="all" role="tab" aria-selected="true">
+                        <span>All Updates</span>
+                        <span class="pill-count" id="pillCountAll">8</span>
+                    </button>
+                    <button type="button" class="filter-pill" data-filter="bm" role="tab" aria-selected="false">
+                        <span class="pill-dot dot-bm"></span>
+                        <span>IUEA-B&amp;M</span>
+                    </button>
+                    <button type="button" class="filter-pill" data-filter="st" role="tab" aria-selected="false">
+                        <span class="pill-dot dot-st"></span>
+                        <span>IUEA-S&amp;T</span>
+                    </button>
+                    <button type="button" class="filter-pill" data-filter="law" role="tab" aria-selected="false">
+                        <span class="pill-dot dot-law"></span>
+                        <span>IUEA-LAW</span>
+                    </button>
+                    <button type="button" class="filter-pill" data-filter="hes" role="tab" aria-selected="false">
+                        <span class="pill-dot dot-hes"></span>
+                        <span>IUEA-HES</span>
+                    </button>
+                    <button type="button" class="filter-pill" data-filter="ssh" role="tab" aria-selected="false">
+                        <span class="pill-dot dot-ssh"></span>
+                        <span>IUEA-SSH</span>
+                    </button>
+                    <button type="button" class="filter-pill" data-filter="srd" role="tab" aria-selected="false">
+                        <span class="pill-dot dot-srd"></span>
+                        <span>IUEA-SRD</span>
+                    </button>
                 </div>
             </div>
+
+            <!-- 3. UPDATE CARDS GRID -->
+            <div class="news-cards-grid" id="newsGrid">
+                
+                <!-- Card 1 (B&M) -->
+                <article class="news-card card-bm" data-category="bm" data-reveal data-reveal-delay="0">
+                    <div class="news-banner">
+                        <div class="banner-watermark">B&amp;M</div>
+                        <div class="banner-icon-disc"><i class="ph ph-chart-line-up"></i></div>
+                        <span class="news-category-tag">IUEA-B&amp;M</span>
+                        <span class="news-status-tag">Call for Papers</span>
+                    </div>
+                    <div class="news-card-body">
+                        <div class="news-card-meta">
+                            <span><i class="ph ph-calendar-blank"></i> March 2025</span>
+                            <span><i class="ph ph-eye"></i> 142 reads</span>
+                            <span><i class="ph ph-clock"></i> 3 min</span>
+                        </div>
+                        <h3>Digital Transformation &amp; FinTech Adoption in Emerging African Markets</h3>
+                        <p>An open access call inviting empirical analyses on mobile money infrastructure, digital payment interoperability, and SME financial inclusion in East Africa.</p>
+                        <div class="news-card-footer">
+                            <a href="submit.html" class="news-action-link"><span>Submit manuscript</span> <i class="ph ph-arrow-right"></i></a>
+                            <span class="news-issue-tag">Vol. 8 &middot; 2025</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 2 (S&T) -->
+                <article class="news-card card-st" data-category="st" data-reveal data-reveal-delay="100">
+                    <div class="news-banner">
+                        <div class="banner-watermark">S&amp;T</div>
+                        <div class="banner-icon-disc"><i class="ph ph-flask"></i></div>
+                        <span class="news-category-tag">IUEA-S&amp;T</span>
+                        <span class="news-status-tag">Call for Papers</span>
+                    </div>
+                    <div class="news-card-body">
+                        <div class="news-card-meta">
+                            <span><i class="ph ph-calendar-blank"></i> March 2025</span>
+                            <span><i class="ph ph-eye"></i> 119 reads</span>
+                            <span><i class="ph ph-clock"></i> 4 min</span>
+                        </div>
+                        <h3>Applied Artificial Intelligence, IoT &amp; Renewable Energy Systems</h3>
+                        <p>The International Journal of Science and Technology invites contemporary and novel research in clean power generation, automated sensory networks, and distributed computing.</p>
+                        <div class="news-card-footer">
+                            <a href="submit.html" class="news-action-link"><span>Submit manuscript</span> <i class="ph ph-arrow-right"></i></a>
+                            <span class="news-issue-tag">Vol. 7 &middot; 2025</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 3 (LAW) -->
+                <article class="news-card card-law" data-category="law" data-reveal data-reveal-delay="200">
+                    <div class="news-banner">
+                        <div class="banner-watermark">LAW</div>
+                        <div class="banner-icon-disc"><i class="ph ph-scales"></i></div>
+                        <span class="news-category-tag">IUEA-LAW</span>
+                        <span class="news-status-tag">Call for Papers</span>
+                    </div>
+                    <div class="news-card-body">
+                        <div class="news-card-meta">
+                            <span><i class="ph ph-calendar-blank"></i> February 2025</span>
+                            <span><i class="ph ph-eye"></i> 168 reads</span>
+                            <span><i class="ph ph-clock"></i> 5 min</span>
+                        </div>
+                        <h3>Cross-Border Commercial Law &amp; Harmonization in the East African Community</h3>
+                        <p>The official journal of the Faculty of Law invites legal scholars and practitioners to submit analyses on regional trade dispute mechanisms, arbitration, and digital jurisprudence.</p>
+                        <div class="news-card-footer">
+                            <a href="submit.html" class="news-action-link"><span>Submit manuscript</span> <i class="ph ph-arrow-right"></i></a>
+                            <span class="news-issue-tag">Vol. 5 &middot; 2025</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 4 (HES) -->
+                <article class="news-card card-hes" data-category="hes" data-reveal data-reveal-delay="100">
+                    <div class="news-banner">
+                        <div class="banner-watermark">HES</div>
+                        <div class="banner-icon-disc"><i class="ph ph-heartbeat"></i></div>
+                        <span class="news-category-tag">IUEA-HES</span>
+                        <span class="news-status-tag">Call for Papers</span>
+                    </div>
+                    <div class="news-card-body">
+                        <div class="news-card-meta">
+                            <span><i class="ph ph-calendar-blank"></i> February 2025</span>
+                            <span><i class="ph ph-eye"></i> 94 reads</span>
+                            <span><i class="ph ph-clock"></i> 4 min</span>
+                        </div>
+                        <h3>One Health Perspectives: Environmental Resilience &amp; Urban Public Health</h3>
+                        <p>Inviting multidisciplinary submissions examining epidemiology, clean water sustainability, climate adaptation, and community health interventions across sub-Saharan Africa.</p>
+                        <div class="news-card-footer">
+                            <a href="submit.html" class="news-action-link"><span>Submit manuscript</span> <i class="ph ph-arrow-right"></i></a>
+                            <span class="news-issue-tag">Vol. 4 &middot; 2025</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 5 (SSH) -->
+                <article class="news-card card-ssh" data-category="ssh" data-reveal data-reveal-delay="200">
+                    <div class="news-banner">
+                        <div class="banner-watermark">SSH</div>
+                        <div class="banner-icon-disc"><i class="ph ph-users-three"></i></div>
+                        <span class="news-category-tag">IUEA-SSH</span>
+                        <span class="news-status-tag">Editorial Notice</span>
+                    </div>
+                    <div class="news-card-body">
+                        <div class="news-card-meta">
+                            <span><i class="ph ph-calendar-blank"></i> January 2025</span>
+                            <span><i class="ph ph-eye"></i> 210 reads</span>
+                            <span><i class="ph ph-clock"></i> 2 min</span>
+                        </div>
+                        <h3>Social Sciences Journal Announces Continuous Article Publishing Model</h3>
+                        <p>To accelerate scholarly dissemination, accepted papers will now be published online immediately following peer review and proofing, prior to compiled volume archival.</p>
+                        <div class="news-card-footer">
+                            <a href="about.html" class="news-action-link"><span>Read policy notice</span> <i class="ph ph-arrow-right"></i></a>
+                            <span class="news-issue-tag">Vol. 6 &middot; 2025</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 6 (SRD) -->
+                <article class="news-card card-srd" data-category="srd" data-reveal data-reveal-delay="300">
+                    <div class="news-banner">
+                        <div class="banner-watermark">SRD</div>
+                        <div class="banner-icon-disc"><i class="ph ph-graduation-cap"></i></div>
+                        <span class="news-category-tag">IUEA-SRD</span>
+                        <span class="news-status-tag">Research Grants</span>
+                    </div>
+                    <div class="news-card-body">
+                        <div class="news-card-meta">
+                            <span><i class="ph ph-calendar-blank"></i> January 2025</span>
+                            <span><i class="ph ph-eye"></i> 155 reads</span>
+                            <span><i class="ph ph-clock"></i> 3 min</span>
+                        </div>
+                        <h3>2025 Postgraduate &amp; Undergraduate Research Fellowship Applications Open</h3>
+                        <p>A funded mentorship and publication pathway designed to highlight outstanding student theses, capstone innovations, and collaborative research initiatives at IUEA.</p>
+                        <div class="news-card-footer">
+                            <a href="submit.html" class="news-action-link"><span>Apply for fellowship</span> <i class="ph ph-arrow-right"></i></a>
+                            <span class="news-issue-tag">Vol. 3 &middot; 2025</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 7 (B&M - Extra card for Load More) -->
+                <article class="news-card card-bm is-extra" data-category="bm" style="display: none;">
+                    <div class="news-banner">
+                        <div class="banner-watermark">B&amp;M</div>
+                        <div class="banner-icon-disc"><i class="ph ph-briefcase"></i></div>
+                        <span class="news-category-tag">IUEA-B&amp;M</span>
+                        <span class="news-status-tag">Editorial Notice</span>
+                    </div>
+                    <div class="news-card-body">
+                        <div class="news-card-meta">
+                            <span><i class="ph ph-calendar-blank"></i> December 2024</span>
+                            <span><i class="ph ph-eye"></i> 88 reads</span>
+                            <span><i class="ph ph-clock"></i> 2 min</span>
+                        </div>
+                        <h3>Editorial Board Appointment: Welcoming New Section Editors for Econometrics</h3>
+                        <p>The editorial secretariat welcomes three distinguished international scholars to oversee quantitative submissions and expand double-blind reviewer pools.</p>
+                        <div class="news-card-footer">
+                            <a href="about.html" class="news-action-link"><span>Read announcement</span> <i class="ph ph-arrow-right"></i></a>
+                            <span class="news-issue-tag">Vol. 7 &middot; 2024</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 8 (LAW - Extra card for Load More) -->
+                <article class="news-card card-law is-extra" data-category="law" style="display: none;">
+                    <div class="news-banner">
+                        <div class="banner-watermark">LAW</div>
+                        <div class="banner-icon-disc"><i class="ph ph-gavel"></i></div>
+                        <span class="news-category-tag">IUEA-LAW</span>
+                        <span class="news-status-tag">Symposium</span>
+                    </div>
+                    <div class="news-card-body">
+                        <div class="news-card-meta">
+                            <span><i class="ph ph-calendar-blank"></i> November 2024</span>
+                            <span><i class="ph ph-eye"></i> 230 reads</span>
+                            <span><i class="ph ph-clock"></i> 3 min</span>
+                        </div>
+                        <h3>Annual Constitutional &amp; Human Rights Law Symposium: Registration Open</h3>
+                        <p>Selected proceedings and keynote papers from the symposium will be peer-reviewed and archived in a special edition of the IUEA Law Journal.</p>
+                        <div class="news-card-footer">
+                            <a href="contact.html" class="news-action-link"><span>View symposium details</span> <i class="ph ph-arrow-right"></i></a>
+                            <span class="news-issue-tag">Vol. 4 &middot; 2024</span>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+
+            <!-- 4. LOAD MORE BAR -->
+            <div class="news-load-more-wrap" data-reveal>
+                <button type="button" class="btn-load-more" id="btnLoadMore">
+                    <span>Load More Updates</span>
+                    <i class="ph ph-arrow-down"></i>
+                </button>
+            </div>
+
         </div>
     </section>
 
@@ -140,6 +364,107 @@
 
     <button id="backToTop" aria-label="Back to top"><i class="ph ph-arrow-up"></i></button>
     <script src="journals.js"></script>
+    <script>
+        // News filtering and dynamic "Load More" functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterPills = document.querySelectorAll('.filter-pill');
+            const newsCards = document.querySelectorAll('.news-card');
+            const visibleCountEl = document.getElementById('visibleCount');
+            const btnLoadMore = document.getElementById('btnLoadMore');
+            const newsGrid = document.getElementById('newsGrid');
+
+            let currentFilter = 'all';
+
+            function updateCounts() {
+                let count = 0;
+                newsCards.forEach(card => {
+                    if (card.style.display !== 'none') count++;
+                });
+                if (visibleCountEl) visibleCountEl.textContent = count;
+            }
+
+            // Filtering by journal
+            filterPills.forEach(pill => {
+                pill.addEventListener('click', () => {
+                    filterPills.forEach(p => {
+                        p.classList.remove('active');
+                        p.setAttribute('aria-selected', 'false');
+                    });
+                    pill.classList.add('active');
+                    pill.setAttribute('aria-selected', 'true');
+
+                    currentFilter = pill.dataset.filter;
+
+                    // Fade out slightly, reflow, fade in
+                    if (newsGrid) newsGrid.style.opacity = '0.35';
+
+                    setTimeout(() => {
+                        newsCards.forEach(card => {
+                            const cat = card.dataset.category;
+                            const isExtra = card.classList.contains('is-extra') && !card.classList.contains('is-loaded');
+
+                            if (isExtra) {
+                                card.style.display = 'none';
+                                return;
+                            }
+
+                            if (currentFilter === 'all' || cat === currentFilter) {
+                                card.style.display = 'flex';
+                                card.classList.add('revealed');
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+
+                        updateCounts();
+
+                        if (newsGrid) newsGrid.style.opacity = '1';
+
+                        // Toggle load more visibility depending on filter
+                        if (btnLoadMore) {
+                            if (currentFilter !== 'all') {
+                                btnLoadMore.parentElement.style.display = 'none';
+                            } else {
+                                const hasUnloaded = document.querySelector('.news-card.is-extra:not(.is-loaded)');
+                                btnLoadMore.parentElement.style.display = hasUnloaded ? 'block' : 'none';
+                            }
+                        }
+                    }, 180);
+                });
+            });
+
+            // Load More button
+            if (btnLoadMore) {
+                btnLoadMore.addEventListener('click', () => {
+                    const extraCards = document.querySelectorAll('.news-card.is-extra:not(.is-loaded)');
+                    extraCards.forEach(card => {
+                        card.classList.add('is-loaded');
+                        card.style.display = 'flex';
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        
+                        setTimeout(() => {
+                            card.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0)';
+                            card.classList.add('revealed');
+                        }, 50);
+                    });
+
+                    updateCounts();
+
+                    btnLoadMore.disabled = true;
+                    btnLoadMore.innerHTML = '<span>All Updates Loaded</span> <i class="ph ph-check"></i>';
+                    setTimeout(() => {
+                        btnLoadMore.parentElement.style.display = 'none';
+                    }, 1800);
+                });
+            }
+
+            // Ensure initially visible cards are revealed
+            document.querySelectorAll('.news-card:not(.is-extra)').forEach(c => c.classList.add('revealed'));
+        });
+    </script>
 </body>
 
 </html>

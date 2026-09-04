@@ -94,9 +94,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. Contact Form Validation
+    // 2. Contact Form Validation & Interactive Topic Chips
     const formFeedback = document.getElementById('formFeedback');
     const contactForm = document.getElementById('contactForm');
+    const topicChips = document.querySelectorAll('.topic-chip');
+    const contactTopic = document.getElementById('contactTopic');
+
+    if (topicChips.length && contactTopic) {
+        topicChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                topicChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                contactTopic.value = chip.dataset.topic || chip.textContent.trim();
+            });
+        });
+    }
 
     if (contactForm && formFeedback) {
         contactForm.addEventListener('submit', function (e) {
@@ -119,8 +131,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            showFeedback('success', 'Your message has been sent successfully! We will get back to you shortly.');
+            const selectedTopic = contactTopic ? contactTopic.value : 'General Enquiry';
+            showFeedback('success', `Thank you, ${name}! Your inquiry regarding "${selectedTopic}" has been received by the editorial board. We will reply to ${email} within 24 hours.`);
             contactForm.reset();
+            if (topicChips.length && contactTopic) {
+                topicChips.forEach((c, idx) => c.classList.toggle('active', idx === 0));
+                contactTopic.value = topicChips[0]?.dataset.topic || 'Manuscript Submission';
+            }
         });
     }
 

@@ -37,41 +37,147 @@
         </div>
     </section>
 
-    <section class="contact-section">
-        <div class="container contact-grid">
-            <div class="contact-info" data-reveal data-reveal-dir="left">
-                <span class="eyebrow">Contact Us</span>
-                <h1>Get in touch with us today</h1>
-                <p>Reach out for journal enquiries, manuscript support, partnerships, or any information about our academic publishing services.</p>
-                <div class="info-card" data-reveal data-reveal-delay="100">
-                    <div class="info-icon"><i class="ph ph-envelope-simple"></i></div>
-                    <div class="info-text"><span>Email</span><strong>journals@iuea.ac.ug</strong></div>
-                </div>
-                <div class="info-card" data-reveal data-reveal-delay="220">
-                    <div class="info-icon"><i class="ph ph-phone"></i></div>
-                    <div class="info-text"><span>Phone</span><strong>+256 000 000000</strong></div>
-                </div>
-            </div>
+    <!-- Contact Section — Editorial Secretariat & Inquiry Console -->
+    <section class="contact-section" id="contact">
+        <div class="container">
+            <div class="editorial-console" data-reveal data-reveal-delay="100">
+                <!-- Left Chamber: Editorial Secretariat Directory -->
+                <aside class="editorial-chamber editorial-directory">
+                    <div class="chamber-head">
+                        <span class="chamber-badge"><i class="ph ph-buildings"></i> IUEA Directorate</span>
+                        <h3>Editorial Offices &amp; Contacts</h3>
+                        <p>Direct communication avenues for authors, peer reviewers, and scholarly institutions worldwide.</p>
+                    </div>
 
-            <div class="contact-form-card" data-reveal data-reveal-dir="right" data-reveal-delay="150">
-                <form id="contactForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="contactName">Name <span>*</span></label>
-                            <input type="text" id="contactName" class="form-control" placeholder="Full name">
-                        </div>
-                        <div class="form-group">
-                            <label for="contactEmail">Email <span>*</span></label>
-                            <input type="email" id="contactEmail" class="form-control" placeholder="Email address">
+                    <div class="chamber-channels">
+                        <a href="mailto:journals@iuea.ac.ug" class="channel-card">
+                            <div class="channel-icon">
+                                <i class="ph ph-envelope-simple"></i>
+                            </div>
+                            <div class="channel-content">
+                                <span class="channel-label">Editorial Submissions &amp; Queries</span>
+                                <strong class="channel-value">journals@iuea.ac.ug</strong>
+                                <span class="channel-meta">Mon – Fri &middot; Triage within 24 hours</span>
+                            </div>
+                            <i class="ph ph-arrow-up-right channel-arrow"></i>
+                        </a>
+
+                        <a href="tel:+256705722300" class="channel-card">
+                            <div class="channel-icon">
+                                <i class="ph ph-phone-call"></i>
+                            </div>
+                            <div class="channel-content">
+                                <span class="channel-label">Directorate Telephone Desk</span>
+                                <strong class="channel-value">(+256) 705 722 300</strong>
+                                <span class="channel-meta">Office Hours: 08:00 – 17:00 (EAT)</span>
+                            </div>
+                            <i class="ph ph-arrow-up-right channel-arrow"></i>
+                        </a>
+
+                        <div class="channel-card non-interactive">
+                            <div class="channel-icon">
+                                <i class="ph ph-map-pin"></i>
+                            </div>
+                            <div class="channel-content">
+                                <span class="channel-label">Physical Campus Directorate</span>
+                                <strong class="channel-value">Plot 1112/1121, Ggaba Road</strong>
+                                <span class="channel-meta">Kansanga, Kampala &middot; Uganda</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="contactMessage">How can we help?</label>
-                        <textarea id="contactMessage" class="form-control" placeholder="Tell us about your enquiry"></textarea>
+
+                    <div class="chamber-assurance">
+                        <div class="assurance-status">
+                            <span class="live-dot pulse"></span>
+                            <span>Editorial Desk Operational &middot; Mon&ndash;Fri</span>
+                        </div>
+                        <div class="assurance-note">
+                            <i class="ph ph-shield-check"></i>
+                            <span>All manuscript correspondence is handled under COPE-aligned peer-review confidentiality standards.</span>
+                        </div>
                     </div>
-                    <button type="submit" class="btn-block">SEND MESSAGE</button>
-                    <div id="formFeedback" class="form-feedback"></div>
-                </form>
+                </aside>
+
+                <!-- Right Chamber: Digital Inquiry Terminal -->
+                <div class="editorial-chamber editorial-terminal">
+                    <div class="terminal-head">
+                        <span class="terminal-tag"><i class="ph ph-paper-plane-tilt"></i> Direct Message</span>
+                        <h3>Send an Editorial Enquiry</h3>
+                        <p>Select your topic so our managing editorial team can route your message directly to the coordinating editor.</p>
+                    </div>
+
+                    <form id="contactForm" novalidate>
+                        <!-- Interactive Topic Chips -->
+                        <div class="topic-selection-wrap">
+                            <label class="topic-selection-label">Select enquiry track:</label>
+                            <div class="topic-chips" role="radiogroup" aria-label="Enquiry Topic">
+                                <button type="button" class="topic-chip active" data-topic="Manuscript Submission">
+                                    <i class="ph ph-file-text"></i> Manuscript Support
+                                </button>
+                                <button type="button" class="topic-chip" data-topic="Peer Review Query">
+                                    <i class="ph ph-check-circle"></i> Peer Review
+                                </button>
+                                <button type="button" class="topic-chip" data-topic="Special Issue Proposal">
+                                    <i class="ph ph-sparkle"></i> Special Issues
+                                </button>
+                                <button type="button" class="topic-chip" data-topic="General Information">
+                                    <i class="ph ph-info"></i> General Enquiry
+                                </button>
+                            </div>
+                            <input type="hidden" name="contactTopic" id="contactTopic" value="Manuscript Submission">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contactName">Full Name <span>*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="ph ph-user input-icon"></i>
+                                    <input type="text" id="contactName" class="form-control" placeholder="Dr. / Prof. / Full Name" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactEmail">Academic / Institutional Email <span>*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="ph ph-envelope-simple input-icon"></i>
+                                    <input type="email" id="contactEmail" class="form-control" placeholder="scholar@institution.edu" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contactJournal">Target Journal <span>(Optional)</span></label>
+                            <div class="select-with-icon">
+                                <i class="ph ph-books input-icon"></i>
+                                <select id="contactJournal" class="form-control">
+                                    <option value="General Editorial Desk">General Editorial Desk &middot; All Disciplines</option>
+                                    <option value="IUEA Journal of Business & Management">IUEA Journal of Business &amp; Management (IUEA-B&amp;M)</option>
+                                    <option value="International Journal of Science & Technology">International Journal of Science &amp; Technology (IUEA-S&amp;T)</option>
+                                    <option value="IUEA Law Journal">IUEA Law Journal (IUEA-LAW)</option>
+                                    <option value="IUEA Journal of Health & Environmental Studies">IUEA Journal of Health &amp; Environmental Studies (IUEA-HES)</option>
+                                    <option value="IUEA Journal of Social Sciences & Humanities">IUEA Journal of Social Sciences &amp; Humanities (IUEA-SSH)</option>
+                                    <option value="IUEA Student Research Digest">IUEA Student Research Digest (IUEA-SRD)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contactMessage">Your Message <span>*</span></label>
+                            <textarea id="contactMessage" class="form-control" placeholder="Provide relevant details, including manuscript ID (if applicable), disciplinary area, or proposal summary..." required></textarea>
+                        </div>
+
+                        <div class="form-submit-row">
+                            <button type="submit" class="btn-editorial-submit">
+                                <span>Dispatch Editorial Message</span>
+                                <i class="ph ph-paper-plane-tilt"></i>
+                            </button>
+                            <span class="form-privacy-note">
+                                <i class="ph ph-lock-key"></i> Encrypted &middot; Response within 24h
+                            </span>
+                        </div>
+
+                        <div id="formFeedback" class="form-feedback" role="alert" aria-live="polite"></div>
+                    </form>
+                </div>
             </div>
         </div>
     </section>
