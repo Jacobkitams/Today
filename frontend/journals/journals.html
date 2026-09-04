@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Journals | IUEA Journals</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="journals.css">
 </head>
@@ -29,15 +29,11 @@
         </div>
     </header>
 
-    <section class="hero" style="padding: 4rem 0 3rem;">
+    <section class="page-hero">
         <div class="container">
-            <h1>Our Journals</h1>
-            <p>Peer-reviewed, open-access journals published by IUEA across a range of academic disciplines.</p>
-        </div>
-        <div class="hero-curve">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
-            </svg>
+            <span class="page-hero-eyebrow"><i class="ph ph-books"></i> 6 Active Peer-Reviewed Journals</span>
+            <h1 data-reveal>Our Journals</h1>
+            <p data-reveal data-reveal-delay="120">Peer-reviewed, open-access journals published by IUEA across a range of academic disciplines.</p>
         </div>
     </section>
 
@@ -66,21 +62,9 @@
                 <div class="footer-newsletter">
                     <h4>Stay Updated</h4>
                     <p>Subscribe to our newsletter for the latest calls for papers and research updates.</p>
-                    <div class="captcha-box newsletter-captcha">
-                        <div class="captcha-header">Let us know you are human</div>
-                        <div class="captcha-interactive">
-                            <div class="captcha-checkbox" id="captchaCheckboxNewsletter">
-                                <div class="check-box"></div>
-                                <span class="captcha-msg">Verifying…</span>
-                            </div>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/Cloudflare_logo.svg" alt="Cloudflare" height="15" style="opacity: 0.5;">
-                        </div>
-                        <div class="captcha-helper" id="captchaHelperNewsletter">Please complete verification before subscribing.</div>
-                        <input type="hidden" id="isHumanNewsletter" value="false">
-                    </div>
                     <form class="newsletter-form">
                         <input type="email" placeholder="Email address" required>
-                        <button type="submit" disabled>Subscribe</button>
+                        <button type="submit">Subscribe</button>
                     </form>
                 </div>
             </div>
@@ -96,27 +80,43 @@
     <script src="journals.js"></script>
     <script>
         const JOURNALS = [
-            { icon: 'ph-chart-bar', title: 'IUEA Journal of Business & Management', desc: 'An open access, peer-reviewed journal publishing contemporary research in business, management, and entrepreneurship.', freq: 'Biannual' },
-            { icon: 'ph-flask', title: 'International Journal of Science & Technology', desc: 'Publishing contemporary and novel research in applied sciences, engineering, and emerging technologies.', freq: 'Biannual' },
-            { icon: 'ph-scales', title: 'IUEA Law Journal', desc: 'The official journal of the Faculty of Law, covering legal theory, practice, and policy in East Africa and beyond.', freq: 'Annual' },
-            { icon: 'ph-heartbeat', title: 'IUEA Journal of Health & Environmental Studies', desc: 'Public health, environmental sustainability, and community wellbeing research.', freq: 'Annual' },
-            { icon: 'ph-users-three', title: 'IUEA Journal of Social Sciences & Humanities', desc: 'Studies on governance, culture, education, and society shaping Africa\u2019s future.', freq: 'Biannual' },
-            { icon: 'ph-graduation-cap', title: 'IUEA Student Research Digest', desc: 'A platform for outstanding undergraduate and postgraduate research from IUEA students.', freq: 'Annual' }
+            { icon: 'ph-chart-bar', title: 'IUEA Journal of Business & Management', desc: 'An open access, peer-reviewed journal publishing contemporary research in business, management, and entrepreneurship.', freq: 'Biannual', accent: '#8B1A1A' },
+            { icon: 'ph-flask', title: 'International Journal of Science & Technology', desc: 'Publishing contemporary and novel research in applied sciences, engineering, and emerging technologies.', freq: 'Biannual', accent: '#1f5f8b' },
+            { icon: 'ph-scales', title: 'IUEA Law Journal', desc: 'The official journal of the Faculty of Law, covering legal theory, practice, and policy in East Africa and beyond.', freq: 'Annual', accent: '#7a6200' },
+            { icon: 'ph-heartbeat', title: 'IUEA Journal of Health & Environmental Studies', desc: 'Public health, environmental sustainability, and community wellbeing research.', freq: 'Annual', accent: '#2e7d32' },
+            { icon: 'ph-users-three', title: 'IUEA Journal of Social Sciences & Humanities', desc: 'Studies on governance, culture, education, and society shaping Africa\u2019s future.', freq: 'Biannual', accent: '#6a3d9a' },
+            { icon: 'ph-graduation-cap', title: 'IUEA Student Research Digest', desc: 'A platform for outstanding undergraduate and postgraduate research from IUEA students.', freq: 'Annual', accent: '#b45f17' }
         ];
         document.addEventListener('DOMContentLoaded', () => {
             const grid = document.getElementById('journalsGrid');
-            grid.innerHTML = JOURNALS.map(j => `
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="ph ${j.icon}"></i></div>
+            grid.innerHTML = JOURNALS.map((j, i) => `
+                <div class="feature-card journal-card" data-reveal data-reveal-delay="${(i % 3) * 120}" style="border-top-color:${j.accent}">
+                    <div class="journal-cover" style="background:linear-gradient(90deg, ${j.accent}, var(--accent-color));"></div>
+                    <div class="feature-icon" style="color:${j.accent}; background:linear-gradient(135deg, ${j.accent}1f, rgba(245,197,24,0.14));"><i class="ph ${j.icon}"></i></div>
                     <h3>${j.title}</h3>
                     <p>${j.desc}</p>
-                    <div class="news-meta" style="margin-bottom:0.75rem;">
-                        <span><i class="ph ph-clock"></i> ${j.freq}</span>
-                        <span><i class="ph ph-lock-key-open"></i> Open Access</span>
+                    <div class="journal-badges">
+                        <span class="journal-badge"><i class="ph ph-clock"></i> ${j.freq}</span>
+                        <span class="journal-badge gold"><i class="ph ph-lock-key-open"></i> Open Access</span>
+                        <span class="journal-badge"><i class="ph ph-shield-check"></i> Peer Reviewed</span>
                     </div>
                     <a href="submit.html" class="card-link">Submit to this journal <i class="ph ph-arrow-right"></i></a>
                 </div>
             `).join('');
+
+            // Re-observe dynamically added cards with the reveal observer
+            grid.querySelectorAll('[data-reveal]').forEach((el) => {
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            el.style.setProperty('--reveal-delay', `${el.dataset.revealDelay || 0}ms`);
+                            el.classList.add('revealed');
+                            io.unobserve(el);
+                        }
+                    });
+                }, { threshold: 0.12 });
+                io.observe(el);
+            });
         });
     </script>
 </body>

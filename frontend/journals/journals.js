@@ -1,4 +1,79 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 0. Scroll Animations
+    //    a) Reveal on scroll: fade-in / slide-up / slide-left / slide-right
+    const revealEls = document.querySelectorAll('[data-reveal]');
+
+    if (revealEls.length) {
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    const delay = parseInt(el.dataset.revealDelay || '0', 10);
+                    el.style.setProperty('--reveal-delay', `${delay}ms`);
+                    el.classList.add('revealed');
+                    revealObserver.unobserve(el);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+        revealEls.forEach((el) => revealObserver.observe(el));
+    }
+
+    //    b) Parallax: elements with [data-parallax] drift with scroll.
+    //       The value is the drift factor (0.1 = slow, 0.5 = fast).
+    const parallaxEls = Array.from(document.querySelectorAll('[data-parallax]'))
+        .map((el) => ({ el, factor: parseFloat(el.dataset.parallax || '0.2') }));
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let parallaxTicking = false;
+
+    function applyParallax() {
+        const scrollY = window.scrollY;
+        parallaxEls.forEach(({ el, factor }) => {
+            el.style.transform = `translate3d(0, ${(scrollY * factor).toFixed(1)}px, 0)`;
+        });
+        parallaxTicking = false;
+    }
+
+    if (parallaxEls.length && !prefersReducedMotion) {
+        window.addEventListener('scroll', () => {
+            if (!parallaxTicking) {
+                parallaxTicking = true;
+                requestAnimationFrame(applyParallax);
+            }
+        }, { passive: true });
+        applyParallax();
+    }
+
+    //    c) Animated counters in the hero stats strip
+    const counters = document.querySelectorAll('[data-count]');
+
+    if (counters.length) {
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                const el = entry.target;
+                counterObserver.unobserve(el);
+
+                const target = parseInt(el.dataset.count || '0', 10);
+                const suffix = el.dataset.suffix || '';
+                const duration = 1400;
+                const start = performance.now();
+
+                function tick(now) {
+                    const progress = Math.min((now - start) / duration, 1);
+                    // Ease-out cubic for a natural slowdown
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    el.textContent = Math.round(target * eased) + suffix;
+                    if (progress < 1) requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
+            });
+        }, { threshold: 0.4 });
+
+        counters.forEach((el) => counterObserver.observe(el));
+    }
+
     // 1. Back to Top Button Logic
     const backToTopBtn = document.getElementById('backToTop');
 
@@ -19,110 +94,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. Automatic Background Human Verification
-    //    The checkbox is non-interactive (pointer-events: none).
-    //    Verification starts automatically when the widget is visible
-    //    and completes after a short simulated background check (~1s).
-    function autoVerifyCaptcha(opts) {
-        const checkbox = document.getElementById(opts.checkboxId);
-        const hiddenInput = document.getElementById(opts.hiddenInputId);
-        const helper = document.getElementById(opts.helperId);
-        const submitBtn = document.querySelector(opts.submitSelector);
-
-        if (!checkbox || !hiddenInput) return;
-
-        const msg = checkbox.querySelector('.captcha-msg');
-        const iconBox = checkbox.querySelector('.check-box');
-        const interactive = checkbox.closest('.captcha-interactive');
-        const badge = interactive ? interactive.querySelector('img') : null;
-
-        // --- Start state: verifying ---
-        msg.textContent = 'Verifying…';
-        if (helper) {
-            helper.textContent = opts.helperText;
-        }
-        hiddenInput.value = 'false';
-        checkbox.classList.remove('verified');
-        iconBox.innerHTML = '';
-        if (badge) badge.style.opacity = '0.3';
-        if (submitBtn) submitBtn.disabled = true;
-
-        // --- Simulated background verification (1 second) ---
-        setTimeout(() => {
-            // Verification succeeded
-            checkbox.classList.add('verified');
-            msg.innerHTML = '<strong>Success!</strong> Verification complete.';
-            hiddenInput.value = 'true';
-
-            // Green checkmark icon
-            iconBox.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-
-            // Update helper text to confirm
-            if (helper) {
-                helper.textContent = opts.successText;
-                helper.classList.add('verified');
-            }
-
-            // Enable the submit button
-            if (submitBtn) submitBtn.disabled = false;
-
-            // Reveal verification badge
-            if (badge) badge.style.opacity = '1';
-        }, 1000);
-    }
-
-    // --- Contact form captcha ---
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        autoVerifyCaptcha({
-            checkboxId: 'captchaCheckbox',
-            hiddenInputId: 'isHuman',
-            helperId: 'captchaHelper',
-            submitSelector: '#contactForm button[type="submit"]',
-            helperText: 'Please complete the verification before sending your message.',
-            successText: 'Verification complete. You can now send your message.'
-        });
-    }
-
-    // --- Newsletter form captcha (footer) ---
-    const newsletterForm = document.querySelector('.newsletter-form');
-    if (newsletterForm) {
-        autoVerifyCaptcha({
-            checkboxId: 'captchaCheckboxNewsletter',
-            hiddenInputId: 'isHumanNewsletter',
-            helperId: 'captchaHelperNewsletter',
-            submitSelector: '.newsletter-form button[type="submit"]',
-            helperText: 'Please complete verification before subscribing.',
-            successText: 'Verification complete. You can now subscribe.'
-        });
-
-        // Intercept newsletter submission to enforce verification
-        newsletterForm.addEventListener('submit', function(e) {
-            const isHuman = document.getElementById('isHumanNewsletter');
-            if (isHuman && isHuman.value !== 'true') {
-                e.preventDefault();
-                return false;
-            }
-            e.preventDefault();
-            alert('Subscribed!');
-        });
-    }
-
-    // 3. Contact Form Validation
+    // 2. Contact Form Validation
     const formFeedback = document.getElementById('formFeedback');
+    const contactForm = document.getElementById('contactForm');
 
     if (contactForm && formFeedback) {
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            // The submit button is disabled until verification succeeds,
-            // but we still validate everything here as a safeguard.
             formFeedback.className = 'form-feedback';
             formFeedback.style.display = 'none';
 
             const name = document.getElementById('contactName').value.trim();
             const email = document.getElementById('contactEmail').value.trim();
             const message = document.getElementById('contactMessage').value.trim();
-            const isHuman = document.getElementById('isHuman').value;
 
             if (!name || !email || !message) {
                 showFeedback('error', 'Please fill in all required fields.');
@@ -135,16 +119,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (isHuman !== 'true') {
-                showFeedback('error', 'Please verify that you are human.');
-                return;
-            }
-
-            // Success state (simulated since there is no backend yet)
             showFeedback('success', 'Your message has been sent successfully! We will get back to you shortly.');
-
-            // Reset form
             contactForm.reset();
+        });
+    }
+
+    // 3. Newsletter form (footer)
+    const newsletterForm = document.querySelector('.newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Subscribed!');
         });
     }
 

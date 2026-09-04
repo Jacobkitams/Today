@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IUEA Journals | International University of East Africa</title>
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <!-- Phosphor Icons -->
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <!-- Custom CSS -->
@@ -39,47 +39,93 @@
         </div>
     </header>
 
-    <!-- 2) HERO -->
-    <section class="hero">
-        <div class="container">
-            <h1>IUEA Journals</h1>
-            <p>
-                The scholarly publishing platform of International University of East Africa,
-                connecting rigorous peer review, open access, and discoverable research across
-                IUEA's academic communities.
-            </p>
-            <div class="hero-buttons">
-                <a href="journals.html" class="btn btn-accent">Explore Journals</a>
-                <a href="about.html" class="btn btn-outline-white">About Us</a>
-            </div>
-        </div>
+    <!-- 2) HERO — split editorial layout -->
+    <section class="hero" id="hero">
+        <div class="container hero-inner">
+            <div class="hero-content">
+                <h1 data-reveal data-reveal-delay="100">Where IUEA Research<br><span class="hero-highlight">Reaches the World</span></h1>
+                <p data-reveal data-reveal-delay="200">
+                    The scholarly publishing platform of International University of East Africa,
+                    connecting rigorous peer review, open access, and discoverable research across
+                    IUEA's academic communities.
+                </p>
+                <div class="hero-buttons" data-reveal data-reveal-delay="300">
+                    <a href="journals.html" class="btn btn-accent">Explore Journals</a>
+                    <a href="about.html" class="btn btn-outline-white">About Us</a>
+                </div>
 
-        <!-- Soft wave curve at bottom -->
-        <div class="hero-curve">
-            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
-            </svg>
+                <!-- Credibility strip beneath CTAs -->
+                <div class="hero-stats" data-reveal data-reveal-delay="400">
+                    <div class="hero-stat">
+                        <i class="ph ph-books"></i>
+                        <div><span class="stat-num" data-count="3">0</span><span class="stat-label">Active Journals</span></div>
+                    </div>
+                    <div class="hero-stat">
+                        <i class="ph ph-shield-check"></i>
+                        <div><span class="stat-num" data-count="120" data-suffix="+">0</span><span class="stat-label">Peer-Reviewed Articles</span></div>
+                    </div>
+                    <div class="hero-stat">
+                        <i class="ph ph-users-three"></i>
+                        <div><span class="stat-num" data-count="45" data-suffix="+">0</span><span class="stat-label">Contributing Authors</span></div>
+                    </div>
+                    <div class="hero-stat">
+                        <i class="ph ph-globe-hemisphere-east"></i>
+                        <div><span class="stat-num" data-count="100" data-suffix="%">0</span><span class="stat-label">Open Access</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual" data-reveal data-reveal-dir="right" data-reveal-delay="200">
+                <img src="../assets/images/932f84b104f04968a9ba1a46f7ad12bb.jpg"
+                     alt="IUEA students collaborating on campus" loading="eager" fetchpriority="high">
+                <div class="hero-visual-caption">
+                    <i class="ph ph-mortar-board-simple"></i>
+                    <span>IUEA campus community</span>
+                </div>
+            </div>
         </div>
     </section>
 
+    <!-- 2b) CREDIBILITY TRUST STRIP -->
+    <div class="trust-strip">
+        <div class="container trust-strip-inner">
+            <span class="trust-item" data-reveal data-reveal-delay="0">
+                <i class="ph ph-lock-key-open"></i>
+                <span>Open Access<small>CC-BY licensed research</small></span>
+            </span>
+            <span class="trust-item" data-reveal data-reveal-delay="100">
+                <i class="ph ph-shield-check"></i>
+                <span>Peer Reviewed<small>Double-blind editorial review</small></span>
+            </span>
+            <span class="trust-item" data-reveal data-reveal-delay="200">
+                <i class="ph ph-globe-hemisphere-east"></i>
+                <span>Internationally Indexed<small>Discoverable worldwide</small></span>
+            </span>
+            <span class="trust-item" data-reveal data-reveal-delay="300">
+                <i class="ph ph-seal-check"></i>
+                <span>Publication Ethics<small>COPE-aligned standards</small></span>
+            </span>
+        </div>
+    </div>
+
     <!-- 3) THREE-CARD ROW -->
-    <section class="feature-cards-section container">
+    <section class="feature-cards-section container" id="feature-cards">
         <div class="cards-grid">
-            <div class="feature-card">
+            <div class="feature-card" data-reveal data-reveal-delay="0">
                 <div class="feature-icon"><i class="ph ph-books"></i></div>
                 <h3>IUEA Scholarly Journals</h3>
                 <p>Explore peer-reviewed journals from International University of East Africa, advancing credible research and knowledge across disciplines.</p>
                 <a href="journals.html" class="card-link">Explore Journals <i class="ph ph-arrow-right"></i></a>
             </div>
 
-            <div class="feature-card">
+            <div class="feature-card" data-reveal data-reveal-delay="120">
                 <div class="feature-icon"><i class="ph ph-file-text"></i></div>
                 <h3>Publish Your Research</h3>
                 <p>Submit original research to IUEA Journals and follow a structured peer-review and editorial process from submission to publication.</p>
                 <a href="submit.html" class="card-link">Submit Manuscript <i class="ph ph-arrow-right"></i></a>
             </div>
 
-            <div class="feature-card">
+            <div class="feature-card" data-reveal data-reveal-delay="240">
                 <div class="feature-icon"><i class="ph ph-pen-nib"></i></div>
                 <h3>Editorial & Author Support</h3>
                 <p>Access guidance for manuscript preparation, submission requirements, peer review, revisions, and publication with IUEA Journals.</p>
@@ -91,7 +137,7 @@
     <!-- 4) ABOUT TEASER -->
     <section class="about-section container">
         <div class="about-grid">
-            <div class="about-content">
+            <div class="about-content" data-reveal data-reveal-dir="left">
                 <span class="eyebrow">About IUEA Journals</span>
                 <h2>About Us</h2>
                 <p>
@@ -109,7 +155,7 @@
                 <a href="about.html" class="btn btn-primary" style="margin-top: 10px;">Read More</a>
             </div>
 
-            <div class="about-feature-box">
+            <div class="about-feature-box" data-reveal data-reveal-dir="right" data-parallax="0.06">
                 <h3>Built for credible university scholarship</h3>
                 <p>
                     From submission checks to production, IUEA Journals supports transparent editorial decisions,
@@ -117,15 +163,15 @@
                 </p>
 
                 <div class="feature-tiles">
-                    <div class="tile">
+                    <div class="tile" data-reveal data-reveal-delay="100">
                         <i class="ph ph-lock-key-open"></i>
                         <span>Open Access<br>Publishing</span>
                     </div>
-                    <div class="tile">
+                    <div class="tile" data-reveal data-reveal-delay="220">
                         <i class="ph ph-shield-check"></i>
                         <span>Peer Reviewed<br>Scholarship</span>
                     </div>
-                    <div class="tile">
+                    <div class="tile" data-reveal data-reveal-delay="340">
                         <i class="ph ph-globe-hemisphere-east"></i>
                         <span>Global<br>Academic Reach</span>
                     </div>
@@ -145,17 +191,17 @@
     <section class="news-section">
         <div class="container">
             <div class="section-header">
-                <div class="section-header-left">
+                <div class="section-header-left" data-reveal data-reveal-dir="left">
                     <span class="eyebrow">Latest Updates</span>
                     <h2>News & Updates</h2>
                     <p>Stay informed with journal calls, editorial notices, and publishing news from IUEA Journals.</p>
                 </div>
-                <a href="news.html" class="btn btn-primary">Browse updates</a>
+                <a href="news.html" class="btn btn-primary" data-reveal data-reveal-dir="right">Browse updates</a>
             </div>
 
             <div class="news-grid">
                 <!-- Card 1 -->
-                <div class="news-card">
+                <div class="news-card" data-reveal data-reveal-delay="0">
                     <div class="news-img">
                         <i class="ph ph-newspaper" style="font-size: 5rem; color: #ccc;"></i>
                         <span class="news-tag">IUEA-B&amp;M UPDATES</span>
@@ -171,7 +217,7 @@
                     </div>
                 </div>
                 <!-- Card 2 -->
-                <div class="news-card">
+                <div class="news-card" data-reveal data-reveal-delay="150">
                     <div class="news-img">
                         <i class="ph ph-newspaper" style="font-size: 5rem; color: #ccc;"></i>
                         <span class="news-tag">IUEA-S&amp;T UPDATES</span>
@@ -187,7 +233,7 @@
                     </div>
                 </div>
                 <!-- Card 3 -->
-                <div class="news-card">
+                <div class="news-card" data-reveal data-reveal-delay="300">
                     <div class="news-img">
                         <i class="ph ph-newspaper" style="font-size: 5rem; color: #ccc;"></i>
                         <span class="news-tag">IUEA-LAW UPDATES</span>
@@ -213,12 +259,12 @@
     <!-- 6) CONTACT SECTION -->
     <section class="contact-section">
         <div class="container contact-grid">
-            <div class="contact-info">
+            <div class="contact-info" data-reveal data-reveal-dir="left">
                 <span class="eyebrow">Contact Us</span>
                 <h1>Get in touch with us today</h1>
                 <p>Reach out for journal enquiries, manuscript support, partnerships, or any information about our academic publishing services.</p>
 
-                <div class="info-card">
+                <div class="info-card" data-reveal data-reveal-delay="100">
                     <div class="info-icon"><i class="ph ph-envelope-simple"></i></div>
                     <div class="info-text">
                         <span>Email</span>
@@ -226,7 +272,7 @@
                     </div>
                 </div>
 
-                <div class="info-card">
+                <div class="info-card" data-reveal data-reveal-delay="220">
                     <div class="info-icon"><i class="ph ph-phone"></i></div>
                     <div class="info-text">
                         <span>Phone</span>
@@ -235,7 +281,7 @@
                 </div>
             </div>
 
-            <div class="contact-form-card">
+            <div class="contact-form-card" data-reveal data-reveal-dir="right" data-reveal-delay="150">
                 <form id="contactForm">
                     <div class="form-row">
                         <div class="form-group">
@@ -253,20 +299,7 @@
                         <textarea id="contactMessage" class="form-control" placeholder="Tell us about your enquiry"></textarea>
                     </div>
 
-                    <div class="captcha-box">
-                        <div class="captcha-header">Let us know you are human</div>
-                        <div class="captcha-interactive">
-                            <div class="captcha-checkbox" id="captchaCheckbox">
-                                <div class="check-box"></div>
-                                <span class="captcha-msg">Verifying…</span>
-                            </div>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/Cloudflare_logo.svg" alt="Cloudflare" height="15" style="opacity: 0.5;">
-                        </div>
-                        <div class="captcha-helper" id="captchaHelper">Please complete the verification before sending your message.</div>
-                        <input type="hidden" id="isHuman" value="false">
-                    </div>
-
-                    <button type="submit" class="btn-block" disabled>SEND MESSAGE</button>
+                    <button type="submit" class="btn-block">SEND MESSAGE</button>
                     <div id="formFeedback" class="form-feedback"></div>
                 </form>
             </div>
@@ -323,21 +356,9 @@
                 <div class="footer-newsletter">
                     <h4>Stay Updated</h4>
                     <p>Subscribe for the latest calls for papers, journal releases, and research updates.</p>
-                    <div class="captcha-box newsletter-captcha">
-                        <div class="captcha-header">Let us know you are human</div>
-                        <div class="captcha-interactive">
-                            <div class="captcha-checkbox" id="captchaCheckboxNewsletter">
-                                <div class="check-box"></div>
-                                <span class="captcha-msg">Verifying…</span>
-                            </div>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/Cloudflare_logo.svg" alt="Cloudflare" height="15" style="opacity: 0.5;">
-                        </div>
-                        <div class="captcha-helper" id="captchaHelperNewsletter">Please complete verification before subscribing.</div>
-                        <input type="hidden" id="isHumanNewsletter" value="false">
-                    </div>
                     <form class="newsletter-form">
                         <input type="email" placeholder="Email address" required>
-                        <button type="submit" disabled><i class="ph ph-paper-plane-tilt"></i> Subscribe</button>
+                        <button type="submit"><i class="ph ph-paper-plane-tilt"></i> Subscribe</button>
                     </form>
                     <p class="newsletter-note"><i class="ph ph-shield-check"></i> We respect your privacy. Unsubscribe anytime.</p>
                 </div>

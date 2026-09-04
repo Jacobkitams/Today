@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us | IUEA Journals</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="journals.css">
 </head>
@@ -29,23 +29,31 @@
         </div>
     </header>
 
-    <section class="contact-section" style="padding-top:4rem;">
+    <section class="page-hero">
+        <div class="container">
+            <span class="page-hero-eyebrow"><i class="ph ph-envelope-simple"></i> We reply within 2 working days</span>
+            <h1 data-reveal>Contact Us</h1>
+            <p data-reveal data-reveal-delay="120">Journal enquiries, manuscript support, partnerships — we're here to help.</p>
+        </div>
+    </section>
+
+    <section class="contact-section">
         <div class="container contact-grid">
-            <div class="contact-info">
+            <div class="contact-info" data-reveal data-reveal-dir="left">
                 <span class="eyebrow">Contact Us</span>
                 <h1>Get in touch with us today</h1>
                 <p>Reach out for journal enquiries, manuscript support, partnerships, or any information about our academic publishing services.</p>
-                <div class="info-card">
+                <div class="info-card" data-reveal data-reveal-delay="100">
                     <div class="info-icon"><i class="ph ph-envelope-simple"></i></div>
                     <div class="info-text"><span>Email</span><strong>journals@iuea.ac.ug</strong></div>
                 </div>
-                <div class="info-card">
+                <div class="info-card" data-reveal data-reveal-delay="220">
                     <div class="info-icon"><i class="ph ph-phone"></i></div>
                     <div class="info-text"><span>Phone</span><strong>+256 000 000000</strong></div>
                 </div>
             </div>
 
-            <div class="contact-form-card">
+            <div class="contact-form-card" data-reveal data-reveal-dir="right" data-reveal-delay="150">
                 <form id="contactForm">
                     <div class="form-row">
                         <div class="form-group">
@@ -61,19 +69,7 @@
                         <label for="contactMessage">How can we help?</label>
                         <textarea id="contactMessage" class="form-control" placeholder="Tell us about your enquiry"></textarea>
                     </div>
-                    <div class="captcha-box">
-                        <div class="captcha-header">Let us know you are human</div>
-                        <div class="captcha-interactive">
-                            <div class="captcha-checkbox" id="captchaCheckbox">
-                                <div class="check-box"></div>
-                                <span class="captcha-msg">Verifying…</span>
-                            </div>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/Cloudflare_logo.svg" alt="Cloudflare" height="15" style="opacity: 0.5;">
-                        </div>
-                        <div class="captcha-helper" id="captchaHelper">Please complete the verification before sending your message.</div>
-                        <input type="hidden" id="isHuman" value="false">
-                    </div>
-                    <button type="submit" class="btn-block" disabled>SEND MESSAGE</button>
+                    <button type="submit" class="btn-block">SEND MESSAGE</button>
                     <div id="formFeedback" class="form-feedback"></div>
                 </form>
             </div>
@@ -101,21 +97,9 @@
                 <div class="footer-newsletter">
                     <h4>Stay Updated</h4>
                     <p>Subscribe to our newsletter for the latest calls for papers and research updates.</p>
-                    <div class="captcha-box newsletter-captcha">
-                        <div class="captcha-header">Let us know you are human</div>
-                        <div class="captcha-interactive">
-                            <div class="captcha-checkbox" id="captchaCheckboxNewsletter">
-                                <div class="check-box"></div>
-                                <span class="captcha-msg">Verifying…</span>
-                            </div>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/Cloudflare_logo.svg" alt="Cloudflare" height="15" style="opacity: 0.5;">
-                        </div>
-                        <div class="captcha-helper" id="captchaHelperNewsletter">Please complete verification before subscribing.</div>
-                        <input type="hidden" id="isHumanNewsletter" value="false">
-                    </div>
                     <form class="newsletter-form">
                         <input type="email" placeholder="Email address" required>
-                        <button type="submit" disabled>Subscribe</button>
+                        <button type="submit">Subscribe</button>
                     </form>
                 </div>
             </div>
