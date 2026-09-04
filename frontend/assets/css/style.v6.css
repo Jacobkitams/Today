@@ -9076,11 +9076,11 @@ body.app-offline .offline-admin-notice {
     #publicHeader .mobile-menu-btn {
         display: inline-flex;
     }
-    
+
     .public-search-wrap {
         display: none;
     }
-    
+
     .public-search-wrap.show-mobile {
         display: block;
     }
@@ -9927,7 +9927,7 @@ body.app-offline .offline-admin-notice {
         align-items: center;
         justify-content: center;
     }
-    
+
     .admin-topbar-left {
         display: flex;
         align-items: center;
@@ -9964,31 +9964,31 @@ body.app-offline .offline-admin-notice {
         overflow-y: auto;
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }
-    
+
     .admin-page-wrapper .admin-sidebar.open {
         left: 0;
     }
-    
+
     /* Make text and icons white on the maroon background */
     .admin-page-wrapper .admin-sidebar .admin-sidebar-label {
         color: rgba(255, 255, 255, 0.7) !important;
     }
-    
+
     .admin-page-wrapper .admin-sidebar .admin-nav-btn {
         color: #fff !important;
     }
-    
+
     .admin-page-wrapper .admin-sidebar .admin-nav-btn i {
         color: rgba(255, 255, 255, 0.9) !important;
     }
-    
+
     .admin-page-wrapper .admin-sidebar .admin-nav-btn:hover,
     .admin-page-wrapper .admin-sidebar .admin-nav-btn:focus,
     .admin-page-wrapper .admin-sidebar .admin-nav-btn.active {
         background-color: rgba(255, 255, 255, 0.15) !important;
         color: #fff !important;
     }
-    
+
     /* Ensure content adjusts underneath */
     .admin-page-wrapper .admin-main.col {
         padding-left: 1rem !important;
@@ -10110,7 +10110,7 @@ body.app-offline .offline-admin-notice {
     h2 { font-size: 1.5rem !important; }
     .page-hero-title { font-size: 2.2rem !important; }
     .page-hero, .hero-section { height: 320px !important; }
-    
+
     .hero-actions {
         flex-direction: column;
         gap: 0.75rem;
@@ -10125,7 +10125,7 @@ body.app-offline .offline-admin-notice {
     .content-grid:not(.row):not(.spotlight-grid).cols-4 {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
-    
+
     .tab-section {
         padding: 1.5rem 0 !important;
     }
@@ -10162,7 +10162,7 @@ body.app-offline .offline-admin-notice {
         height: auto !important;
         padding: 1rem;
     }
-    
+
     .search-container {
         max-width: 100%;
     }
@@ -10324,7 +10324,7 @@ body.app-offline .offline-admin-notice {
         margin: -1.25rem;
         width: calc(100% + 2.5rem);
     }
-    
+
     .ru-dashboard .msg-sidebar {
         border-right: none;
         border-bottom: 1px solid #e2e8f0;
@@ -11102,19 +11102,19 @@ edia (max-width: 768px) {
     .conference-featured-card {
         flex-direction: column;
     }
-    
+
     .cfc-timer-side {
         padding: 2rem;
     }
-    
+
     .conference-hero h1 {
         font-size: 2.5rem;
     }
-    
+
     .conference-hero-actions {
         flex-direction: column;
     }
-    
+
     .conference-featured-wrapper {
         margin-top: -3rem;
     }
@@ -11585,19 +11585,19 @@ edia (max-width: 768px) {
     .match-center-board {
         grid-template-columns: 1fr;
     }
-    
+
     .bento-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .bento-large {
         grid-column: span 2;
     }
-    
+
     .bento-wide {
         grid-column: span 2;
     }
-    
+
     .athlete-glass-card {
         right: 1.5rem;
         width: 55%;
@@ -11608,38 +11608,38 @@ edia (max-width: 768px) {
     .sports-hero-headline {
         font-size: 3.5rem;
     }
-    
+
     .sports-hero-action-bar {
         width: 90%;
         overflow-x: auto;
         justify-content: flex-start;
     }
-    
+
     .sports-hero-action-bar button {
         white-space: nowrap;
     }
-    
+
     .bento-grid {
         grid-template-columns: 1fr;
         grid-auto-rows: 300px;
     }
-    
+
     .bento-large, .bento-tall, .bento-wide {
         grid-column: span 1;
         grid-row: span 1;
     }
-    
+
     .athlete-spotlight-wrapper {
         flex-direction: column;
         background: transparent;
     }
-    
+
     .athlete-image {
         width: 100%;
         height: 300px;
         border-radius: 20px;
     }
-    
+
     .athlete-glass-card {
         position: relative;
         right: 0;
@@ -11863,4 +11863,73 @@ edia (max-width: 768px) {
     border-color: #800000;
     color: #800000;
     background: #fff5f5;
+}
+
+/* ============ IUEA JOURNALS PAGE ============ */
+.journal-card {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.journal-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(128, 0, 0, 0.12);
+}
+
+.journal-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #a62121 0%, #700000 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.journal-card-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.journal-card-meta {
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--iuea-gray);
+}
+
+.journal-card-meta > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 600;
+}
+
+.journal-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-left: auto;
+}
+
+.journal-tag {
+    background: rgba(128, 0, 0, 0.08);
+    color: var(--iuea-maroon);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }

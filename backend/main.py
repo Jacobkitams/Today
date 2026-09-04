@@ -135,6 +135,14 @@ def serve_index():
 @app.get("/{filename:path}")
 def serve_frontend_files(filename: str):
     file_path = os.path.join(FRONTEND_DIR, filename)
+    # Directory-style URLs (e.g. /journals/) serve that folder's index.html
+    if os.path.isdir(file_path):
+        dir_index = os.path.join(file_path, "index.html")
+        if os.path.isfile(dir_index):
+            resp = FileResponse(dir_index)
+            resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+            resp.headers["Pragma"] = "no-cache"
+            return resp
     if os.path.isfile(file_path):
         resp = FileResponse(file_path)
         # HTML and service worker must always be re-validated

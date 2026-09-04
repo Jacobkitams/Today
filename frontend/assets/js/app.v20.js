@@ -851,6 +851,7 @@ function navigateTo(pageId) {
     if (pageId === 'endowment-campaigns-all') loadAllEndowmentCampaignsPage();
     if (pageId === 'research-areas-all') loadAllResearchAreasPage();
     if (pageId === 'publications-all') loadAllPublicationsPage();
+    if (pageId === 'iuea-journals') renderIueaJournalsPage();
     if (pageId === 'conference') loadConferencesPage();
     if (pageId === 'community-service') loadCommunityServicesPage();
     if (pageId === 'research-labs-all') loadAllResearchLabsPage();
@@ -892,13 +893,13 @@ function toggleMobileNav() {
 function toggleMobileSearch() {
     const searchWrap = document.getElementById('publicSearch');
     if (!searchWrap) return;
-    
+
     // Close nav menu if it's open
     const navLinks = document.getElementById('navLinks');
     if (navLinks && navLinks.classList.contains('open')) {
         toggleMobileNav();
     }
-    
+
     const isShowing = searchWrap.classList.toggle('show-mobile');
     const input = document.getElementById('globalSearch');
     if (isShowing && input) {
@@ -1475,7 +1476,7 @@ function showAdminTab(tabId, btn) {
     dash.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
     const tab = document.getElementById(`admin-tab-${tabId}`);
     if (tab) tab.classList.add('active');
-    
+
     if (tabId === 'profile') {
         populateProfileForm('admin');
     }
@@ -2920,6 +2921,59 @@ function loadAllPublicationsPage() {
     if (page) refreshIconsIn(page);
 }
 
+const IUEA_JOURNALS = [
+    {
+        title: 'IUEA Journal of Science, Technology & Innovation',
+        excerpt: 'Peer-reviewed research in engineering, computing, and applied sciences driving African innovation.',
+        icon: 'cpu', tags: ['Science', 'Engineering', 'Open Access'], frequency: 'Biannual'
+    },
+    {
+        title: 'IUEA Business & Economics Review',
+        excerpt: 'Research on entrepreneurship, finance, and sustainable economic development across the continent.',
+        icon: 'trending-up', tags: ['Business', 'Economics', 'Peer-Reviewed'], frequency: 'Annual'
+    },
+    {
+        title: 'IUEA Journal of Social Sciences & Humanities',
+        excerpt: 'Studies on governance, culture, education, and society shaping Africa\'s future.',
+        icon: 'users', tags: ['Humanities', 'Social Sciences', 'Open Access'], frequency: 'Biannual'
+    },
+    {
+        title: 'IUEA Student Research Digest',
+        excerpt: 'A platform for outstanding undergraduate and postgraduate research from IUEA students.',
+        icon: 'graduation-cap', tags: ['Students', 'Emerging Research'], frequency: 'Annual'
+    },
+    {
+        title: 'IUEA Journal of Health & Environmental Studies',
+        excerpt: 'Public health, environmental sustainability, and community wellbeing research in East Africa.',
+        icon: 'leaf', tags: ['Health', 'Environment', 'Peer-Reviewed'], frequency: 'Annual'
+    },
+    {
+        title: 'IUEA Proceedings & Working Papers',
+        excerpt: 'Conference proceedings and working papers from IUEA research labs and academic events.',
+        icon: 'file-text', tags: ['Proceedings', 'Working Papers'], frequency: 'Continuous'
+    }
+];
+
+function renderIueaJournalsPage() {
+    const grid = document.getElementById('iueaJournalsGrid');
+    if (!grid) return;
+    grid.innerHTML = IUEA_JOURNALS.map(j => `
+        <article class="content-card journal-card">
+            <div class="journal-card-icon"><i data-lucide="${j.icon}"></i></div>
+            <h3 style="color:var(--iuea-maroon); font-weight:700;">${j.title}</h3>
+            <p style="color:var(--iuea-gray); font-size:0.9rem;">${j.excerpt}</p>
+            <div class="journal-card-meta">
+                <span><i data-lucide="clock"></i> ${j.frequency}</span>
+                <div class="journal-card-tags">
+                    ${j.tags.map(t => `<span class="journal-tag">${t}</span>`).join('')}
+                </div>
+            </div>
+        </article>
+    `).join('');
+    const page = document.getElementById('iuea-journals');
+    if (page) refreshIconsIn(page);
+}
+
 function loadAllResearchLabsPage() {
     renderGridCards('researchLabsAllGrid', publicContentCache.researchLabs || [], 'research-labs', 'No research labs yet.');
     const page = document.getElementById('research-labs-all');
@@ -3165,7 +3219,7 @@ async function loadAdminDashboard() {
 let chartInstances = {};
 function initAdminCharts() {
     if (typeof Chart === 'undefined') return;
-    
+
     const chartOptions = {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false } },
@@ -3503,7 +3557,7 @@ async function loadAdminStats() {
         if (donationsNum) donationsNum.textContent = stats.total_donations;
         const pendingNum = document.getElementById('stat-pending-num');
         if (pendingNum) pendingNum.textContent = stats.pending_content;
-        
+
         const pendingBadge = document.getElementById('nav-pending-badge');
         if (pendingBadge) pendingBadge.textContent = stats.pending_content;
         const kanbanPending = document.getElementById('kanban-pending-count');
@@ -5092,7 +5146,7 @@ async function loadResearchAdminModule(btn, options = {}) {
 async function loadInnovationsAdminModule(btn, options = {}) {
     const { forceRefresh = false, targetId = 'adminContentArea', skipHeaderUpdate = false } = options;
     currentAdminModule = 'innovations';
-    
+
     if (!skipHeaderUpdate) {
         showAdminTab('content', btn || document.querySelector('.admin-nav-btn[data-module="innovations"]'));
         updateAdminContentHeader('innovations');
@@ -5852,7 +5906,7 @@ function reloadAdminModuleAfterCrud(moduleName, options = {}) {
         : isTechParkSubModule(moduleName) ? 'techpark'
         : isDonationsSubModule(moduleName) ? 'donations'
         : moduleName;
-    
+
     const isIa = document.getElementById('innovation-admin-dashboard')?.style.display === 'block';
     if (isIa && parentModule === 'innovations') {
         loadInnovationsAdminModule(null, { ...options, targetId: 'iaContentArea', skipHeaderUpdate: true });
@@ -7127,7 +7181,7 @@ function renderRuStoryComment(comment, newsId, depth = 0) {
         ? `<ul class="ru-story-comment-replies">${comment.replies.map(r => `<li>${renderRuStoryComment(r, newsId, depth + 1)}</li>`).join('')}</ul>`
         : '';
 
-    const avatarHtml = pic 
+    const avatarHtml = pic
         ? `<img src="${resolveMediaUrl(pic)}" alt="${escapeHtml(author)}" style="width:24px;height:24px;object-fit:cover;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:6px;">`
         : '';
 
@@ -8015,7 +8069,7 @@ async function uploadFile(fileInput, type, onProgress) {
     onProgress(30, `Uploading ${type}…`);
     const res = await fetch(`${API_BASE_URL}/upload/${type}`, {
         method: 'POST',
-        headers: { 
+        headers: {
             'Authorization': `Bearer ${authToken}`,
             'ngrok-skip-browser-warning': 'true'
         },
@@ -8105,15 +8159,15 @@ async function submitCreateForm() {
             'community-services': '/admin/community-services'
         };
         const endpoint = ENDPOINT_MAP[type] || '/content/news';
-        
+
         let body = { title, description: desc, image: imageUrl, video: videoUrl };
         if (type === 'alumni') {
             const names = title.split(' ');
-            body = { 
-                first_name: names[0] || 'Unknown', 
-                last_name: names.slice(1).join(' ') || 'Unknown', 
-                achievement: desc, 
-                image: imageUrl 
+            body = {
+                first_name: names[0] || 'Unknown',
+                last_name: names.slice(1).join(' ') || 'Unknown',
+                achievement: desc,
+                image: imageUrl
             };
         } else if (type === 'research-areas') {
             body = { name: title, description: desc, image: imageUrl };
@@ -8177,10 +8231,10 @@ async function submitCreateForm() {
                 cover_image_url: imageUrl || null
             };
         } else if (type === 'event') {
-            body = { 
-                title, 
-                description: desc, 
-                image: imageUrl, 
+            body = {
+                title,
+                description: desc,
+                image: imageUrl,
                 video: videoUrl,
                 date: document.getElementById('createEventDate')?.value || null,
                 ticket_types: document.getElementById('createTicketTypes')?.value || 'general'
@@ -8299,7 +8353,7 @@ async function signIn() {
     try {
         const res = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'ngrok-skip-browser-warning': 'true'
             },
@@ -8476,7 +8530,7 @@ function updateUIForUser() {
     if (currentUser) {
         const displayName = getUserDisplayName(currentUser) || 'User';
         if (display) display.textContent = displayName;
-        
+
         if (avatarImg && avatarIcon) {
             avatarImg.src = currentUser.profile_picture ? resolveMediaUrl(currentUser.profile_picture) : getInitialsAvatarSvgUrl(currentUser.name, currentUser.id);
             avatarImg.classList.remove('hidden');
@@ -8523,7 +8577,7 @@ function updateUIForUser() {
         // Populate name in role dashboards
         const ruDashNameEl = document.getElementById('ruDashName');
         if (ruDashNameEl) ruDashNameEl.textContent = displayName;
-        
+
         const ruDropName = document.getElementById('ruDropName');
         if (ruDropName) ruDropName.textContent = displayName;
         const ruDropEmail = document.getElementById('ruDropEmail');
@@ -8559,7 +8613,7 @@ function updateUIForUser() {
         startNotificationPolling();
     } else {
         if (display) display.textContent = `Sign In`;
-        
+
         if (avatarImg && avatarIcon) {
             avatarImg.classList.add('hidden');
             avatarIcon.classList.remove('hidden');
@@ -8583,7 +8637,7 @@ function updateUIForUser() {
                 iconEl.classList.remove('hidden');
             }
         });
-        
+
         if (mobileLink) { mobileLink.innerHTML = `<i data-lucide="log-in"></i> Sign In`; mobileLink.setAttribute('onclick', 'showAuthModal()'); }
         if (userDashLink) userDashLink.classList.add('hidden');
         if (badge) badge.textContent = '';
@@ -8851,7 +8905,7 @@ function handleOutsideSearchClick(e) {
     if (!isSearchWrapClick) {
         hideSearchResults();
     }
-    
+
     if (!isSearchWrapClick && !isSearchToggleBtnClick) {
         const searchWrap = document.getElementById('publicSearch');
         if (searchWrap && searchWrap.classList.contains('show-mobile')) {
@@ -9051,7 +9105,7 @@ async function uploadHeroVideo(pageKey, file, inputEl) {
     try {
         const res = await fetch(`${API_BASE_URL}/settings/hero-videos/${pageKey}`, {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Authorization': `Bearer ${authToken}`,
                 'ngrok-skip-browser-warning': 'true'
             },
@@ -9886,7 +9940,7 @@ function ruGoToTab(tabId) {
     const dash = document.getElementById('registered-user-dashboard');
     const btn = dash?.querySelector(`[data-ru-tab="${tabId}"]`);
     showRoleTab('ru', tabId, btn || null);
-    
+
     // Update mobile bottom nav if it exists
     document.querySelectorAll('.ru-mob-nav-btn').forEach(b => b.classList.remove('active'));
     const mobBtn = document.querySelector(`.ru-mob-nav-btn[data-ru-tab="${tabId}"]`);
@@ -9945,7 +9999,7 @@ function ensureRoleDashboardTabActive(dashId) {
     if (!prefix) return;
     const dash = document.getElementById(dashId);
     if (!dash || dash.querySelector('.role-tab.active') || dash.querySelector('.co-tab.active')) return;
-    
+
     // Default to 'overview' tab if none active
     const btn = findRoleTabButton(prefix, 'overview');
     if (btn) showRoleTab(prefix, 'overview', btn);
@@ -10714,7 +10768,7 @@ async function iaLoadContent(contentType) {
     if (contentType === 'content') {
         const actionsEl = document.getElementById('ia-content-actions');
         if (actionsEl && actionsEl.dataset.initialized !== 'true') {
-            const btnHtml = INNOVATIONS_SUBMODULES.map(sub => 
+            const btnHtml = INNOVATIONS_SUBMODULES.map(sub =>
                 `<button type="button" class="btn-primary" style="margin-left:8px;" onclick="showCreateModal('${sub.createType}')"><i data-lucide="${sub.icon}"></i> ${sub.createLabel}</button>`
             ).join('');
             actionsEl.innerHTML = `
@@ -11014,18 +11068,18 @@ async function saveProfile(prefix = 'ru') {
     const emailEl = document.getElementById(`${prefix}ProfileEmail`);
     const passEl = document.getElementById(`${prefix}ProfilePassword`);
     const picInput = document.getElementById(`${prefix}ProfilePictureInput`);
-    
+
     if (!nameEl || !emailEl || !passEl) return;
-    
+
     const name = nameEl.value.trim();
     const email = emailEl.value.trim();
     const password = passEl.value;
-    
+
     if (!name || !email) {
         showToast('Name and email are required.', 'error');
         return;
     }
-    
+
     let profile_picture = currentUser.profile_picture;
     if (picInput && picInput.files && picInput.files[0]) {
         const formData = new FormData();
@@ -11049,7 +11103,7 @@ async function saveProfile(prefix = 'ru') {
             return;
         }
     }
-    
+
     try {
         const res = await fetch(`${API_BASE_URL}/auth/me`, {
             method: 'PUT',
@@ -11059,7 +11113,7 @@ async function saveProfile(prefix = 'ru') {
             },
             body: JSON.stringify({ name, email, password, profile_picture })
         });
-        
+
         if (res.ok) {
             const updatedUser = await res.json();
             currentUser = updatedUser;
@@ -11956,7 +12010,7 @@ function initNotificationsUI() {
 
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.notify-wrap')) closeAllNotifyDropdowns();
-        
+
         // Auto-close admin sidebar on mobile when a link is clicked
         if (window.innerWidth <= 991 && e.target.closest('.admin-sidebar .admin-nav-btn')) {
             const sidebar = e.target.closest('.admin-sidebar');
@@ -11975,10 +12029,10 @@ function initNotificationsUI() {
 
 async function registerForEvent(eventId, title, date, ticketTypes = 'general') {
     if (!currentUser) { showAuthModal(); return; }
-    
+
     const modal = document.getElementById('eventRegistrationModal');
     if (!modal) return;
-    
+
     // Wire up VIP payment toggle if not done
     const ticketType = document.getElementById('regTicketType');
     if (ticketType && !ticketType.dataset.wired) {
@@ -12000,16 +12054,16 @@ async function registerForEvent(eventId, title, date, ticketTypes = 'general') {
             }
         });
     }
-    
+
     document.getElementById('eventRegForm').reset();
     document.getElementById('regPaymentMethodGroup').style.display = 'none';
     document.getElementById('regPaymentMethod').required = false;
     const paymentPhone = document.getElementById('regPaymentPhone');
     if(paymentPhone) paymentPhone.required = false;
-    
+
     document.getElementById('regEventId').value = eventId;
     document.getElementById('eventRegistrationSubtitle').textContent = `${title} ${date ? '• ' + date : ''}`;
-    
+
     if (ticketType) {
         ticketType.innerHTML = '';
         if (ticketTypes.includes('general')) {
@@ -12024,7 +12078,7 @@ async function registerForEvent(eventId, title, date, ticketTypes = 'general') {
         // Force trigger change event to show/hide payment if VIP/Ordinary is only option
         ticketType.dispatchEvent(new Event('change'));
     }
-    
+
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
 }
@@ -12134,13 +12188,13 @@ async function loadRuEvents() {
         });
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
-        
+
         const badge = document.getElementById('ru-nav-events-badge');
         if (badge) {
             badge.textContent = data.length;
             badge.style.display = data.length > 0 ? 'inline-block' : 'none';
         }
-        
+
         if (!data.length) {
             container.innerHTML = `
                 <div class="admin-panel">
@@ -12157,7 +12211,7 @@ async function loadRuEvents() {
 
         let html = '<div class="admin-panel"><div class="table-responsive"><table class="admin-table-modern">';
         html += `<thead><tr><th>Event</th><th>Date & Location</th><th>Status</th><th>Registered On</th><th>Actions</th></tr></thead><tbody>`;
-        
+
         data.forEach(reg => {
             const statusClass = reg.status === 'confirmed' ? 'status-approved' : (reg.status === 'waitlisted' ? 'status-pending' : 'status-rejected');
             const created = new Date(reg.created_at).toLocaleDateString();
@@ -12207,23 +12261,23 @@ async function manageEventParticipants(eventId, title) {
     `;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     lucide.createIcons();
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/events-reg/admin/events/${eventId}/participants`, {
             headers: { 'Authorization': `Bearer ${authToken}`, 'ngrok-skip-browser-warning': 'true' }
         });
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
-        
+
         const body = document.getElementById('participantsModalBody');
         if (!data.length) {
             body.innerHTML = '<div class="admin-empty-state"><p>No participants registered yet.</p></div>';
             return;
         }
-        
+
         let html = '<div class="table-responsive"><table class="admin-table-modern" style="width:100%">';
         html += '<thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Registered On</th><th>Actions</th></tr></thead><tbody>';
-        
+
         data.forEach(p => {
             const statusClass = p.status === 'confirmed' ? 'status-approved' : (p.status === 'waitlisted' ? 'status-pending' : 'status-rejected');
             html += `<tr>
@@ -12301,10 +12355,10 @@ async function checkEventRegistrationStatus(eventId, btn) {
 async function loadEventRegistrationsAdmin(btn, options = {}) {
     const area = document.getElementById('adminEventRegistrationsArea');
     if (!area) return;
-    
+
     currentAdminModule = 'event-registrations';
     showAdminTab('event-registrations', btn || document.querySelector('.admin-nav-btn[data-module="event-registrations"]'));
-    
+
     // Only skip re-fetch if a real table is already rendered (not a loading/error state)
     if (!options.forceRefresh && area.querySelector('table')) {
         return;
@@ -12326,9 +12380,9 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
             if (response.status === 401) logout();
             return;
         }
-        
+
         const participants = await response.json();
-        
+
         if (!participants.length) {
             area.innerHTML = '<div class="admin-empty-state"><p>No registrations found.</p></div>';
             return;
@@ -12336,7 +12390,7 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
 
         let html = '<div class="table-responsive"><table class="admin-table-modern" style="width:100%; white-space:nowrap;">';
         html += '<thead><tr><th>Participant</th><th>Event</th><th>Ticket & Payment</th><th>Status</th><th>Registered On</th><th>Actions</th></tr></thead><tbody>';
-        
+
         participants.forEach(p => {
             const ticketText = (p.ticket_type || 'General').toUpperCase();
             const payText = p.payment_method ? (p.payment_method === 'mobile_money' ? 'Mobile Money' : 'Card') : 'None';
@@ -12356,7 +12410,7 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
                         <span style="font-weight:600;color:var(--iuea-maroon)">${ticketText}</span>${guestsText}
                     </div>
                     <div style="font-size:0.8rem;color:#555">
-                        ${payText} 
+                        ${payText}
                         ${p.payment_status === 'paid' ? '<span style="color:green;font-weight:500">(Paid)</span>' : (p.payment_status === 'pending' ? '<span style="color:orange;font-weight:500">(Pending)</span>' : '')}
                         ${payPhone}
                     </div>
@@ -12376,11 +12430,11 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
                 </td>
             </tr>`;
         });
-        
+
         html += '</tbody></table></div>';
         area.innerHTML = html;
         if (typeof lucide !== 'undefined') lucide.createIcons();
-        
+
     } catch (e) {
         area.innerHTML = `<div class="admin-empty-state"><p style="color:red">Failed to load events: ${e.message || e}</p></div>`;
         console.error(e);
@@ -12608,15 +12662,15 @@ let wsReconnectAttempts = 0;
 function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
+
     globalWebSocket = new WebSocket(wsUrl);
-    
+
     globalWebSocket.onopen = () => {
         console.log('WebSocket connected for real-time updates');
         wsReconnectAttempts = 0;
         if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
     };
-    
+
     globalWebSocket.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
@@ -12627,14 +12681,14 @@ function connectWebSocket() {
             console.error('Error parsing WebSocket message', e);
         }
     };
-    
+
     globalWebSocket.onclose = () => {
         // Exponential backoff reconnect
         const delay = Math.min(1000 * (2 ** wsReconnectAttempts), 30000);
         wsReconnectAttempts++;
         wsReconnectTimer = setTimeout(connectWebSocket, delay);
     };
-    
+
     globalWebSocket.onerror = (err) => {
         globalWebSocket.close();
     };
@@ -12643,7 +12697,7 @@ function connectWebSocket() {
 function handleUserUpdatedEvent(payload) {
     const { id, name, profile_picture } = payload;
     if (!id) return;
-    
+
     // Update global variables if this is the current user
     if (currentUser && currentUser.id === id) {
         currentUser.name = name;
