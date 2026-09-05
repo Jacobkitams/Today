@@ -3,10 +3,16 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import io
 import uuid
+import logging
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from PIL import Image, ImageOps
 from auth import get_current_user
 from models import User
+
+logger = logging.getLogger(__name__)
+
+# Prevent DecompressionBombError on high-resolution camera photos (e.g. 100 megapixels)
+Image.MAX_IMAGE_PIXELS = 100_000_000
 
 router = APIRouter()
 
@@ -57,7 +63,16 @@ FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__fi
 IMAGES_DIR   = os.path.join(FRONTEND_DIR, "images")
 VIDEOS_DIR   = os.path.join(FRONTEND_DIR, "videos")
 
-ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+ALLOWED_IMAGE_TYPES = {
+    "image/jpeg",
+    "image/pjpeg",
+    "image/jpg",
+    "image/png",
+    "image/x-png",
+    "image/webp",
+    "image/gif",
+}
+ALLOWED_IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".jfif"}
 ALLOWED_VIDEO_TYPES = {"video/mp4", "video/webm", "video/ogg"}
 MAX_IMAGE_SIZE = 20 * 1024 * 1024   # 20 MB
 MAX_VIDEO_SIZE = 200 * 1024 * 1024  # 200 MB
@@ -65,12 +80,14 @@ MAX_UPLOAD_BYTES = MAX_VIDEO_SIZE   # Starlette multipart limit (must cover vide
 
 def _save_file(upload: UploadFile, dest_dir: str, allowed_types: set, max_size: int) -> str:
     ext = os.path.splitext(upload.filename or "")[1].lower() or ".bin"
+    # Validate MIME type with fallback to extension for images and documents
     if upload.content_type not in allowed_types:
-        # Fallback for documents: allow based on extension if MIME type is unrecognised
-        if "documents" in dest_dir and ext in {".pdf", ".doc", ".docx", ".txt", ".rtf", ".csv", ".xls", ".xlsx", ".ppt", ".pptx"}:
+        if dest_dir == IMAGES_DIR and ext in ALLOWED_IMAGE_EXTS:
+            pass
+        elif "documents" in dest_dir and ext in {".pdf", ".doc", ".docx", ".txt", ".rtf", ".csv", ".xls", ".xlsx", ".ppt", ".pptx"}:
             pass
         else:
-            raise HTTPException(status_code=400, detail=f"Unsupported file type: {upload.content_type} (ext: {ext})")
+            raise HTTPException(status_code=400, detail=f"Unsupported file format: {upload.content_type or 'unknown'} (ext: {ext}).")
     content = upload.file.read()
     if len(content) > max_size:
         limit_mb = max_size // (1024 * 1024)
@@ -91,16 +108,28 @@ async def upload_image(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user)
 ):
-    filename = _save_file(file, IMAGES_DIR, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE)
-    return {"url": f"/assets/images/{filename}", "filename": filename}
+    try:
+        filename = _save_file(file, IMAGES_DIR, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE)
+        return {"url": f"/assets/images/{filename}", "filename": filename}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Image upload failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"Image upload processing failed: {str(e)}")
 
 @router.post("/video")
 async def upload_video(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user)
 ):
-    filename = _save_file(file, VIDEOS_DIR, ALLOWED_VIDEO_TYPES, MAX_VIDEO_SIZE)
-    return {"url": f"/assets/videos/{filename}", "filename": filename}
+    try:
+        filename = _save_file(file, VIDEOS_DIR, ALLOWED_VIDEO_TYPES, MAX_VIDEO_SIZE)
+        return {"url": f"/assets/videos/{filename}", "filename": filename}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Video upload failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"Video upload processing failed: {str(e)}")
 
 ALLOWED_DOCUMENT_TYPES = {"application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"}
 DOCUMENTS_DIR = os.path.join(FRONTEND_DIR, "documents")

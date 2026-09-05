@@ -1,6 +1,9 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+import logging
+logger = logging.getLogger(__name__)
+
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -489,10 +492,19 @@ def get_tech_park(db: Session = Depends(get_db)):
 @router.post("/news", response_model=schemas.NewsResponse)
 def create_news(item: schemas.NewsCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     status = "approved" if current_user.role in ["super_admin", "content_editor", "admin"] else "pending"
-    db_item = models.News(**item.dict(), author_id=current_user.id, status=status)
-    db.add(db_item); db.commit(); db.refresh(db_item)
-    _after_pending_content_create(db, "news", db_item, current_user)
-    return db_item
+    valid_cols = {c.name for c in models.News.__table__.columns}
+    data = {k: v for k, v in item.dict().items() if k in valid_cols}
+    try:
+        db_item = models.News(**data, author_id=current_user.id, status=status)
+        db.add(db_item)
+        db.commit()
+        db.refresh(db_item)
+        _after_pending_content_create(db, "news", db_item, current_user)
+        return db_item
+    except Exception as e:
+        db.rollback()
+        logger.exception("Failed to publish news article: %s", e)
+        raise HTTPException(status_code=500, detail=f"Failed to publish news article: {str(e)}")
 
 @router.post("/events", response_model=schemas.EventResponse)
 def create_event(item: schemas.EventCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

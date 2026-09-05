@@ -7804,14 +7804,20 @@ function closeCreateModal() {
 /* ---- upload size limits (must match backend upload_routes.py) ---- */
 const IMAGE_MAX_BYTES = 20 * 1024 * 1024;
 const VIDEO_MAX_BYTES = 200 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/pjpeg', 'image/jpg', 'image/x-png'];
+const ALLOWED_IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.jfif'];
 
 function validateImageFile(file) {
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        return 'Only JPEG, PNG, WebP, and GIF images are allowed.';
+    if (!file) return null;
+    const name = file.name || '';
+    const ext = name.substring(name.lastIndexOf('.')).toLowerCase();
+    const isAllowedType = ALLOWED_IMAGE_TYPES.includes(file.type) || ALLOWED_IMAGE_EXTS.includes(ext);
+    if (!isAllowedType) {
+        return 'Unsupported format. Allowed formats: JPEG (.jpg, .jpeg), PNG (.png), WebP (.webp), and GIF (.gif).';
     }
     if (file.size > IMAGE_MAX_BYTES) {
-        return 'Image must be 20MB or smaller.';
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+        return `Image too large (${sizeMb} MB). Maximum allowed size is 20 MB.`;
     }
     return null;
 }
@@ -8077,7 +8083,14 @@ async function uploadFile(fileInput, type, onProgress) {
     });
     if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || `${type} upload failed: ${res.status}`);
+        let msg = data.detail;
+        if (!msg) {
+            if (res.status === 413) msg = `${type.charAt(0).toUpperCase() + type.slice(1)} is too large. Maximum size is 20 MB.`;
+            else if (res.status === 400) msg = `Unsupported ${type} format. Please use standard JPEG, PNG, WebP or GIF.`;
+            else if (res.status === 401) msg = 'Session expired. Please log in again.';
+            else msg = `${type.charAt(0).toUpperCase() + type.slice(1)} upload failed (HTTP ${res.status}).`;
+        }
+        throw new Error(msg);
     }
     onProgress(70, `${type.charAt(0).toUpperCase()+type.slice(1)} uploaded ✓`);
     const data = await res.json();
