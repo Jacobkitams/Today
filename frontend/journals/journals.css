@@ -1914,7 +1914,7 @@ textarea.form-control {
 }
 
 /* ==========================================================================
-   Footer — matches main IUEA Today footer palette
+   Footer — matches journals home section palette
    ========================================================================== */
 .footer {
   background-color: #383a3e;
@@ -1924,7 +1924,6 @@ textarea.form-control {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
-
 /* Slim brand accent line across the top */
 .footer::before {
   content: "";
@@ -1932,24 +1931,20 @@ textarea.form-control {
   height: 3px;
   background: linear-gradient(90deg, var(--primary-color) 0%, #c22a2a 45%, rgba(194, 42, 42, 0) 100%);
 }
-
 .footer .container {
   padding-top: 56px;
   padding-bottom: 40px;
 }
-
 .footer-grid {
   display: grid;
   grid-template-columns: 1.4fr 1fr 1fr 1.3fr;
   gap: 40px;
   margin-bottom: 48px;
 }
-
 .footer-brand {
   display: flex;
   flex-direction: column;
 }
-
 .footer-brand img {
   height: 48px;
   filter: none;
@@ -1961,7 +1956,6 @@ textarea.form-control {
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
-
 .footer-brand p {
   font-size: 0.92rem;
   color: #c5c8cc;
@@ -1969,13 +1963,11 @@ textarea.form-control {
   margin-bottom: 20px;
   max-width: 320px;
 }
-
 .footer-socials {
   display: flex;
   gap: 10px;
   margin-top: 4px;
 }
-
 .footer-socials a {
   width: 38px;
   height: 38px;
@@ -1989,14 +1981,12 @@ textarea.form-control {
   font-size: 1.05rem;
   transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
 }
-
 .footer-socials a:hover {
   background: #800000;
   border-color: #800000;
   color: #ffffff;
   transform: translateY(-2px);
 }
-
 .footer-socials i {
   line-height: 1;
 }
@@ -2014,7 +2004,6 @@ textarea.form-control {
   text-decoration-thickness: 1.5px;
   letter-spacing: -0.01em;
 }
-
 .footer-links ul {
   display: grid;
   gap: 10px;
@@ -2022,7 +2011,6 @@ textarea.form-control {
   list-style: none;
   padding: 0;
 }
-
 .footer-links a {
   color: #c5c8cc;
   text-decoration: none;
@@ -2032,35 +2020,19 @@ textarea.form-control {
   gap: 0.5rem;
   transition: color 0.2s ease, transform 0.2s ease;
 }
-
-.footer-links a .chevron {
-  font-size: 1.15rem;
-  line-height: 1;
-  font-weight: 700;
-  color: #d1d5db;
-  display: inline-block;
-  transition: transform 0.2s ease, color 0.2s ease;
-}
-
 .footer-links a:hover {
   color: #ffffff;
   transform: translateX(3px);
 }
 
-.footer-links a:hover .chevron {
-  color: #ffffff;
-}
-
 .footer-contact {
   font-size: 0.92rem;
 }
-
 .footer-contact-list {
   display: grid;
   gap: 14px;
   margin-top: 4px;
 }
-
 .footer-contact-item {
   display: flex;
   align-items: flex-start;
@@ -2068,7 +2040,6 @@ textarea.form-control {
   color: #c5c8cc;
   line-height: 1.5;
 }
-
 .footer-contact-item .footer-contact-icon {
   flex-shrink: 0;
   width: 18px;
@@ -2079,19 +2050,16 @@ textarea.form-control {
   align-items: center;
   justify-content: center;
 }
-
 .footer-contact-item .footer-contact-icon i {
   width: 18px;
   height: 18px;
   stroke-width: 2;
 }
-
 .footer-contact-item a {
   color: #c5c8cc;
   text-decoration: none;
   transition: color 0.2s ease;
 }
-
 .footer-contact-item a:hover {
   color: #ffffff;
   text-decoration: underline;
@@ -2103,12 +2071,10 @@ textarea.form-control {
   line-height: 1.6;
   margin: 4px 0 18px;
 }
-
 .newsletter-form {
   display: flex;
   gap: 8px;
 }
-
 .newsletter-form input {
   flex-grow: 1;
   padding: 11px 14px;
@@ -2122,18 +2088,15 @@ textarea.form-control {
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   min-width: 0;
 }
-
 .newsletter-form input::placeholder {
   color: #a0a6ae;
 }
-
 .newsletter-form input:focus {
   outline: none;
   background-color: #555b64;
   border-color: rgba(255, 255, 255, 0.35);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
 }
-
 .newsletter-form button {
   padding: 11px 18px;
   background-color: #800000;
@@ -2149,13 +2112,11 @@ textarea.form-control {
   transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
   flex-shrink: 0;
 }
-
 .newsletter-form button:hover {
   background-color: #990000;
   box-shadow: 0 4px 12px rgba(128, 0, 0, 0.35);
   transform: translateY(-1px);
 }
-
 .newsletter-note {
   font-size: 0.78rem;
   color: #a0a6ae;
@@ -2176,13 +2137,11 @@ textarea.form-control {
   color: #ffffff;
   font-weight: 500;
 }
-
 .footer-bottom a {
   color: #ffffff;
   text-decoration: none;
   transition: opacity 0.2s ease;
 }
-
 .footer-bottom a:hover {
   opacity: 0.85;
   text-decoration: underline;

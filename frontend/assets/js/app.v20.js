@@ -4,6 +4,7 @@ const API_BASE_URL = (() => {
         return override.replace(/\/$/, '');
     }
     const host = window.location.hostname || 'localhost';
+    const port = window.location.port;
     // Production domain — API is served by same FastAPI process via Nginx proxy (same origin, no port)
     if (host === 'today.iuea.ac.ug' || host.endsWith('.iuea.ac.ug')) {
         return '';
@@ -11,7 +12,11 @@ const API_BASE_URL = (() => {
     if (host.includes('ngrok-free.dev')) {
         return `https://${host}/MyProject/today/frontend/api`;
     }
-    return `http://${host}:8002`;
+    // When served directly by the backend (e.g. port 8001, 8002, 8000) use same origin
+    if (port === '8001' || port === '8002' || port === '8000') {
+        return window.location.origin;
+    }
+    return `http://${host}:8001`;
 })();
 
 // Same-origin relative prefix for static media (Apache serves frontend/assets and frontend/uploads)
@@ -6929,17 +6934,6 @@ function openCardDetailFromCard(card) {
     const detail = cardDetailFromCard(card);
     if (!detail || !detail.id) return;
 
-    // ── AUTH GUARD ────────────────────────────────────────────────────────────
-    // If the user is not signed in, save this card as a pending action and
-    // surface the login modal.  After a successful sign-in the action is
-    // replayed automatically (see signIn()).
-    if (!currentUser) {
-        pendingCardAction = { action: 'open_card', type: detail.type, id: detail.id };
-        showAuthModal();
-        return;
-    }
-    // ─────────────────────────────────────────────────────────────────────────
-
     const modal = document.getElementById('cardDetailModal');
     const media = document.getElementById('cardDetailMedia');
     const badge = document.getElementById('cardDetailBadge');
@@ -7753,6 +7747,12 @@ function onCreateTypeChange(type) {
 }
 
 function showCreateModal(presetType) {
+    if (!currentUser || !authToken) {
+        showToast('Please sign in to publish content.', 'info');
+        showAuthModal();
+        return;
+    }
+
     createModalPresetMode = !!presetType;
     createModalPresetType = presetType || null;
     const type = presetType || 'news';
@@ -8099,6 +8099,12 @@ async function uploadFile(fileInput, type, onProgress) {
 
 /* ---- submit content ---- */
 async function submitCreateForm() {
+    if (!currentUser || !authToken) {
+        showToast('Please sign in to publish content.', 'error');
+        showAuthModal();
+        return;
+    }
+
     const type = resolveCreateFormType();
     const title = document.getElementById('createTitle')?.value.trim();
     const desc  = document.getElementById('createDesc')?.value.trim();
@@ -12674,7 +12680,11 @@ let wsReconnectAttempts = 0;
 
 function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    let host = window.location.host;
+    if (API_BASE_URL && API_BASE_URL.startsWith('http')) {
+        try { host = new URL(API_BASE_URL).host; } catch (_) {}
+    }
+    const wsUrl = `${protocol}//${host}/ws`;
 
     globalWebSocket = new WebSocket(wsUrl);
 
