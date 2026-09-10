@@ -22,7 +22,7 @@ class News(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), index=True)
     description = Column(Text)
-    image = Column(String(512))
+    image = Column(Text, nullable=True)
     video = Column(String(512), nullable=True)
     likes = Column(Integer, default=0)
     comments_count = Column(Integer, default=0)

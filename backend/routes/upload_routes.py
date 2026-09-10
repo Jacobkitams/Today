@@ -73,16 +73,32 @@ ALLOWED_IMAGE_TYPES = {
     "image/gif",
 }
 ALLOWED_IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".jfif"}
-ALLOWED_VIDEO_TYPES = {"video/mp4", "video/webm", "video/ogg"}
-MAX_IMAGE_SIZE = 20 * 1024 * 1024   # 20 MB
-MAX_VIDEO_SIZE = 200 * 1024 * 1024  # 200 MB
-MAX_UPLOAD_BYTES = MAX_VIDEO_SIZE   # Starlette multipart limit (must cover video)
+# Accept any browser-playable video / QuickTime / AVI etc. Servers may report
+# generic types (application/octet-stream, application/x-msvideo, ...) for
+# common formats, so fall back to a wide allowlist of known video extensions.
+ALLOWED_VIDEO_TYPES = {
+    "video/mp4", "video/webm", "video/ogg", "video/ogv", "video/x-msvideo",
+    "video/quicktime", "video/mpeg", "video/3gpp", "video/3gpp2",
+    "video/x-m4v", "video/mp2t", "video/x-matroska", "video/x-flv",
+    "video/x-m4v", "application/octet-stream", "application/x-mpegURL",
+}
+ALLOWED_VIDEO_EXTS = {
+    ".mp4", ".webm", ".ogg", ".ogv", ".mov", ".mkv", ".avi", ".m4v",
+    ".m4a", ".mpg", ".mpeg", ".mpe", ".m1v", ".m2v", ".3gp", ".3g2",
+    ".3gpp", ".3gpp2", ".flv", ".mts", ".m2ts", ".ts", ".m2t",
+    ".wmv", ".asf", ".vob", ".m1v", ".m2v", ".qt", ".mxf", ".rmvb",
+}
+MAX_IMAGE_SIZE = 500 * 1024 * 1024   # 500 MB
+MAX_VIDEO_SIZE = 300 * 1024 * 1024  # 300 MB
+MAX_UPLOAD_BYTES = 500 * 1024 * 1024  # Starlette multipart limit (must cover largest file)
 
 def _save_file(upload: UploadFile, dest_dir: str, allowed_types: set, max_size: int) -> str:
     ext = os.path.splitext(upload.filename or "")[1].lower() or ".bin"
-    # Validate MIME type with fallback to extension for images and documents
+    # Validate MIME type with fallback to extension for images/videos/documents
     if upload.content_type not in allowed_types:
         if dest_dir == IMAGES_DIR and ext in ALLOWED_IMAGE_EXTS:
+            pass
+        elif "videos" in dest_dir and (ext in ALLOWED_VIDEO_EXTS or upload.content_type in ALLOWED_VIDEO_TYPES):
             pass
         elif "documents" in dest_dir and ext in {".pdf", ".doc", ".docx", ".txt", ".rtf", ".csv", ".xls", ".xlsx", ".ppt", ".pptx"}:
             pass
@@ -116,6 +132,23 @@ async def upload_image(
     except Exception as e:
         logger.exception("Image upload failed: %s", e)
         raise HTTPException(status_code=500, detail=f"Image upload processing failed: {str(e)}")
+
+@router.post("/images")
+async def upload_multiple_images(
+    files: list[UploadFile] = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        results = []
+        for file in files:
+            filename = _save_file(file, IMAGES_DIR, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE)
+            results.append({"url": f"/assets/images/{filename}", "filename": filename})
+        return {"images": results, "urls": [r["url"] for r in results]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Multiple images upload failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"Multiple images upload failed: {str(e)}")
 
 @router.post("/video")
 async def upload_video(

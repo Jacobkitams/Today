@@ -1485,6 +1485,104 @@ nav {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
+/* ---------------------------------------------------------------------------
+   Home news multi-image carousel (Instagram-style)
+   Only rendered when an article has more than one uploaded image —
+   see buildHomeNewsMediaHtml() in app.v21.js.
+---------------------------------------------------------------------------- */
+.home-carousel {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.home-carousel-slide {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.35s ease;
+}
+
+/* Arrows sit at the vertical centre on the left/right edges, like Instagram.
+   Buttons (not divs) so they are keyboard-accessible; they always call
+   event.stopPropagation() so clicking one never opens the card detail modal. */
+.home-carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: #1f2937;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
+    transition: background 0.2s ease, transform 0.2s ease;
+    z-index: 3;
+}
+
+.home-carousel-prev { left: 0.35rem; }
+.home-carousel-next { right: 0.35rem; }
+
+.home-carousel-arrow:hover {
+    background: #fff;
+    transform: translateY(-50%) scale(1.08);
+}
+
+.home-carousel-arrow:focus-visible {
+    outline: 2px solid var(--iuea-maroon);
+    outline-offset: 2px;
+}
+
+/* Dots bottom-centre indicator: how many images + which one is active. */
+.home-carousel-dots {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    z-index: 4;
+    pointer-events: auto;
+}
+
+.home-carousel-dot {
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    width: 0.55rem;
+    height: 0.55rem;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.55);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.home-carousel-dot.active {
+    background: #fff;
+    transform: scale(1.35);
+}
+
+.home-carousel-dot:focus-visible {
+    outline: 2px solid var(--iuea-maroon);
+    outline-offset: 2px;
+}
+
+/* Avoid the universal hover zoom fighting/overlapping the carousel chrome. */
+.home-news-card .card-media .home-carousel:hover .home-carousel-slide {
+    transform: none;
+}
+
 .card-content {
     padding: 1.25rem;
     flex: 1;
@@ -6431,6 +6529,135 @@ nav {
     border-style: solid;
     border-color: var(--iuea-maroon);
     padding: 0;
+}
+.upload-zone#imageDropZone.has-file {
+    height: auto;
+    min-height: 150px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 6px;
+    display: block;
+}
+.image-gallery-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.image-preview-thumb {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0f172a;
+    border: 1.5px solid #e2e8f0;
+}
+.image-preview-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.thumb-remove-btn {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.75);
+    color: #ffffff;
+    border: none;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+    z-index: 10;
+}
+.thumb-remove-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+.thumb-num-badge {
+    position: absolute;
+    bottom: 3px;
+    left: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(15, 23, 42, 0.75);
+    color: #ffffff;
+    padding: 1px 5px;
+    border-radius: 4px;
+    line-height: 1.2;
+}
+.thumb-add-tile {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    border: 1.5px dashed #94a3b8;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.thumb-add-tile:hover {
+    border-color: var(--iuea-maroon);
+    color: var(--iuea-maroon);
+    background: rgba(128, 0, 0, 0.05);
+}
+.thumb-add-tile svg {
+    width: 18px;
+    height: 18px;
+}
+.card-detail-gallery {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.gallery-main-view {
+    width: 100%;
+    max-height: 440px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #0f172a;
+}
+.gallery-thumbs-track {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+.gallery-thumb-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+.gallery-thumb-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.gallery-thumb-btn.active {
+    border-color: var(--iuea-maroon);
+    box-shadow: 0 0 0 2px rgba(128, 0, 0, 0.25);
 }
 .upload-zone-video { height: 120px; }
 

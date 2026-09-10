@@ -4652,24 +4652,24 @@
                 <div class="create-modal-media" id="createMediaColumn">
                     <!-- Image Upload -->
                     <div class="upload-zone" id="imageDropZone"
-                        onclick="document.getElementById('createImageFile').click()" ondragover="event.preventDefault()"
+                        onclick="handleImageZoneClick(event)" ondragover="event.preventDefault()"
                         ondrop="handleFileDrop(event,'image')">
                         <div id="imagePreviewWrap">
                             <i data-lucide="image" style="width:36px;height:36px;color:var(--iuea-gray-light)"></i>
                             <p style="color:var(--iuea-gray-light);margin:0.5rem 0 0;font-size:0.85rem;">Click or drag
-                                to upload image</p>
-                            <span style="font-size:0.75rem;color:#aaa;">JPG, PNG, WebP — max 10MB</span>
+                                to upload images</p>
+                            <span style="font-size:0.75rem;color:#aaa;">JPG, PNG, WebP — max 500MB (select multiple)</span>
                         </div>
-                        <img id="imagePreview" src="" alt=""
-                            style="display:none;width:100%;height:100%;object-fit:cover;border-radius:8px;">
+                        <div id="imageGalleryPreview" class="image-gallery-preview" style="display:none;"></div>
+                        <img id="imagePreview" src="" alt="" style="display:none;">
                     </div>
-                    <input type="file" id="createImageFile" accept="image/*" style="display:none"
+                    <input type="file" id="createImageFile" accept="image/*" multiple style="display:none"
                         onchange="previewMedia(this,'image')">
                     <div class="upload-zone-label">
-                        <span id="imageFileName" style="font-size:0.8rem;color:var(--iuea-gray-light);">No image
+                        <span id="imageFileName" style="font-size:0.8rem;color:var(--iuea-gray-light);">No images
                             selected</span>
-                        <button class="btn-text-sm" onclick="clearMedia('image')" style="display:none"
-                            id="clearImageBtn">✕ Remove</button>
+                        <button type="button" class="btn-text-sm" onclick="clearMedia('image')" style="display:none"
+                            id="clearImageBtn">✕ Clear all</button>
                     </div>
 
                     <!-- Video Upload -->
@@ -4681,7 +4681,7 @@
                                 <i data-lucide="video" style="width:36px;height:36px;color:var(--iuea-gray-light)"></i>
                                 <p style="color:var(--iuea-gray-light);margin:0.5rem 0 0;font-size:0.85rem;">Click or
                                     drag to upload video</p>
-                                <span style="font-size:0.75rem;color:#aaa;">MP4, WebM — max 200MB</span>
+                                <span style="font-size:0.75rem;color:#aaa;">MP4, WebM, OGG, MOV, AVI, MKV, FLV, WMV, M4V, TS, 3GP &amp; more — max 300MB</span>
                             </div>
                             <video id="videoPreview" style="display:none;width:100%;border-radius:8px;"
                                 controls></video>
@@ -4691,7 +4691,7 @@
                         <div class="upload-zone-label">
                             <span id="videoFileName" style="font-size:0.8rem;color:var(--iuea-gray-light);">No video
                                 selected</span>
-                            <button class="btn-text-sm" onclick="clearMedia('video')" style="display:none"
+                            <button type="button" class="btn-text-sm" onclick="clearMedia('video')" style="display:none"
                                 id="clearVideoBtn">✕ Remove</button>
                         </div>
                     </div>

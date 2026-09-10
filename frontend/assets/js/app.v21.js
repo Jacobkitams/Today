@@ -31,7 +31,14 @@ const FRONTEND_BASE = (() => {
 })();
 
 /* =================== STATE =================== */
-let currentUser = null;
+let currentUser = (() => {
+    try {
+        const raw = localStorage.getItem('iuea_cached_user');
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+})();
 let authToken = localStorage.getItem('jwt_token');
 
 /** Stores the card {type, id} that an unauthenticated user tried to open.
@@ -689,13 +696,13 @@ function showHomeLoadingState() {
 
 /* =================== ROLE DASHBOARD MAP =================== */
 const ROLE_DASHBOARD_MAP = {
-    'registered_user':   'registered-user-dashboard',
-    'coordinator':       'coordinator-dashboard',
-    'innovation_admin':  'innovation-admin-dashboard',
-    'content_editor':    'admin-dashboard',
-    'super_admin':       'admin-dashboard',
-    'marketing_admin':   'admin-dashboard',
-    'admin':             'admin-dashboard'
+    'registered_user': 'registered-user-dashboard',
+    'coordinator': 'coordinator-dashboard',
+    'innovation_admin': 'innovation-admin-dashboard',
+    'content_editor': 'admin-dashboard',
+    'super_admin': 'admin-dashboard',
+    'marketing_admin': 'admin-dashboard',
+    'admin': 'admin-dashboard'
 };
 
 const ASSIGNABLE_USER_ROLES = [
@@ -766,11 +773,11 @@ function navigateTo(pageId) {
     }
 
     const isAdminDash = pageId === 'admin-dashboard';
-    const isRoleDash  = Object.values(ROLE_DASHBOARD_MAP).includes(pageId) && pageId !== 'admin-dashboard';
+    const isRoleDash = Object.values(ROLE_DASHBOARD_MAP).includes(pageId) && pageId !== 'admin-dashboard';
 
     // Guard: admin-dashboard requires admin role
     if (isAdminDash && (!currentUser || !['super_admin',
-    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role))) {
+        'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role))) {
         showToast('Access denied.', 'error');
         showAuthModal();
         // The deep-link restore script (index.html) may have already shown
@@ -830,26 +837,26 @@ function navigateTo(pageId) {
     if (document.getElementById('navLinks').classList.contains('open')) toggleMobileNav();
 
     // Toggle public chrome visibility
-    const applyBtn  = document.getElementById('fixedApplyBtn');
+    const applyBtn = document.getElementById('fixedApplyBtn');
     const pubHeader = document.getElementById('publicHeader');
     const pubSearch = document.getElementById('publicSearch');
-    const footer    = document.querySelector('footer');
-    const isDash    = isAdminDash || isRoleDash;
+    const footer = document.querySelector('footer');
+    const isDash = isAdminDash || isRoleDash;
 
     if (isDash) {
         if (pubHeader) pubHeader.style.display = 'none';
         if (pubSearch) { pubSearch.style.display = 'none'; pubSearch.classList.remove('show-mobile'); }
-        if (footer)    footer.style.display    = 'none';
-        if (applyBtn)  applyBtn.style.display  = 'none';
+        if (footer) footer.style.display = 'none';
+        if (applyBtn) applyBtn.style.display = 'none';
     } else {
         if (pubHeader) pubHeader.style.display = 'block';
         if (pubSearch) { pubSearch.style.removeProperty('display'); pubSearch.classList.remove('show-mobile'); }
-        if (footer)    footer.style.display    = 'block';
-        if (applyBtn)  applyBtn.style.display  = 'inline-flex';
+        if (footer) footer.style.display = 'block';
+        if (applyBtn) applyBtn.style.display = 'inline-flex';
     }
 
     if (isAdminDash) loadAdminDashboard();
-    if (isRoleDash)  populateRoleDashboard(pageId);
+    if (isRoleDash) populateRoleDashboard(pageId);
     if (pageId === 'news-all') loadAllNewsPage();
     if (pageId === 'events-all') loadAllEventsPage();
     if (pageId === 'past-activities-all') loadAllPastActivitiesPage();
@@ -867,7 +874,7 @@ function navigateTo(pageId) {
     if (pageId === 'community') {
         loadHeroVideosForPublicPages().then(() => {
             const vid = document.getElementById('communityVideo');
-            if (vid?.src) vid.play().catch(() => {});
+            if (vid?.src) vid.play().catch(() => { });
         });
     }
 }
@@ -1344,8 +1351,8 @@ function buildInnovationRobot(THREE, stage) {
     const clock = new THREE.Clock();
     let elapsed = 0;   // running total, advanced by delta so hover can vary its rate
     let idlePhase = 0; // separate phase accumulator for the idle bob/sway — advancing
-                        // this faster on hover speeds the idle motion up without a
-                        // phase jump (deriving speed straight from `elapsed` would snap)
+    // this faster on hover speeds the idle motion up without a
+    // phase jump (deriving speed straight from `elapsed` would snap)
     let hoverAmount = 0; // 0..1, lerped toward isHovering — drives every hover reaction
     const HOVER_SCALE = new THREE.Vector3(1.05, 1.05, 1.05);
     const REST_SCALE = new THREE.Vector3(1, 1, 1);
@@ -1570,9 +1577,21 @@ function toggleForm(type) {
 // Resolve stored media paths to loadable URLs.
 // Images live under frontend/assets (Apache); hero videos under frontend/uploads symlink.
 function resolveMediaUrl(url) {
-    if (!url || typeof url !== 'string') return null;
+    if (!url) return null;
+    if (Array.isArray(url)) return resolveMediaUrl(url[0]);
+    if (typeof url !== 'string') return null;
     const trimmed = url.trim();
     if (!trimmed) return null;
+
+    if (trimmed.includes(',')) {
+        return resolveMediaUrl(trimmed.split(',')[0].trim());
+    }
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+            const arr = JSON.parse(trimmed);
+            if (Array.isArray(arr) && arr.length) return resolveMediaUrl(arr[0]);
+        } catch { }
+    }
 
     let path = trimmed;
     if (/^https?:\/\//i.test(trimmed)) {
@@ -1614,6 +1633,25 @@ function resolveMediaUrl(url) {
     }
 
     return trimmed;
+}
+
+function resolveAllMediaUrls(field) {
+    if (!field) return [];
+    if (Array.isArray(field)) return field.map(resolveMediaUrl).filter(Boolean);
+    if (typeof field !== 'string') return [];
+    const trimmed = field.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+            const arr = JSON.parse(trimmed);
+            if (Array.isArray(arr)) return arr.map(resolveMediaUrl).filter(Boolean);
+        } catch { }
+    }
+    if (trimmed.includes(',')) {
+        return trimmed.split(',').map(s => resolveMediaUrl(s.trim())).filter(Boolean);
+    }
+    const resolved = resolveMediaUrl(trimmed);
+    return resolved ? [resolved] : [];
 }
 
 function kanbanItemImageRaw(item) {
@@ -2013,6 +2051,95 @@ function handlePastActivityCardClick(event, contentType, id) {
     openCardDetailFromCard(event.currentTarget);
 }
 
+/* ---- Generic multi-image card carousel ---- */
+// Builds an Instagram-style image carousel for card media. Only renders
+// arrows + dots when the card has MORE than one uploaded image; a single
+// image (or a video) stays a plain static card with no navigation chrome.
+// Fully generalized: any card template (news, events, alumni, …) can point
+// its multi-image content here via buildCarouselMarkup().
+//
+// Slides stay absolutely-positioned (see .carousel-slide in CSS) and are
+// revealed strictly by transform+visibility — never opacity — because
+// .card-image's hover-zoom uses `transition: transform .5s ease` and an
+// opacity fade would fight that the same way the old per-slide inline
+// `transition:opacity .3s` used to.
+function buildCarouselMarkup(images, key, title) {
+    const slideHtml = images.map((src, index) =>
+        `<img class="card-image carousel-slide" data-carousel="${key}" data-index="${index}" src="${src}" alt="${title} — photo ${index + 1}" loading="lazy" decoding="async" width="600" height="400" onerror="this.src='https://picsum.photos/600/400?random=${key}'">`
+    ).join('');
+    const dots = Array.from({ length: images.length }, (_, i) =>
+        `<button type="button" class="carousel-dot${i === 0 ? ' active' : ''}" aria-label="Go to photo ${i + 1}" onclick="event.stopPropagation(); goToCarouselImage('${key}', ${i})"></button>`
+    ).join('');
+    return `
+        <div class="card-carousel" data-carousel="${key}" data-count="${images.length}" data-index="0">
+            ${slideHtml}
+            <button type="button" class="carousel-arrow carousel-prev" aria-label="Previous photo" onclick="event.stopPropagation(); cycleCarousel('${key}', -1)">&#8249;</button>
+            <button type="button" class="carousel-arrow carousel-next" aria-label="Next photo" onclick="event.stopPropagation(); cycleCarousel('${key}', 1)">&#8250;</button>
+            <div class="carousel-dots">${dots}</div>
+        </div>`;
+}
+
+// Multi-image media block used by every card template. Falls back to a single
+// image or video exactly like the original per-template logic did.
+function buildCardMediaHtml({ videoUrl, imageUrl, images, alt, key, fallbackSrc }) {
+    if (videoUrl) {
+        return `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`;
+    }
+    const slides = (images && images.length) ? images : (imageUrl ? [imageUrl] : []);
+    if (slides.length > 1) {
+        return buildCarouselMarkup(slides, key, alt);
+    }
+    const single = slides[0] || fallbackSrc;
+    return `<img class="card-image" src="${single}" alt="${alt}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='${fallbackSrc}';this.style.opacity='1'">`;
+}
+
+// Old name kept as a thin alias so nothing else in the file breaks.
+function buildHomeNewsMediaHtml(item) {
+    const title = item.title || 'Untitled';
+    const key = item.id;
+    const videoUrl = resolveMediaUrl(item.video);
+    const imageUrl = resolveMediaUrl(item.image) || `https://picsum.photos/600/400?random=${item.id}`;
+    const fallbackSrc = `https://picsum.photos/600/400?random=${item.id}`;
+    const images = resolveAllMediaUrls(item.image || '');
+    return buildCardMediaHtml({ videoUrl, imageUrl, images, alt: title, key, fallbackSrc });
+}
+
+// Cycle forward/back, wrapping around the ends.
+function cycleCarousel(key, delta) {
+    const carousel = document.querySelector(`.card-carousel[data-carousel="${key}"]`);
+    if (!carousel) return;
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const count = slides.length;
+    if (count < 2) return;
+    let current = parseInt(carousel.dataset.index || 0, 10);
+    current = (current + delta + count) % count;
+    carousel.dataset.index = current;
+    applyCarouselIndex(carousel, current);
+}
+
+// Jump to a specific photo (dot click).
+function goToCarouselImage(key, index) {
+    const carousel = document.querySelector(`.card-carousel[data-carousel="${key}"]`);
+    if (!carousel) return;
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const count = slides.length;
+    if (!count) return;
+    const target = ((index % count) + count) % count;
+    carousel.dataset.index = target;
+    applyCarouselIndex(carousel, target);
+}
+
+function applyCarouselIndex(carousel, current) {
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const dots = carousel.querySelectorAll('.carousel-dot');
+    slides.forEach((s, i) => {
+        const active = i === current;
+        s.style.transform = active ? 'none' : 'translateX(100%)';
+        s.style.visibility = active ? 'visible' : 'hidden';
+    });
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+}
+
 function createHomeNewsCard(item) {
     const sectionKey = resolveHomeNewsSection(item);
     const meta = HOME_NEWS_SECTION_META[sectionKey];
@@ -2026,9 +2153,7 @@ function createHomeNewsCard(item) {
     stats += cardCommentsStat(item);
     if (item.date) stats += statHTML('calendar', item.date);
     const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, item.author_profile_picture, contentType, item.id);
-    const mediaHTML = videoUrl
-        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
-        : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
+    const mediaHTML = buildHomeNewsMediaHtml(item);
     const badgeHTML = `<span class="card-badge ${meta.badgeClass}" role="link" tabindex="0" onclick="event.stopPropagation(); navigateToHomeNewsSection('${sectionKey}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigateToHomeNewsSection('${sectionKey}');}">${meta.label}</span>`;
 
     return `
@@ -2728,7 +2853,7 @@ async function fetchPublicContent(forceRefresh = false) {
         });
 
         await homePromise;
-        restPromise.catch(() => {});
+        restPromise.catch(() => { });
         return publicContentCache;
     })().finally(() => {
         publicContentFetchPromise = null;
@@ -3197,7 +3322,7 @@ async function loadInitialData(options = {}) {
 /* =================== ADMIN DATA =================== */
 async function loadAdminDashboard() {
     if (!currentUser || !['super_admin',
-    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role)) return;
+        'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role)) return;
     if (isOfflineMode()) {
         showToast('Admin dashboard is in offline view — server actions are disabled.', 'info');
     }
@@ -3808,8 +3933,8 @@ async function loadAdminUsers() {
                     : parts[0].substring(0, 2);
                 // Unique gradient per user (based on id) — used as fallback
                 const gradients = [
-                    ['#6366f1','#8b5cf6'],['#0ea5e9','#6366f1'],['#f59e0b','#ef4444'],
-                    ['#10b981','#0ea5e9'],['#ec4899','#8b5cf6'],['#f97316','#f59e0b']
+                    ['#6366f1', '#8b5cf6'], ['#0ea5e9', '#6366f1'], ['#f59e0b', '#ef4444'],
+                    ['#10b981', '#0ea5e9'], ['#ec4899', '#8b5cf6'], ['#f97316', '#f59e0b']
                 ];
                 const [c1, c2] = gradients[u.id % gradients.length];
 
@@ -3834,8 +3959,8 @@ async function loadAdminUsers() {
                     <td>
                         <select class="role-select" onchange="updateUserRole(${u.id}, this.value)">
                             ${selectableRolesForUser(u.role).map(r =>
-                                `<option value="${r}" ${u.role === r ? 'selected' : ''}>${r.replace(/_/g, ' ')}</option>`
-                            ).join('')}
+                    `<option value="${r}" ${u.role === r ? 'selected' : ''}>${r.replace(/_/g, ' ')}</option>`
+                ).join('')}
                         </select>
                     </td>
                     <td>
@@ -3935,8 +4060,8 @@ function editUser(userId) {
     // Avatar
     const avatarEl = document.getElementById('editUserAvatar');
     const gradients = [
-        ['#6366f1','#8b5cf6'],['#0ea5e9','#6366f1'],['#f59e0b','#ef4444'],
-        ['#10b981','#0ea5e9'],['#ec4899','#8b5cf6'],['#f97316','#f59e0b']
+        ['#6366f1', '#8b5cf6'], ['#0ea5e9', '#6366f1'], ['#f59e0b', '#ef4444'],
+        ['#10b981', '#0ea5e9'], ['#ec4899', '#8b5cf6'], ['#f97316', '#f59e0b']
     ];
     const [c1, c2] = gradients[u.id % gradients.length];
     const parts = (u.name || 'U').trim().split(' ');
@@ -4127,13 +4252,13 @@ const EVENTS_DISPLAY_SECTIONS = [
 ];
 
 const ADMIN_MODULE_ENDPOINTS = {
-    news:        '/content/news',
-    events:      '/content/events',
+    news: '/content/news',
+    events: '/content/events',
     innovations: '/content/innovations',
-    alumni:      '/content/alumni',
-    research:    '/content/research-areas',
-    community:  '/content/community',
-    techpark:    '/content/tech-park'
+    alumni: '/content/alumni',
+    research: '/content/research-areas',
+    community: '/content/community',
+    techpark: '/content/tech-park'
 };
 
 const ADMIN_MODULE_API_TYPES = {
@@ -4692,16 +4817,16 @@ function updateAdminContentHeader(moduleName) {
         titleEl.textContent = moduleName === 'research'
             ? 'Research Management'
             : moduleName === 'innovations'
-            ? 'Innovations Management'
-            : moduleName === 'alumni'
-            ? 'Alumni Management'
-            : moduleName === 'community'
-            ? 'Community Management'
-            : moduleName === 'techpark'
-            ? 'Tech Park Management'
-            : moduleName === 'donations'
-            ? 'Donations Management'
-            : `${ADMIN_MODULE_LABELS[moduleName]} Management`;
+                ? 'Innovations Management'
+                : moduleName === 'alumni'
+                    ? 'Alumni Management'
+                    : moduleName === 'community'
+                        ? 'Community Management'
+                        : moduleName === 'techpark'
+                            ? 'Tech Park Management'
+                            : moduleName === 'donations'
+                                ? 'Donations Management'
+                                : `${ADMIN_MODULE_LABELS[moduleName]} Management`;
     }
     if (subtitleEl) subtitleEl.textContent = config.subtitle;
 
@@ -4941,7 +5066,7 @@ function adminContentListsEqual(a, b) {
 
 function prefetchAdminContentModules() {
     if (!currentUser || !['super_admin',
-    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role)) {
+        'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role)) {
         return Promise.resolve();
     }
     if (adminContentPrefetchPromise) return adminContentPrefetchPromise;
@@ -5276,8 +5401,8 @@ function renderCommunityAdminModule(options = {}) {
     area.innerHTML = `
         <div class="admin-research-sections">
             ${COMMUNITY_SUBMODULES.map(sub => {
-                const items = adminContentItemsCache[sub.key] || [];
-                return `
+        const items = adminContentItemsCache[sub.key] || [];
+        return `
                 <section class="admin-research-block">
                     <div class="admin-research-block-header">
                         <div class="admin-research-block-title">
@@ -5288,7 +5413,7 @@ function renderCommunityAdminModule(options = {}) {
                     </div>
                     ${buildAdminTableHTML(sub.key, items)}
                 </section>`;
-            }).join('')}
+    }).join('')}
         </div>`;
     lucide.createIcons();
 }
@@ -5516,8 +5641,8 @@ function renderDonationsAdminModule(options = {}) {
     area.innerHTML = `
         <div class="admin-research-sections">
             ${DONATIONS_SUBMODULES.map(sub => {
-                const items = adminContentItemsCache[sub.key] || [];
-                return `
+        const items = adminContentItemsCache[sub.key] || [];
+        return `
                 <section class="admin-research-block">
                     <div class="admin-research-block-header">
                         <div class="admin-research-block-title">
@@ -5531,7 +5656,7 @@ function renderDonationsAdminModule(options = {}) {
                     </div>
                     ${buildDonationsSubmoduleTableHTML(sub.key, items)}
                 </section>`;
-            }).join('')}
+    }).join('')}
         </div>`;
     lucide.createIcons();
 }
@@ -5605,8 +5730,8 @@ function renderDisplaySectionedAdminModule(moduleName, items, options = {}) {
     area.innerHTML = `
         <div class="admin-research-sections">
             ${sections.map(section => {
-                const sectionItems = section.sliceItems(items);
-                return `
+        const sectionItems = section.sliceItems(items);
+        return `
                 <section class="admin-research-block">
                     <div class="admin-research-block-header">
                         <div class="admin-research-block-title">
@@ -5620,7 +5745,7 @@ function renderDisplaySectionedAdminModule(moduleName, items, options = {}) {
                     </div>
                     ${buildAdminTableHTML(moduleName, sectionItems)}
                 </section>`;
-            }).join('')}
+    }).join('')}
         </div>`;
     lucide.createIcons();
 }
@@ -5677,14 +5802,14 @@ function buildAdminTableHTML(moduleName, items) {
             </thead>
             <tbody>
                 ${items.map(item => {
-                    const title = adminItemTitle(item);
-                    const desc = adminItemDesc(item);
-                    const img = resolveMediaUrl(item.image) || `https://picsum.photos/80/60?random=${item.id}`;
-                    const status = item.status || 'approved';
-                    const created = item.created_at ? new Date(item.created_at).toLocaleDateString() : '—';
-                    const descShort = desc.length > 80 ? desc.substring(0, 80) + '…' : desc;
-                    const typeBadge = isAdminNewsCrossListedModule(moduleName) ? adminNewsTypeBadge(item) : '';
-                    return `
+        const title = adminItemTitle(item);
+        const desc = adminItemDesc(item);
+        const img = resolveMediaUrl(item.image) || `https://picsum.photos/80/60?random=${item.id}`;
+        const status = item.status || 'approved';
+        const created = item.created_at ? new Date(item.created_at).toLocaleDateString() : '—';
+        const descShort = desc.length > 80 ? desc.substring(0, 80) + '…' : desc;
+        const typeBadge = isAdminNewsCrossListedModule(moduleName) ? adminNewsTypeBadge(item) : '';
+        return `
                     <tr id="admin-row-${moduleName}-${item.id}">
                         <td><img src="${img}" alt="" style="width:56px;height:42px;object-fit:cover;border-radius:6px;" onerror="this.src='https://picsum.photos/80/60?random=${item.id}'"></td>
                         <td><strong>${title}</strong>${typeBadge}</td>
@@ -5700,7 +5825,7 @@ function buildAdminTableHTML(moduleName, items) {
                             </div>
                         </td>
                     </tr>`;
-                }).join('')}
+    }).join('')}
             </tbody>
         </table>
         <div class="table-pagination">
@@ -5717,8 +5842,8 @@ function renderResearchAdminModule(options = {}) {
     area.innerHTML = `
         <div class="admin-research-sections">
             ${RESEARCH_SUBMODULES.map(sub => {
-                const items = adminContentItemsCache[sub.key] || [];
-                return `
+        const items = adminContentItemsCache[sub.key] || [];
+        return `
                 <section class="admin-research-block">
                     <div class="admin-research-block-header">
                         <div class="admin-research-block-title">
@@ -5729,7 +5854,7 @@ function renderResearchAdminModule(options = {}) {
                     </div>
                     ${buildAdminTableHTML(sub.key, items)}
                 </section>`;
-            }).join('')}
+    }).join('')}
         </div>`;
     lucide.createIcons();
 }
@@ -5743,8 +5868,8 @@ function renderInnovationsAdminModule(options = {}) {
     area.innerHTML = `
         <div class="admin-research-sections">
             ${INNOVATIONS_SUBMODULES.map(sub => {
-                const items = adminContentItemsCache[sub.key] || [];
-                return `
+        const items = adminContentItemsCache[sub.key] || [];
+        return `
                 <section class="admin-research-block">
                     <div class="admin-research-block-header">
                         <div class="admin-research-block-title">
@@ -5755,7 +5880,7 @@ function renderInnovationsAdminModule(options = {}) {
                     </div>
                     ${buildAdminTableHTML(sub.key, items)}
                 </section>`;
-            }).join('')}
+    }).join('')}
         </div>`;
     lucide.createIcons();
 }
@@ -5769,8 +5894,8 @@ function renderAlumniAdminModule(options = {}) {
     area.innerHTML = `
         <div class="admin-research-sections">
             ${ALUMNI_SUBMODULES.map(sub => {
-                const items = adminContentItemsCache[sub.key] || [];
-                return `
+        const items = adminContentItemsCache[sub.key] || [];
+        return `
                 <section class="admin-research-block">
                     <div class="admin-research-block-header">
                         <div class="admin-research-block-title">
@@ -5781,7 +5906,7 @@ function renderAlumniAdminModule(options = {}) {
                     </div>
                     ${buildAdminTableHTML(sub.key, items)}
                 </section>`;
-            }).join('')}
+    }).join('')}
         </div>`;
     lucide.createIcons();
 }
@@ -5795,8 +5920,8 @@ function renderTechParkAdminModule(options = {}) {
     area.innerHTML = `
         <div class="admin-research-sections">
             ${TECH_PARK_SUBMODULES.map(sub => {
-                const items = adminContentItemsCache[sub.key] || [];
-                return `
+        const items = adminContentItemsCache[sub.key] || [];
+        return `
                 <section class="admin-research-block">
                     <div class="admin-research-block-header">
                         <div class="admin-research-block-title">
@@ -5807,7 +5932,7 @@ function renderTechParkAdminModule(options = {}) {
                     </div>
                     ${buildAdminTableHTML(sub.key, items)}
                 </section>`;
-            }).join('')}
+    }).join('')}
         </div>`;
     lucide.createIcons();
 }
@@ -5906,11 +6031,11 @@ async function refreshTechParkAdminModuleInBackground() {
 function reloadAdminModuleAfterCrud(moduleName, options = {}) {
     const parentModule = isResearchSubModule(moduleName) ? 'research'
         : isInnovationsSubModule(moduleName) ? 'innovations'
-        : isAlumniSubModule(moduleName) ? 'alumni'
-        : isCommunitySubModule(moduleName) ? 'community'
-        : isTechParkSubModule(moduleName) ? 'techpark'
-        : isDonationsSubModule(moduleName) ? 'donations'
-        : moduleName;
+            : isAlumniSubModule(moduleName) ? 'alumni'
+                : isCommunitySubModule(moduleName) ? 'community'
+                    : isTechParkSubModule(moduleName) ? 'techpark'
+                        : isDonationsSubModule(moduleName) ? 'donations'
+                            : moduleName;
 
     const isIa = document.getElementById('innovation-admin-dashboard')?.style.display === 'block';
     if (isIa && parentModule === 'innovations') {
@@ -6211,7 +6336,7 @@ function populateAdminEditForm(moduleName, item) {
         const statEl = document.getElementById('adminEditConfStatus');
         const yearEl = document.getElementById('adminEditConfYear');
         const urlEl = document.getElementById('adminEditConfUrl');
-        if (dateEl) dateEl.value = item.start_date ? item.start_date.substring(0,16) : '';
+        if (dateEl) dateEl.value = item.start_date ? item.start_date.substring(0, 16) : '';
         if (displayDateEl) displayDateEl.value = item.display_date || '';
         if (locEl) locEl.value = item.location || '';
         if (statEl) statEl.value = item.status || 'OPEN';
@@ -6228,7 +6353,7 @@ function populateAdminEditForm(moduleName, item) {
         const csDocUrlEl = document.getElementById('adminEditCsDocUrl');
         const csDocCurrentWrap = document.getElementById('adminEditCsDocCurrentWrap');
         const csDocCurrentLink = document.getElementById('adminEditCsDocCurrentLink');
-        if (csDateEl) csDateEl.value = item.start_date ? item.start_date.substring(0,16) : '';
+        if (csDateEl) csDateEl.value = item.start_date ? item.start_date.substring(0, 16) : '';
         if (csDisplayDateEl) csDisplayDateEl.value = item.display_date || '';
         if (csLocEl) csLocEl.value = item.location || '';
         if (csStatEl) csStatEl.value = item.status || 'OPEN';
@@ -6390,7 +6515,7 @@ async function saveAdminEdit() {
     try {
         const imageInput = document.getElementById('adminEditImageFile');
         if (adminEditModuleHasImage(moduleName) && imageInput?.files?.[0]) {
-            const uploadedUrl = await uploadFile(imageInput, 'image', () => {});
+            const uploadedUrl = await uploadFile(imageInput, 'image', () => { });
             if (uploadedUrl) {
                 const imageEl = document.getElementById('adminEditImage');
                 if (imageEl) imageEl.value = uploadedUrl;
@@ -6401,7 +6526,7 @@ async function saveAdminEdit() {
         if (moduleName === 'community-services') {
             const csDocFile = document.getElementById('adminEditCsDocFile');
             if (csDocFile?.files?.[0]) {
-                const uploadedDocUrl = await uploadFile(csDocFile, 'document', () => {});
+                const uploadedDocUrl = await uploadFile(csDocFile, 'document', () => { });
                 if (uploadedDocUrl) {
                     const hiddenEl = document.getElementById('adminEditCsDocUrl');
                     if (hiddenEl) hiddenEl.value = uploadedDocUrl;
@@ -6863,10 +6988,11 @@ function getCardDetailMeta(item, card) {
 function getCardDetailMedia(item, card) {
     const cardVideo = card?.querySelector('.card-media video');
     const cardImage = card?.querySelector('.card-media img');
-    const image = resolveMediaUrl(item?.image || item?.image_url || item?.profile_image) || cardImage?.currentSrc || cardImage?.src || '';
+    const rawImage = item?.image || item?.image_url || card?.dataset?.rawImage || '';
+    const image = resolveMediaUrl(rawImage || item?.profile_image) || cardImage?.currentSrc || cardImage?.src || '';
     const video = resolveMediaUrl(item?.video || item?.video_url) || cardVideo?.currentSrc || cardVideo?.src || '';
     const poster = image || cardVideo?.poster || '';
-    return { image, video, poster };
+    return { image, video, poster, rawImage };
 }
 
 function cardDetailFromCard(card) {
@@ -6886,15 +7012,43 @@ function cardDetailFromCard(card) {
 }
 
 function renderCardDetailMedia(detail) {
-    const { image, video, poster } = detail.media || {};
+    const { image, video, poster, rawImage } = detail.media || {};
     const safeTitle = escapeHtml(detail.title);
     if (video) {
         return `<video class="card-detail-media-el" src="${escapeHtml(video)}" poster="${escapeHtml(poster || image || '')}" preload="none" controls playsinline></video>`;
     }
-    if (image) {
-        return `<img class="card-detail-media-el" src="${escapeHtml(image)}" alt="${safeTitle}" loading="lazy" decoding="async" style="opacity:0;transition:opacity .4s" onload="this.style.opacity='1'">`;
+    const allImages = resolveAllMediaUrls(rawImage || image);
+    if (allImages.length > 1) {
+        return `
+            <div class="card-detail-gallery" id="cardDetailGallery">
+                <div class="gallery-main-view">
+                    <img id="galleryMainImg" class="card-detail-media-el" src="${escapeHtml(allImages[0])}" alt="${safeTitle}" style="opacity:1;">
+                </div>
+                <div class="gallery-thumbs-track">
+                    ${allImages.map((img, idx) => `
+                        <button type="button" class="gallery-thumb-btn ${idx === 0 ? 'active' : ''}" onclick="switchDetailGalleryImage('${escapeHtml(img)}', this)" aria-label="View photo ${idx + 1}">
+                            <img src="${escapeHtml(img)}" alt="thumbnail ${idx + 1}">
+                        </button>
+                    `).join('')}
+                </div>
+            </div>`;
+    }
+    if (allImages.length === 1 || image) {
+        const singleImg = allImages[0] || image;
+        return `<img class="card-detail-media-el" src="${escapeHtml(singleImg)}" alt="${safeTitle}" loading="lazy" decoding="async" style="opacity:0;transition:opacity .4s" onload="this.style.opacity='1'">`;
     }
     return `<div class="card-detail-media-empty"><i data-lucide="image"></i><span>No media available</span></div>`;
+}
+
+function switchDetailGalleryImage(imgUrl, btn) {
+    const mainImg = document.getElementById('galleryMainImg');
+    if (mainImg) {
+        mainImg.style.opacity = '0.6';
+        mainImg.src = imgUrl;
+        setTimeout(() => { mainImg.style.opacity = '1'; }, 100);
+    }
+    document.querySelectorAll('.gallery-thumb-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
 }
 
 function renderCardDetailShareActions(detail) {
@@ -7654,7 +7808,7 @@ function getMessagingContextForCurrentUser() {
     if (!currentUser) return null;
     const role = currentUser.role;
     if (['super_admin',
-    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(role)) return 'admin';
+        'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(role)) return 'admin';
     if (role === 'registered_user') return 'ru';
     return null;
 }
@@ -7802,8 +7956,8 @@ function closeCreateModal() {
 }
 
 /* ---- upload size limits (must match backend upload_routes.py) ---- */
-const IMAGE_MAX_BYTES = 20 * 1024 * 1024;
-const VIDEO_MAX_BYTES = 200 * 1024 * 1024;
+const IMAGE_MAX_BYTES = 500 * 1024 * 1024; // 500 MB
+const VIDEO_MAX_BYTES = 300 * 1024 * 1024; // 300 MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/pjpeg', 'image/jpg', 'image/x-png'];
 const ALLOWED_IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.jfif'];
 
@@ -7817,49 +7971,146 @@ function validateImageFile(file) {
     }
     if (file.size > IMAGE_MAX_BYTES) {
         const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-        return `Image too large (${sizeMb} MB). Maximum allowed size is 20 MB.`;
+        return `Image too large (${sizeMb} MB). Maximum allowed size is 500 MB.`;
     }
     return null;
 }
 
+/* Accepted video MIME types — browsers/platforms often report generic types
+ * (application/octet-stream) for AVI/MKV/QuickTime, so a matching extension
+ * is accepted too. Keep in sync with backend/routes/upload_routes.py. */
+const ALLOWED_VIDEO_TYPES = [
+    'video/mp4', 'video/webm', 'video/ogg', 'video/ogv', 'video/x-msvideo',
+    'video/quicktime', 'video/mpeg', 'video/3gpp', 'video/3gpp2',
+    'video/x-m4v', 'video/mp2t', 'video/x-matroska', 'video/x-flv',
+    'application/octet-stream', 'application/x-mpegURL',
+];
+const ALLOWED_VIDEO_EXTS = [
+    '.mp4', '.webm', '.ogg', '.ogv', '.mov', '.mkv', '.avi', '.m4v',
+    '.mpg', '.mpeg', '.mpe', '.m1v', '.m2v', '.3gp', '.3g2',
+    '.3gpp', '.3gpp2', '.flv', '.mts', '.m2ts', '.ts', '.m2t',
+    '.wmv', '.asf', '.vob', '.qt', '.mxf', '.rmvb',
+];
+
 function validateVideoFile(file) {
-    if (!['video/mp4', 'video/webm', 'video/ogg'].includes(file.type)) {
-        return 'Only MP4, WebM, and OGG videos are allowed.';
+    if (!file) return null;
+    const name = file.name || '';
+    const ext = name.substring(name.lastIndexOf('.')).toLowerCase();
+    const isAllowedType = ALLOWED_VIDEO_TYPES.includes(file.type) || ALLOWED_VIDEO_EXTS.includes(ext);
+    if (!isAllowedType) {
+        return 'Unsupported video format. Please use a standard video file (MP4, WebM, MOV, AVI, MKV, OGV, 3GP, …).';
     }
     if (file.size > VIDEO_MAX_BYTES) {
-        return 'Video must be 200MB or smaller.';
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+        return `Video too large (${sizeMb} MB). Maximum allowed size is 300 MB.`;
     }
     return null;
+}
+
+/* ---- multi-image state & previews ---- */
+let selectedCreateImageFiles = [];
+
+function handleImageZoneClick(event) {
+    if (event.target.closest('.thumb-remove-btn') || event.target.closest('.thumb-add-tile')) return;
+    document.getElementById('createImageFile')?.click();
+}
+
+function renderCreateImageThumbnails() {
+    const zone = document.getElementById('imageDropZone');
+    const wrap = document.getElementById('imagePreviewWrap');
+    const gallery = document.getElementById('imageGalleryPreview');
+    const nameEl = document.getElementById('imageFileName');
+    const clearBtn = document.getElementById('clearImageBtn');
+
+    if (!gallery) return;
+
+    if (selectedCreateImageFiles.length > 0) {
+        if (zone) zone.classList.add('has-file');
+        if (wrap) wrap.style.display = 'none';
+        gallery.style.display = 'grid';
+        if (clearBtn) clearBtn.style.display = 'inline';
+
+        const totalBytes = selectedCreateImageFiles.reduce((sum, f) => sum + f.size, 0);
+        const totalMb = (totalBytes / (1024 * 1024)).toFixed(1);
+        if (nameEl) {
+            nameEl.textContent = `${selectedCreateImageFiles.length} image${selectedCreateImageFiles.length > 1 ? 's' : ''} selected (${totalMb} MB total)`;
+        }
+
+        gallery.innerHTML = selectedCreateImageFiles.map((file, idx) => {
+            const previewUrl = URL.createObjectURL(file);
+            const sizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+            return `
+                <div class="image-preview-thumb" title="${escapeHtml(file.name)} (${sizeStr})">
+                    <img src="${previewUrl}" alt="${escapeHtml(file.name)}">
+                    <button type="button" class="thumb-remove-btn" onclick="event.stopPropagation(); removeSelectedCreateImage(${idx})" title="Remove image ${idx + 1}" aria-label="Remove image ${idx + 1}">✕</button>
+                    <span class="thumb-num-badge">${idx + 1}</span>
+                </div>`;
+        }).join('') + `
+            <div class="thumb-add-tile" onclick="event.stopPropagation(); document.getElementById('createImageFile')?.click()" title="Add more images">
+                <i data-lucide="plus"></i>
+                <span>Add</span>
+            </div>`;
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } else {
+        if (zone) zone.classList.remove('has-file');
+        if (wrap) wrap.style.display = 'flex';
+        gallery.style.display = 'none';
+        gallery.innerHTML = '';
+        if (nameEl) nameEl.textContent = 'No images selected';
+        if (clearBtn) clearBtn.style.display = 'none';
+    }
+}
+
+function removeSelectedCreateImage(index) {
+    if (index >= 0 && index < selectedCreateImageFiles.length) {
+        selectedCreateImageFiles.splice(index, 1);
+        renderCreateImageThumbnails();
+    }
 }
 
 /* ---- media preview ---- */
 function previewMedia(input, type) {
+    if (type === 'image') {
+        const files = Array.from(input.files || []);
+        if (!files.length) return;
+
+        for (const file of files) {
+            const err = validateImageFile(file);
+            if (err) {
+                showToast(err, 'error');
+                break;
+            }
+            const exists = selectedCreateImageFiles.some(f => f.name === file.name && f.size === file.size);
+            if (!exists) {
+                selectedCreateImageFiles.push(file);
+            }
+        }
+        input.value = '';
+        renderCreateImageThumbnails();
+        return;
+    }
+
     const file = input.files[0];
     if (!file) return;
-    const err = type === 'image' ? validateImageFile(file) : validateVideoFile(file);
+    const err = validateVideoFile(file);
     if (err) {
         showToast(err, 'error');
         input.value = '';
         clearMedia(type);
         return;
     }
-    const nameEl  = document.getElementById(`${type}FileName`);
-    const clearBtn = document.getElementById(`clear${type.charAt(0).toUpperCase()+type.slice(1)}Btn`);
+    const nameEl = document.getElementById(`${type}FileName`);
+    const clearBtn = document.getElementById(`clear${type.charAt(0).toUpperCase() + type.slice(1)}Btn`);
     if (nameEl) nameEl.textContent = file.name;
     if (clearBtn) clearBtn.style.display = 'inline';
 
     const zone = document.getElementById(`${type}DropZone`);
-    zone.classList.add('has-file');
+    if (zone) zone.classList.add('has-file');
 
-    if (type === 'image') {
-        const preview = document.getElementById('imagePreview');
-        const wrap    = document.getElementById('imagePreviewWrap');
-        const reader  = new FileReader();
-        reader.onload = e => { preview.src = e.target.result; preview.style.display='block'; wrap.style.display='none'; };
-        reader.readAsDataURL(file);
-    } else {
-        const preview = document.getElementById('videoPreview');
-        const wrap    = document.getElementById('videoPreviewWrap');
+    const preview = document.getElementById('videoPreview');
+    const wrap = document.getElementById('videoPreviewWrap');
+    if (preview && wrap) {
         preview.src = URL.createObjectURL(file);
         preview.style.display = 'block';
         wrap.style.display = 'none';
@@ -7869,39 +8120,93 @@ function previewMedia(input, type) {
 function handleFileDrop(event, type) {
     event.preventDefault();
     const zone = document.getElementById(`${type}DropZone`);
-    zone.classList.remove('drag-over');
+    if (zone) zone.classList.remove('drag-over');
+
+    if (type === 'image') {
+        const files = Array.from(event.dataTransfer.files || []).filter(f => f.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|jfif)$/i.test(f.name));
+        if (!files.length) return;
+        for (const file of files) {
+            const err = validateImageFile(file);
+            if (err) {
+                showToast(err, 'error');
+                return;
+            }
+            const exists = selectedCreateImageFiles.some(f => f.name === file.name && f.size === file.size);
+            if (!exists) selectedCreateImageFiles.push(file);
+        }
+        renderCreateImageThumbnails();
+        return;
+    }
+
     const file = event.dataTransfer.files[0];
     if (!file) return;
-    const err = type === 'image' ? validateImageFile(file) : validateVideoFile(file);
+    const err = validateVideoFile(file);
     if (err) {
         showToast(err, 'error');
         return;
     }
-    // Assign to the hidden input
-    const inputEl = document.getElementById(`create${type.charAt(0).toUpperCase()+type.slice(1)}File`);
+    const inputEl = document.getElementById(`create${type.charAt(0).toUpperCase() + type.slice(1)}File`);
     const dt = new DataTransfer();
     dt.items.add(file);
-    inputEl.files = dt.files;
+    if (inputEl) inputEl.files = dt.files;
     previewMedia(inputEl, type);
 }
 
 function clearMedia(type) {
-    const cap    = type.charAt(0).toUpperCase() + type.slice(1);
-    const input  = document.getElementById(`create${cap}File`);
+    const cap = type.charAt(0).toUpperCase() + type.slice(1);
+    const input = document.getElementById(`create${cap}File`);
     const nameEl = document.getElementById(`${type}FileName`);
-    const clearBtn= document.getElementById(`clear${cap}Btn`);
-    const zone   = document.getElementById(`${type}DropZone`);
-    if (input)   input.value = '';
-    if (nameEl)  nameEl.textContent = `No ${type} selected`;
+    const clearBtn = document.getElementById(`clear${cap}Btn`);
+    const zone = document.getElementById(`${type}DropZone`);
+    if (input) input.value = '';
     if (clearBtn) clearBtn.style.display = 'none';
-    if (zone)    zone.classList.remove('has-file');
+    if (zone) zone.classList.remove('has-file');
+
     if (type === 'image') {
-        document.getElementById('imagePreview').style.display = 'none';
-        document.getElementById('imagePreviewWrap').style.display = 'flex';
+        selectedCreateImageFiles = [];
+        renderCreateImageThumbnails();
+        const singlePreview = document.getElementById('imagePreview');
+        if (singlePreview) singlePreview.style.display = 'none';
     } else {
-        document.getElementById('videoPreview').style.display = 'none';
-        document.getElementById('videoPreviewWrap').style.display = 'flex';
+        if (nameEl) nameEl.textContent = `No ${type} selected`;
+        const vPreview = document.getElementById('videoPreview');
+        const vWrap = document.getElementById('videoPreviewWrap');
+        if (vPreview) vPreview.style.display = 'none';
+        if (vWrap) vWrap.style.display = 'flex';
     }
+}
+
+async function uploadMultipleImageFiles(files, onProgress) {
+    if (!files || files.length === 0) return null;
+    const urls = [];
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const pct = Math.round(15 + ((i + 1) / files.length) * 55);
+        if (onProgress) onProgress(pct, `Uploading image ${i + 1} of ${files.length}…`);
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch(`${API_BASE_URL}/upload/image`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'ngrok-skip-browser-warning': 'true'
+            },
+            body: formData
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            let msg = data.detail;
+            if (!msg) {
+                if (res.status === 413) msg = `Image "${file.name}" is too large. Maximum size is 500 MB.`;
+                else if (res.status === 400) msg = `Unsupported image format for "${file.name}".`;
+                else msg = `Image upload failed for "${file.name}" (HTTP ${res.status}).`;
+            }
+            throw new Error(msg);
+        }
+        const data = await res.json();
+        if (data.url) urls.push(data.url);
+    }
+    return urls.join(',');
 }
 
 /* ---- home post form: image preview & upload ---- */
@@ -8014,7 +8319,7 @@ async function addNewsPost() {
 
         // One submit action: upload selected file first, then create the post with the URL.
         if (hasFile) {
-            imageUrl = await uploadFile(fileInput, 'image', () => {});
+            imageUrl = await uploadFile(fileInput, 'image', () => { });
             if (!imageUrl) {
                 throw new Error('Image upload failed. Your post was not submitted.');
             }
@@ -8038,7 +8343,7 @@ async function addNewsPost() {
                 clearNewsPostForm();
             } else {
                 const isAdmin = ['super_admin',
-    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role);
+                    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role);
                 showToast(isAdmin ? 'Update posted successfully!' : 'Update submitted for review.');
                 clearNewsPostForm();
                 if (isAdmin) {
@@ -8085,14 +8390,14 @@ async function uploadFile(fileInput, type, onProgress) {
         const data = await res.json().catch(() => ({}));
         let msg = data.detail;
         if (!msg) {
-            if (res.status === 413) msg = `${type.charAt(0).toUpperCase() + type.slice(1)} is too large. Maximum size is 20 MB.`;
+            if (res.status === 413) msg = `${type.charAt(0).toUpperCase() + type.slice(1)} is too large. Maximum size is 300 MB.`;
             else if (res.status === 400) msg = `Unsupported ${type} format. Please use standard JPEG, PNG, WebP or GIF.`;
             else if (res.status === 401) msg = 'Session expired. Please log in again.';
             else msg = `${type.charAt(0).toUpperCase() + type.slice(1)} upload failed (HTTP ${res.status}).`;
         }
         throw new Error(msg);
     }
-    onProgress(70, `${type.charAt(0).toUpperCase()+type.slice(1)} uploaded ✓`);
+    onProgress(70, `${type.charAt(0).toUpperCase() + type.slice(1)} uploaded ✓`);
     const data = await res.json();
     return data.url || null;
 }
@@ -8107,7 +8412,7 @@ async function submitCreateForm() {
 
     const type = resolveCreateFormType();
     const title = document.getElementById('createTitle')?.value.trim();
-    const desc  = document.getElementById('createDesc')?.value.trim();
+    const desc = document.getElementById('createDesc')?.value.trim();
 
     const config = CREATE_MODAL_CONFIG[type] || CREATE_MODAL_CONFIG.news;
     if (!title || !desc) {
@@ -8118,8 +8423,8 @@ async function submitCreateForm() {
     const btn = document.getElementById('createSubmitBtn');
     if (btn) { btn.disabled = true; btn.textContent = 'Publishing…'; }
 
-    const progressWrap  = document.getElementById('uploadProgressWrap');
-    const progressBar   = document.getElementById('uploadProgressBar');
+    const progressWrap = document.getElementById('uploadProgressWrap');
+    const progressBar = document.getElementById('uploadProgressBar');
     const progressLabel = document.getElementById('uploadProgressLabel');
     progressWrap.style.display = 'block';
 
@@ -8137,7 +8442,11 @@ async function submitCreateForm() {
         let videoUrl = null;
         let docUrl = null;
 
-        if (imageInput?.files[0]) imageUrl = await uploadFile(imageInput, 'image', setProgress);
+        if (selectedCreateImageFiles.length > 0) {
+            imageUrl = await uploadMultipleImageFiles(selectedCreateImageFiles, setProgress);
+        } else if (imageInput?.files[0]) {
+            imageUrl = await uploadFile(imageInput, 'image', setProgress);
+        }
         if (videoInput?.files[0]) videoUrl = await uploadFile(videoInput, 'video', setProgress);
 
         // Upload document for community-services
@@ -8153,7 +8462,7 @@ async function submitCreateForm() {
         setProgress(85, 'Saving content…');
 
         const ENDPOINT_MAP = {
-            news:       '/content/news',
+            news: '/content/news',
             'innovation-news': '/content/news',
             'startup-news': '/content/news',
             'alumni-news': '/content/news',
@@ -8161,15 +8470,15 @@ async function submitCreateForm() {
             'community-committees': '/content/community',
             'community-initiatives': '/content/community',
             'community-reports': '/content/community',
-            event:      '/content/events',
+            event: '/content/events',
             innovation: '/content/innovations',
-            startup:    '/content/startups',
-            alumni:     '/content/alumni',
+            startup: '/content/startups',
+            alumni: '/content/alumni',
             'research-areas': '/content/research-areas',
             publications: '/content/publications',
             'research-labs': '/content/research-labs',
             'tech-park': '/content/tech-park',
-            donations:  '/content/donations',
+            donations: '/content/donations',
             'donation-tiers': '/content/donation-tiers',
             'endowment-stats': '/content/endowment-stats',
             'endowment-campaigns': '/content/endowment-campaigns',
@@ -8282,6 +8591,8 @@ async function submitCreateForm() {
 
         if (res.ok) {
             setProgress(100, 'Done!');
+            selectedCreateImageFiles = [];
+            renderCreateImageThumbnails();
             showToast(`${config.submitLabel || 'Content'} completed successfully!`);
             const typedInvalidation = getContentCreateInvalidation(type);
             if (typedInvalidation) {
@@ -8335,10 +8646,16 @@ async function submitCreateForm() {
     }
 }
 
+window.showCreateModal = showCreateModal;
+window.closeCreateModal = closeCreateModal;
+window.submitCreateForm = submitCreateForm;
+window.removeSelectedCreateImage = removeSelectedCreateImage;
+window.switchDetailGalleryImage = switchDetailGalleryImage;
+window.handleImageZoneClick = handleImageZoneClick;
 
 function toggleLoginPassword() {
     const input = document.getElementById('loginPassword');
-    const icon  = document.getElementById('loginPasswordEyeIcon');
+    const icon = document.getElementById('loginPasswordEyeIcon');
     if (!input) return;
     const isHidden = input.type === 'password';
     input.type = isHidden ? 'text' : 'password';
@@ -8350,7 +8667,7 @@ function toggleLoginPassword() {
 
 function toggleSignupPassword() {
     const input = document.getElementById('signupPassword');
-    const icon  = document.getElementById('signupPasswordEyeIcon');
+    const icon = document.getElementById('signupPasswordEyeIcon');
     if (!input) return;
     const isHidden = input.type === 'password';
     input.type = isHidden ? 'text' : 'password';
@@ -8538,12 +8855,12 @@ function logout() {
 
 
 function updateUIForUser() {
-    const display    = document.getElementById('userNameDisplay');
+    const display = document.getElementById('userNameDisplay');
     const mobileLink = document.getElementById('mobileAuthLink');
     const userDashLink = document.getElementById('userDashboardNavLink');
-    const badge      = document.getElementById('adminRoleBadge');
+    const badge = document.getElementById('adminRoleBadge');
     const welcomeTitle = document.getElementById('adminWelcomeTitle');
-    const avatarImg  = document.getElementById('userAvatarImg');
+    const avatarImg = document.getElementById('userAvatarImg');
     const avatarIcon = document.getElementById('userAvatarIcon');
 
     if (currentUser) {
@@ -8568,7 +8885,7 @@ function updateUIForUser() {
             { img: 'iaDashAvatarImg', icon: 'iaDashAvatarIcon' },
             { img: 'iaDropAvatarImg', icon: 'iaDropAvatarIcon' }
         ];
-        sidebarAvatars.forEach(({img, icon}) => {
+        sidebarAvatars.forEach(({ img, icon }) => {
             const imgEl = document.getElementById(img);
             const iconEl = document.getElementById(icon);
             if (imgEl && iconEl) {
@@ -8648,7 +8965,7 @@ function updateUIForUser() {
             { img: 'adminDashAvatarImg', icon: 'adminDashAvatarIcon' },
             { img: 'adminDropAvatarImg', icon: 'adminDropAvatarIcon' }
         ];
-        sidebarAvatars.forEach(({img, icon}) => {
+        sidebarAvatars.forEach(({ img, icon }) => {
             const imgEl = document.getElementById(img);
             const iconEl = document.getElementById(icon);
             if (imgEl && iconEl) {
@@ -8676,7 +8993,7 @@ function updateUIForUser() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
     if (currentUser && ['super_admin',
-    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role)) {
+        'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role)) {
         prefetchAdminContentModules();
     }
 }
@@ -9976,12 +10293,12 @@ function returnToPublic() {
     if (home) home.classList.add('active');
     const pubHeader = document.getElementById('publicHeader');
     const pubSearch = document.getElementById('publicSearch');
-    const footer    = document.querySelector('footer');
-    const applyBtn  = document.getElementById('fixedApplyBtn');
+    const footer = document.querySelector('footer');
+    const applyBtn = document.getElementById('fixedApplyBtn');
     if (pubHeader) pubHeader.style.display = 'block';
     if (pubSearch) pubSearch.style.display = 'block';
-    if (footer)    footer.style.display    = 'block';
-    if (applyBtn)  applyBtn.style.display  = 'inline-flex';
+    if (footer) footer.style.display = 'block';
+    if (applyBtn) applyBtn.style.display = 'inline-flex';
     window.scrollTo({ top: 0, behavior: 'smooth' });
     lucide.createIcons();
 }
@@ -10407,8 +10724,8 @@ function renderSubmissionRow(sub, tabKey) {
                 </div>
             </td>
             ${tabKey === 'donations'
-                ? `<td class="co-cell-extra">${escapeHtml(extra)}</td><td class="co-cell-email">${email}</td>`
-                : `<td class="co-cell-email">${email}</td>${hasExtra ? `<td class="co-cell-extra">${escapeHtml(extra)}</td>` : ''}`}
+            ? `<td class="co-cell-extra">${escapeHtml(extra)}</td><td class="co-cell-email">${email}</td>`
+            : `<td class="co-cell-email">${email}</td>${hasExtra ? `<td class="co-cell-extra">${escapeHtml(extra)}</td>` : ''}`}
             <td class="co-cell-submitted">${date}</td>
             <td class="co-cell-status"><span class="status-badge ${ruStoryStatusClass(status)}">${statusLabel}</span></td>
             <td class="co-cell-actions">
@@ -10828,7 +11145,7 @@ async function iaLoadContent(contentType) {
 
         tbody.innerHTML = items.map(item => {
             const displayName = item.title || item.name || 'Untitled';
-            const displaySub  = item.author ? item.author.name : 'Unknown';
+            const displaySub = item.author ? item.author.name : 'Unknown';
 
             return `
             <tr>
@@ -11004,7 +11321,7 @@ function escapeHtml(text) {
 }
 
 async function makeDonation() {
-    const amount  = parseFloat(document.getElementById('dpDonAmount')?.value);
+    const amount = parseFloat(document.getElementById('dpDonAmount')?.value);
     const message = document.getElementById('dpDonMsg')?.value.trim();
     if (!amount || amount <= 0) { showToast('Please enter a valid amount.', 'error'); return; }
     const name = currentUser?.name || 'Anonymous';
@@ -11012,7 +11329,7 @@ async function makeDonation() {
     if (res.ok) {
         showToast('Thank you for your generous donation!');
         document.getElementById('dpDonAmount').value = '';
-        document.getElementById('dpDonMsg').value    = '';
+        document.getElementById('dpDonMsg').value = '';
         await populateDpDashboard();
     } else {
         showToast('Donation failed. Please try again.', 'error');
@@ -11024,8 +11341,8 @@ function getInitialsAvatarSvgUrl(name, id) {
     const initials = safeName.substring(0, 2).toUpperCase();
     const numId = parseInt(id) || 1;
     const gradients = [
-        ['#6366f1','#8b5cf6'],['#0ea5e9','#6366f1'],['#f59e0b','#ef4444'],
-        ['#10b981','#0ea5e9'],['#ec4899','#8b5cf6'],['#f97316','#f59e0b']
+        ['#6366f1', '#8b5cf6'], ['#0ea5e9', '#6366f1'], ['#f59e0b', '#ef4444'],
+        ['#10b981', '#0ea5e9'], ['#ec4899', '#8b5cf6'], ['#f97316', '#f59e0b']
     ];
     const [c1, c2] = gradients[numId % gradients.length];
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
@@ -11056,14 +11373,14 @@ function populateProfileForm(prefix) {
 function previewProfilePicture(input, prefix = 'ru') {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             const preview = document.getElementById(`${prefix}ProfilePicturePreview`);
             if (preview) {
                 preview.src = e.target.result;
                 preview.style.padding = '0';
             }
             // Also update the navbar avatar immediately for live feedback
-            const navImg  = document.getElementById('userAvatarImg');
+            const navImg = document.getElementById('userAvatarImg');
             const navIcon = document.getElementById('userAvatarIcon');
             if (navImg && navIcon) {
                 navImg.src = e.target.result;
@@ -11150,20 +11467,20 @@ async function saveProfile(prefix = 'ru') {
             if (instantSrc) {
                 // Update every avatar img/icon pair in the page
                 const allAvatarPairs = [
-                    { img: 'userAvatarImg',       icon: 'userAvatarIcon' },
-                    { img: 'ruAvatarImg',          icon: 'ruAvatarIcon' },
-                    { img: 'ruDropAvatarImg',      icon: 'ruDropAvatarIcon' },
-                    { img: 'dpAvatarImg',          icon: 'dpAvatarIcon' },
-                    { img: 'dpDropAvatarImg',      icon: 'dpDropAvatarIcon' },
-                    { img: 'coAvatarImg',          icon: 'coAvatarIcon' },
-                    { img: 'coDropAvatarImg',      icon: 'coDropAvatarIcon' },
-                    { img: 'adminDashAvatarImg',   icon: 'adminDashAvatarIcon' },
-                    { img: 'adminDropAvatarImg',   icon: 'adminDropAvatarIcon' },
-                    { img: 'iaDashAvatarImg',      icon: 'iaDashAvatarIcon' },
-                    { img: 'iaDropAvatarImg',      icon: 'iaDropAvatarIcon' },
+                    { img: 'userAvatarImg', icon: 'userAvatarIcon' },
+                    { img: 'ruAvatarImg', icon: 'ruAvatarIcon' },
+                    { img: 'ruDropAvatarImg', icon: 'ruDropAvatarIcon' },
+                    { img: 'dpAvatarImg', icon: 'dpAvatarIcon' },
+                    { img: 'dpDropAvatarImg', icon: 'dpDropAvatarIcon' },
+                    { img: 'coAvatarImg', icon: 'coAvatarIcon' },
+                    { img: 'coDropAvatarImg', icon: 'coDropAvatarIcon' },
+                    { img: 'adminDashAvatarImg', icon: 'adminDashAvatarIcon' },
+                    { img: 'adminDropAvatarImg', icon: 'adminDropAvatarIcon' },
+                    { img: 'iaDashAvatarImg', icon: 'iaDashAvatarIcon' },
+                    { img: 'iaDropAvatarImg', icon: 'iaDropAvatarIcon' },
                 ];
                 allAvatarPairs.forEach(({ img, icon }) => {
-                    const imgEl  = document.getElementById(img);
+                    const imgEl = document.getElementById(img);
                     const iconEl = document.getElementById(icon);
                     if (imgEl) {
                         imgEl.src = instantSrc;
@@ -11454,7 +11771,7 @@ async function refreshUnreadMessageBadges() {
     const data = await apiGet('/admin/messages/unread-count');
     const count = data?.count || 0;
     const isAdmin = ['super_admin',
-    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role);
+        'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(currentUser.role);
     if (isAdmin) setMsgBadge('nav-messages-badge', count);
     if (currentUser.role === 'registered_user') setMsgBadge('ru-nav-messages-badge', count);
 }
@@ -11768,7 +12085,7 @@ function getActiveNotifyContext() {
     if (!currentUser) return null;
     const role = currentUser.role;
     if (['super_admin',
-    'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(role)) return 'admin';
+        'marketing_admin', 'content_editor', 'admin', 'marketing_admin'].includes(role)) return 'admin';
     if (role === 'registered_user') return 'ru';
     return null;
 }
@@ -12063,13 +12380,13 @@ async function registerForEvent(eventId, title, date, ticketTypes = 'general') {
             if (e.target.value === 'vip' || e.target.value === 'ordinary') {
                 paymentGroup.style.display = 'block';
                 paymentMethod.required = true;
-                if(paymentPhone) paymentPhone.required = true;
+                if (paymentPhone) paymentPhone.required = true;
             } else {
                 paymentGroup.style.display = 'none';
                 paymentMethod.required = false;
                 paymentMethod.value = '';
-                if(paymentPhone) paymentPhone.required = false;
-                if(paymentPhone) paymentPhone.value = '';
+                if (paymentPhone) paymentPhone.required = false;
+                if (paymentPhone) paymentPhone.value = '';
             }
         });
     }
@@ -12078,7 +12395,7 @@ async function registerForEvent(eventId, title, date, ticketTypes = 'general') {
     document.getElementById('regPaymentMethodGroup').style.display = 'none';
     document.getElementById('regPaymentMethod').required = false;
     const paymentPhone = document.getElementById('regPaymentPhone');
-    if(paymentPhone) paymentPhone.required = false;
+    if (paymentPhone) paymentPhone.required = false;
 
     document.getElementById('regEventId').value = eventId;
     document.getElementById('eventRegistrationSubtitle').textContent = `${title} ${date ? '• ' + date : ''}`;
@@ -12186,7 +12503,7 @@ async function cancelEventRegistration(eventId) {
                 btn.onclick = () => registerForEvent(eventId, btn.dataset.eventTitle, btn.dataset.eventDate, btn.dataset.eventTicketTypes);
             });
             lucide.createIcons();
-            if(document.getElementById('ru-tab-events').classList.contains('active')) {
+            if (document.getElementById('ru-tab-events').classList.contains('active')) {
                 loadRuEvents();
             }
         } else {
@@ -12257,7 +12574,7 @@ async function loadRuEvents() {
 
 // Hook into the ruRoleTab rendering to load events
 const originalShowRoleTabForEvents = window.showRoleTab;
-window.showRoleTab = function(role, tab, btn) {
+window.showRoleTab = function (role, tab, btn) {
     originalShowRoleTabForEvents(role, tab, btn);
     if (role === 'ru' && tab === 'events') {
         loadRuEvents();
@@ -12304,9 +12621,9 @@ async function manageEventParticipants(eventId, title) {
                 <td>${p.user_email || '—'}</td>
                 <td>
                     <select onchange="updateParticipantStatus(${eventId}, ${p.id}, this.value)" style="padding:0.25rem;border-radius:4px;border:1px solid #ddd">
-                        <option value="confirmed" ${p.status==='confirmed'?'selected':''}>Confirmed</option>
-                        <option value="waitlisted" ${p.status==='waitlisted'?'selected':''}>Waitlisted</option>
-                        <option value="cancelled" ${p.status==='cancelled'?'selected':''}>Cancelled</option>
+                        <option value="confirmed" ${p.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                        <option value="waitlisted" ${p.status === 'waitlisted' ? 'selected' : ''}>Waitlisted</option>
+                        <option value="cancelled" ${p.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
                 <td>${new Date(p.created_at).toLocaleDateString()}</td>
@@ -12414,7 +12731,7 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
             const ticketText = (p.ticket_type || 'General').toUpperCase();
             const payText = p.payment_method ? (p.payment_method === 'mobile_money' ? 'Mobile Money' : 'Card') : 'None';
             const payPhone = p.payment_phone ? `<br><small style="color:#666">${p.payment_phone}</small>` : '';
-            const guestsText = p.guests > 0 ? ` <span style="font-size:0.8rem;color:#666">(+${p.guests} guest${p.guests>1?'s':''})</span>` : '';
+            const guestsText = p.guests > 0 ? ` <span style="font-size:0.8rem;color:#666">(+${p.guests} guest${p.guests > 1 ? 's' : ''})</span>` : '';
 
             html += `<tr>
                 <td>
@@ -12436,12 +12753,12 @@ async function loadEventRegistrationsAdmin(btn, options = {}) {
                 </td>
                 <td>
                     <select onchange="updateParticipantStatus(${p.event_id}, ${p.id}, this.value)" style="padding:0.25rem 0.5rem;border-radius:4px;border:1px solid #ddd;background:#f9fafb">
-                        <option value="confirmed" ${p.status==='confirmed'?'selected':''}>Confirmed</option>
-                        <option value="waitlisted" ${p.status==='waitlisted'?'selected':''}>Waitlisted</option>
-                        <option value="cancelled" ${p.status==='cancelled'?'selected':''}>Cancelled</option>
+                        <option value="confirmed" ${p.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                        <option value="waitlisted" ${p.status === 'waitlisted' ? 'selected' : ''}>Waitlisted</option>
+                        <option value="cancelled" ${p.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
-                <td><span style="font-size:0.9rem">${new Date(p.created_at).toLocaleDateString(undefined, {year:'numeric',month:'short',day:'numeric'})}</span></td>
+                <td><span style="font-size:0.9rem">${new Date(p.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span></td>
                 <td>
                     <button type="button" class="admin-table-action-btn" onclick="removeParticipant(${p.event_id}, ${p.id}, this)" style="color:#ef4444;background:rgba(239, 68, 68, 0.1);padding:0.35rem 0.65rem;border-radius:4px;font-size:0.85rem;border:none;">
                         <i data-lucide="trash-2" style="width:16px;height:16px"></i> Remove
@@ -12477,7 +12794,7 @@ function closeAllProfileDropdowns() {
     });
 }
 
-document.addEventListener('click', function(event) {
+document.addEventListener('click', function (event) {
     if (!event.target.closest('.admin-user-menu') && !event.target.closest('.global-profile-dropdown')) {
         closeAllProfileDropdowns();
     }
@@ -12545,7 +12862,7 @@ function renderFeaturedConference(conf) {
         return;
     }
 
-    const dateStr = conf.display_date || (conf.start_date ? new Date(conf.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : 'TBA');
+    const dateStr = conf.display_date || (conf.start_date ? new Date(conf.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBA');
     const statusCls = (conf.status || '').toUpperCase() === 'OPEN' ? 'open' : 'closed';
     const statusLbl = (conf.status || 'OPEN').toUpperCase();
 
@@ -12588,7 +12905,7 @@ function renderFeaturedConference(conf) {
             const diff = target - Date.now();
             if (diff <= 0) {
                 clearInterval(conferenceTimerInterval);
-                ['t-days','t-hours','t-mins','t-secs'].forEach(id => {
+                ['t-days', 't-hours', 't-mins', 't-secs'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.textContent = '00';
                 });
@@ -12598,7 +12915,7 @@ function renderFeaturedConference(conf) {
             const h = Math.floor((diff % 86400000) / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
             const s = Math.floor((diff % 60000) / 1000);
-            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v).padStart(2,'0'); };
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v).padStart(2, '0'); };
             set('t-days', d); set('t-hours', h); set('t-mins', m); set('t-secs', s);
         }
         tick();
@@ -12617,7 +12934,7 @@ function renderUpcomingConferences(upcoming) {
     }
 
     grid.innerHTML = upcoming.map(c => {
-        const dateStr = c.display_date || (c.start_date ? new Date(c.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : 'TBA');
+        const dateStr = c.display_date || (c.start_date ? new Date(c.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBA');
         const year = c.year || (c.start_date ? new Date(c.start_date).getFullYear() : '');
         const statusCls = (c.status || '').toUpperCase() === 'OPEN' ? 'open' : 'closed';
         const statusLbl = (c.status || 'OPEN').toUpperCase();
@@ -12655,7 +12972,7 @@ function renderPastConferences(past) {
 
     timeline.innerHTML = past.map(c => {
         const year = c.year || (c.start_date ? new Date(c.start_date).getFullYear() : '');
-        const dateStr = c.display_date || (c.start_date ? new Date(c.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : '');
+        const dateStr = c.display_date || (c.start_date ? new Date(c.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '');
         return `
         <div class="conf-tl-item">
             <div class="conf-tl-header">
@@ -12682,7 +12999,7 @@ function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     let host = window.location.host;
     if (API_BASE_URL && API_BASE_URL.startsWith('http')) {
-        try { host = new URL(API_BASE_URL).host; } catch (_) {}
+        try { host = new URL(API_BASE_URL).host; } catch (_) { }
     }
     const wsUrl = `${protocol}//${host}/ws`;
 
@@ -12817,7 +13134,7 @@ function renderUpcomingCommunityServices(upcoming) {
     }
 
     grid.innerHTML = upcoming.map(cs => {
-        const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : null);
+        const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : null);
         const imageUrl = resolveMediaUrl(cs.cover_image_url) || `https://picsum.photos/600/400?random=${cs.id}`;
         const viewBtn = cs.file_url
             ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.25rem 0.5rem;width:fit-content;background:transparent;border:1px solid var(--iuea-maroon);color:var(--iuea-maroon);border-radius:6px;font-size:0.75rem;font-weight:600;text-decoration:none;margin-top:0.75rem;transition:all 0.2s ease;" onmouseover="this.style.background='var(--iuea-maroon)';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='var(--iuea-maroon)';"><i data-lucide="download" style="width:14px;height:14px;"></i> Download</a>`
@@ -12852,7 +13169,7 @@ function attachCsCardClicks() {
     ].filter(Boolean);
     grids.forEach(grid => {
         grid.querySelectorAll('.modern-card[data-content-type="community-services"]').forEach(card => {
-            card.addEventListener('click', function(e) {
+            card.addEventListener('click', function (e) {
                 if (e.target.closest('a, button')) return; // let download/links work normally
                 const id = parseInt(this.dataset.contentId);
                 const cs = (window._csCache || []).find(c => c.id === id);
@@ -12866,7 +13183,7 @@ function openCsDetailModal(cs) {
     const modal = document.getElementById('csDetailModal');
     if (!modal) return;
     const imageUrl = resolveMediaUrl(cs.cover_image_url) || `https://picsum.photos/600/400?random=${cs.id}`;
-    const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : null);
+    const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : null);
     const isCompleted = cs.status && cs.status.toUpperCase() === 'CLOSED';
 
     document.getElementById('csDetailMedia').innerHTML =
@@ -12994,7 +13311,7 @@ function renderPastCommunityServices(past) {
     }
 
     grid.innerHTML = past.map(cs => {
-        const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}) : null);
+        const dateStr = cs.display_date || (cs.start_date ? new Date(cs.start_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : null);
         const imageUrl = resolveMediaUrl(cs.cover_image_url) || `https://picsum.photos/600/400?random=${cs.id}`;
         const viewBtn = cs.file_url
             ? `<a href="${resolveMediaUrl(cs.file_url)}" download target="_blank" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.25rem 0.5rem;width:fit-content;background:transparent;border:1px solid var(--iuea-maroon);color:var(--iuea-maroon);border-radius:6px;font-size:0.75rem;font-weight:600;text-decoration:none;margin-top:0.75rem;transition:all 0.2s ease;" onmouseover="this.style.background='var(--iuea-maroon)';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='var(--iuea-maroon)';"><i data-lucide="download" style="width:14px;height:14px;"></i> Download</a>`
