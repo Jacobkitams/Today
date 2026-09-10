@@ -4341,10 +4341,7 @@
                             <button type="button" class="btn-text-sm" onclick="clearAdminEditMedia()"
                                 style="display:none" id="adminEditClearImageBtn">&#x2715; Clear all</button>
                         </div>
-                        <label style="font-weight:500;font-size:0.8rem;margin-top:0.5rem;display:block;color:var(--iuea-gray-light);">Or keep / paste Image URL</label>
-                        <input type="text" id="adminEditImage" placeholder="https://... or /uploads/..."
-                            oninput="onAdminEditImageUrlInput(this.value)"
-                            style="width:100%;padding:0.5rem 0.75rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.85rem;margin-top:0.25rem;box-sizing:border-box;">
+                        <input type="hidden" id="adminEditImage">
                     </div>
 
                     <!-- Video Upload -->
