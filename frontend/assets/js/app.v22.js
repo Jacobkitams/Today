@@ -6121,28 +6121,63 @@ let adminEditSelectedImageFiles = [];
 function renderAdminEditImageThumbnails() {
     const zone = document.getElementById('adminEditImageDropZone');
     const wrap = document.getElementById('adminEditImagePreviewWrap');
-    const preview = document.getElementById('adminEditImagePreview');
+    const singlePreview = document.getElementById('adminEditImagePreview');
+    const gallery = document.getElementById('adminEditImageGallery');
     const nameEl = document.getElementById('adminEditImageFileName');
     const clearBtn = document.getElementById('adminEditClearImageBtn');
 
     if (adminEditSelectedImageFiles.length > 0) {
         if (zone) zone.classList.add('has-file');
         if (wrap) wrap.style.display = 'none';
-        if (preview) preview.style.display = 'none';
+        if (singlePreview) singlePreview.style.display = 'none';
+        if (gallery) gallery.style.display = 'grid';
+        if (clearBtn) clearBtn.style.display = 'inline';
+
         const total = adminEditSelectedImageFiles.length;
         const totalMb = (adminEditSelectedImageFiles.reduce((s, f) => s + f.size, 0) / (1024 * 1024)).toFixed(1);
         if (nameEl) nameEl.textContent = `${total} image${total > 1 ? 's' : ''} selected (${totalMb} MB)`;
-        if (clearBtn) clearBtn.style.display = 'inline';
+
+        if (gallery) {
+            gallery.innerHTML = adminEditSelectedImageFiles.map((file, idx) => {
+                const url = URL.createObjectURL(file);
+                const sizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+                return `
+                    <div class="image-preview-thumb" title="${escapeHtml(file.name)} (${sizeStr})">
+                        <img src="${url}" alt="${escapeHtml(file.name)}">
+                        <button type="button" class="thumb-remove-btn" onclick="event.stopPropagation(); removeAdminEditImage(${idx})" title="Remove image ${idx + 1}" aria-label="Remove image ${idx + 1}">✕</button>
+                        <span class="thumb-num-badge">${idx + 1}</span>
+                    </div>`;
+            }).join('') + `
+            <div class="thumb-add-tile" onclick="event.stopPropagation(); document.getElementById('adminEditImageFile')?.click()" title="Add more images">
+                <i data-lucide="plus"></i>
+                <span>Add</span>
+            </div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
     } else if (adminEditExistingImageUrl) {
+        if (gallery) gallery.style.display = 'none';
         showAdminEditImagePreview(adminEditExistingImageUrl, 'Current image');
         if (clearBtn) clearBtn.style.display = 'none';
     } else {
         if (zone) zone.classList.remove('has-file');
         if (wrap) wrap.style.display = 'flex';
-        if (preview) { preview.src = ''; preview.style.display = 'none'; }
-        if (nameEl) nameEl.textContent = 'No new image selected';
+        if (singlePreview) { singlePreview.src = ''; singlePreview.style.display = 'none'; }
+        if (gallery) { gallery.style.display = 'none'; gallery.innerHTML = ''; }
+        if (nameEl) nameEl.textContent = 'No new images selected';
         if (clearBtn) clearBtn.style.display = 'none';
     }
+}
+
+function removeAdminEditImage(index) {
+    if (index >= 0 && index < adminEditSelectedImageFiles.length) {
+        adminEditSelectedImageFiles.splice(index, 1);
+        renderAdminEditImageThumbnails();
+    }
+}
+
+function handleAdminEditImageZoneClick(event) {
+    if (event.target.closest('.thumb-remove-btn') || event.target.closest('.thumb-add-tile')) return;
+    document.getElementById('adminEditImageFile')?.click();
 }
 
 function showAdminEditImagePreview(url, label) {
@@ -8674,6 +8709,8 @@ window.submitCreateForm = submitCreateForm;
 window.removeSelectedCreateImage = removeSelectedCreateImage;
 window.switchDetailGalleryImage = switchDetailGalleryImage;
 window.handleImageZoneClick = handleImageZoneClick;
+window.handleAdminEditImageZoneClick = handleAdminEditImageZoneClick;
+window.removeAdminEditImage = removeAdminEditImage;
 
 function toggleLoginPassword() {
     const input = document.getElementById('loginPassword');

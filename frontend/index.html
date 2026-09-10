@@ -4311,17 +4311,18 @@
                     <div id="adminEditImageGroup" class="form-group">
                         <label>Image</label>
                         <div class="upload-zone" id="adminEditImageDropZone"
-                            onclick="document.getElementById('adminEditImageFile').click()"
+                            onclick="handleAdminEditImageZoneClick(event)"
                             ondragover="event.preventDefault(); this.classList.add('drag-over')"
                             ondragleave="this.classList.remove('drag-over')" ondrop="handleAdminEditFileDrop(event)">
                             <div id="adminEditImagePreviewWrap">
                                 <i data-lucide="image" style="width:36px;height:36px;color:var(--iuea-gray-light)"></i>
                                 <p style="color:var(--iuea-gray-light);margin:0.5rem 0 0;font-size:0.85rem;">Click or
-                                    drag to upload a new image</p>
+                                    drag to upload images</p>
                                 <span style="font-size:0.75rem;color:#aaa;">JPG, PNG, WebP, GIF — max 500MB (select multiple)</span>
                             </div>
                             <img id="adminEditImagePreview" src="" alt=""
                                 style="display:none;width:100%;height:100%;object-fit:cover;border-radius:8px;">
+                            <div id="adminEditImageGallery" class="image-gallery-preview" style="display:none;"></div>
                         </div>
                         <input type="file" id="adminEditImageFile" accept="image/*" multiple style="display:none"
                             onchange="previewAdminEditMedia(this)">
@@ -4329,7 +4330,7 @@
                             <span id="adminEditImageFileName" style="font-size:0.8rem;color:var(--iuea-gray-light);">No
                                 new image selected</span>
                             <button type="button" class="btn-text-sm" onclick="clearAdminEditMedia()"
-                                style="display:none" id="adminEditClearImageBtn">✕ Remove</button>
+                                style="display:none" id="adminEditClearImageBtn">✕ Clear all</button>
                         </div>
                         <label style="font-weight:500;font-size:0.8rem;margin-top:0.75rem;display:block;">Or keep /
                             paste Image URL</label>
