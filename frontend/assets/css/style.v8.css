@@ -91,7 +91,7 @@ p { margin-bottom: 1rem; color: var(--iuea-gray-light); }
 
 .page-section {
     display: none;
-    opacity: 0;
+    opacity: 0.85;
     transition: opacity var(--transition-speed) ease;
 }
 .page-section.active {
@@ -100,7 +100,7 @@ p { margin-bottom: 1rem; color: var(--iuea-gray-light); }
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0.85; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -256,7 +256,7 @@ nav {
     min-width: 160px;
     padding: 0.4rem 0;
     z-index: 1050;
-    opacity: 0;
+    opacity: 0.85;
     pointer-events: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
     border: 1px solid rgba(0, 0, 0, 0.06);
@@ -606,7 +606,7 @@ nav {
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(40px); }
+    from { opacity: 0.85; transform: translateY(40px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -1452,7 +1452,7 @@ nav {
     text-align: center;
     cursor: pointer;
     z-index: 10;
-    opacity: 0;
+    opacity: 0.85;
     transition: opacity 0.3s, background 0.3s;
     display: flex;
     align-items: center;
@@ -1922,7 +1922,7 @@ nav {
     z-index: 2000;
     padding: 2rem;
     overflow-y: auto;
-    opacity: 0;
+    opacity: 0.85;
     transition: opacity var(--transition-speed);
 }
 .detail-modal.show {
@@ -2319,7 +2319,7 @@ nav {
     display: block;
     width: 100% !important;
     height: 100% !important;
-    opacity: 0;
+    opacity: 0.85;
     transition: opacity 0.6s ease;
 }
 
@@ -2342,7 +2342,7 @@ nav {
 }
 
 .showcase-3d-stage.is-ready::after,
-.showcase-3d-stage.is-fallback::after { opacity: 0; }
+.showcase-3d-stage.is-fallback::after { opacity: 0.85; }
 
 @keyframes showcaseSpin {
     to { transform: rotate(360deg); }
@@ -5017,7 +5017,7 @@ nav {
 }
 .ud-notify-switch input {
     position: absolute;
-    opacity: 0;
+    opacity: 0.85;
     width: 100%;
     height: 100%;
     margin: 0;
@@ -6327,7 +6327,7 @@ nav {
 }
 
 @keyframes ia-row-in {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0.85; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -8363,7 +8363,7 @@ nav {
 }
 
 @keyframes miniChatSlideUp {
-    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    from { opacity: 0.85; transform: translateY(16px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
@@ -9011,7 +9011,7 @@ nav {
     font-weight: 500;
     line-height: 1.35;
     white-space: normal;
-    opacity: 0;
+    opacity: 0.85;
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.15s, visibility 0.15s;
@@ -9147,7 +9147,7 @@ body.app-offline .offline-admin-notice {
 
 #admin-dashboard .admin-settings-toggle input {
     position: absolute;
-    opacity: 0;
+    opacity: 0.85;
     pointer-events: none;
 }
 
@@ -10661,7 +10661,7 @@ body.app-offline .offline-admin-notice {
 }
 
 @keyframes fadeInOpacity {
-    from { opacity: 0; }
+    from { opacity: 0.85; }
     to { opacity: 1; }
 }
 
@@ -11784,7 +11784,7 @@ edia (max-width: 768px) {
     color: rgba(255,255,255,0.7);
     line-height: 1.5;
     margin: 0;
-    opacity: 0;
+    opacity: 0.85;
     transition: opacity 0.4s ease;
 }
 
@@ -11993,7 +11993,7 @@ edia (max-width: 768px) {
 }
 
 @keyframes slideUp {
-    from { transform: translateY(24px); opacity: 0; }
+    from { transform: translateY(24px); opacity: 0.85; }
     to   { transform: translateY(0);    opacity: 1; }
 }
 
