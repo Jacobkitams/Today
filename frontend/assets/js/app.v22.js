@@ -1898,7 +1898,7 @@ function createAlumniCard(item) {
     return `
     <div class="modern-card" data-content-type="alumni" data-content-id="${item.id}">
         <div class="card-media">
-            <img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id || 'alumni'}';this.style.opacity='1'">
+            ${buildCardMediaHtml({ videoUrl: null, imageUrl, images: resolveAllMediaUrls(item.image || ''), alt: title, key: 'alumni_'+item.id, fallbackSrc: `https://picsum.photos/600/400?random=${item.id || 'alumni'}` })}
             <span class="card-badge gold">${badgeText}</span>
             ${cardSaveButton('alumni', item.id)}
         </div>
@@ -1930,9 +1930,7 @@ function createEventCard(item) {
     if (item.location) stats += statHTML('map-pin', item.location);
     const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, item.author_profile_picture, 'events', item.id);
 
-    const mediaHTML = videoUrl
-        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
-        : `<img class="card-image" src="${imageUrl}" alt="${escapeHtml(title)}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
+    const mediaHTML = buildCardMediaHtml({ videoUrl, imageUrl, images: resolveAllMediaUrls(item.image || ''), alt: title, key: 'event_'+item.id, fallbackSrc: `https://picsum.photos/600/400?random=${item.id}` });
 
     const registerBtn = `<button type="button" class="btn-primary event-register-btn event-register-btn-${item.id}" data-event-id="${item.id}" data-event-title="${escapeHtml(title)}" data-event-date="${escapeHtml(item.date || '')}" data-event-ticket-types="${escapeHtml(item.ticket_types || 'general')}" onclick="event.stopPropagation(); registerForEvent(${item.id}, this.dataset.eventTitle, this.dataset.eventDate, this.dataset.eventTicketTypes)" style="border-radius:999px;padding:0.4rem 1rem;font-size:0.85rem;background-color:var(--iuea-maroon);color:white;border:none;flex-shrink:0;margin-top:0"><i data-lucide="user-plus"></i> Register</button>`;
 
@@ -2019,9 +2017,7 @@ function createPastActivityCard(item) {
         stats += statHTML('calendar', dateOnly);
     }
     const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, item.author_profile_picture, contentType, item.id);
-    const mediaHTML = videoUrl
-        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
-        : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
+    const mediaHTML = buildCardMediaHtml({ videoUrl, imageUrl, images: resolveAllMediaUrls(item.image || ''), alt: title, key: 'pastactivity_'+item.id, fallbackSrc: `https://picsum.photos/600/400?random=${item.id}` });
     const badgeLabel = isEvent ? 'Past Event' : 'Past News';
     const badgeHTML = `<span class="card-badge badge-past" role="link" tabindex="0">${badgeLabel}</span>`;
 
@@ -2192,7 +2188,7 @@ function createEndowmentCampaignCard(item) {
     return `
     <div class="modern-card" data-content-type="${contentType}" data-content-id="${item.id}">
         <div class="card-media">
-            <img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" onerror="this.src='https://picsum.photos/600/400?random=${item.id}'">
+            ${buildCardMediaHtml({ videoUrl: null, imageUrl, images: resolveAllMediaUrls(item.image || ''), alt: title, key: 'campaign_'+item.id, fallbackSrc: `https://picsum.photos/600/400?random=${item.id}` })}
             <span class="card-badge">Campaign</span>
         </div>
         <div class="card-content">
@@ -8711,6 +8707,8 @@ window.switchDetailGalleryImage = switchDetailGalleryImage;
 window.handleImageZoneClick = handleImageZoneClick;
 window.handleAdminEditImageZoneClick = handleAdminEditImageZoneClick;
 window.removeAdminEditImage = removeAdminEditImage;
+window.cycleCarousel = cycleCarousel;
+window.goToCarouselImage = goToCarouselImage;
 
 function toggleLoginPassword() {
     const input = document.getElementById('loginPassword');
