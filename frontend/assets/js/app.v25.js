@@ -6490,8 +6490,11 @@ function populateAdminEditForm(moduleName, item) {
         descEl.value = item.description || '';
     }
 
-    adminEditExistingImageUrl = item.image || null;
-    clearAdminEditMedia();
+    adminEditExistingImageUrl = item.image || '';
+    adminEditSelectedImageFiles = [];
+    const imageEl = document.getElementById('adminEditImage');
+    if (imageEl) imageEl.value = adminEditExistingImageUrl;
+    renderAdminEditImageThumbnails();
     if (statusEl) statusEl.value = item.status || 'approved';
 }
 
