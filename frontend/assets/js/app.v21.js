@@ -6115,6 +6115,36 @@ function adminEditModuleHasImage(moduleName) {
     return config ? config.showMedia !== false : false;
 }
 
+/* ---- admin edit: multi-image state ---- */
+let adminEditSelectedImageFiles = [];
+
+function renderAdminEditImageThumbnails() {
+    const zone = document.getElementById('adminEditImageDropZone');
+    const wrap = document.getElementById('adminEditImagePreviewWrap');
+    const preview = document.getElementById('adminEditImagePreview');
+    const nameEl = document.getElementById('adminEditImageFileName');
+    const clearBtn = document.getElementById('adminEditClearImageBtn');
+
+    if (adminEditSelectedImageFiles.length > 0) {
+        if (zone) zone.classList.add('has-file');
+        if (wrap) wrap.style.display = 'none';
+        if (preview) preview.style.display = 'none';
+        const total = adminEditSelectedImageFiles.length;
+        const totalMb = (adminEditSelectedImageFiles.reduce((s, f) => s + f.size, 0) / (1024 * 1024)).toFixed(1);
+        if (nameEl) nameEl.textContent = `${total} image${total > 1 ? 's' : ''} selected (${totalMb} MB)`;
+        if (clearBtn) clearBtn.style.display = 'inline';
+    } else if (adminEditExistingImageUrl) {
+        showAdminEditImagePreview(adminEditExistingImageUrl, 'Current image');
+        if (clearBtn) clearBtn.style.display = 'none';
+    } else {
+        if (zone) zone.classList.remove('has-file');
+        if (wrap) wrap.style.display = 'flex';
+        if (preview) { preview.src = ''; preview.style.display = 'none'; }
+        if (nameEl) nameEl.textContent = 'No new image selected';
+        if (clearBtn) clearBtn.style.display = 'none';
+    }
+}
+
 function showAdminEditImagePreview(url, label) {
     const resolved = resolveMediaUrl(url);
     const preview = document.getElementById('adminEditImagePreview');
@@ -6138,70 +6168,51 @@ function showAdminEditImagePreview(url, label) {
 }
 
 function clearAdminEditMedia() {
+    adminEditSelectedImageFiles = [];
     const input = document.getElementById('adminEditImageFile');
     const clearBtn = document.getElementById('adminEditClearImageBtn');
     if (input) input.value = '';
     if (clearBtn) clearBtn.style.display = 'none';
     const imageEl = document.getElementById('adminEditImage');
     if (imageEl) imageEl.value = adminEditExistingImageUrl || '';
-    showAdminEditImagePreview(
-        adminEditExistingImageUrl,
-        adminEditExistingImageUrl ? 'Current image' : null
-    );
+    renderAdminEditImageThumbnails();
 }
 
 function previewAdminEditMedia(input) {
-    const file = input?.files?.[0];
-    if (!file) return;
-    const err = validateImageFile(file);
-    if (err) {
-        showToast(err, 'error');
-        input.value = '';
-        clearAdminEditMedia();
-        return;
+    const files = Array.from(input?.files || []);
+    if (!files.length) return;
+    for (const file of files) {
+        const err = validateImageFile(file);
+        if (err) { showToast(err, 'error'); continue; }
+        const exists = adminEditSelectedImageFiles.some(f => f.name === file.name && f.size === file.size);
+        if (!exists) adminEditSelectedImageFiles.push(file);
     }
-    const nameEl = document.getElementById('adminEditImageFileName');
-    const clearBtn = document.getElementById('adminEditClearImageBtn');
-    const zone = document.getElementById('adminEditImageDropZone');
-    const preview = document.getElementById('adminEditImagePreview');
-    const wrap = document.getElementById('adminEditImagePreviewWrap');
+    input.value = '';
     const imageEl = document.getElementById('adminEditImage');
-
-    if (nameEl) nameEl.textContent = file.name;
-    if (clearBtn) clearBtn.style.display = 'inline';
-    if (zone) zone.classList.add('has-file');
     if (imageEl) imageEl.value = '';
-
-    const reader = new FileReader();
-    reader.onload = e => {
-        if (preview) { preview.src = e.target.result; preview.style.display = 'block'; }
-        if (wrap) wrap.style.display = 'none';
-    };
-    reader.readAsDataURL(file);
+    renderAdminEditImageThumbnails();
 }
 
 function handleAdminEditFileDrop(event) {
     event.preventDefault();
     const zone = document.getElementById('adminEditImageDropZone');
     if (zone) zone.classList.remove('drag-over');
-    const file = event.dataTransfer?.files?.[0];
-    if (!file) return;
-    const err = validateImageFile(file);
-    if (err) {
-        showToast(err, 'error');
-        return;
+    const files = Array.from(event.dataTransfer?.files || []).filter(f => f.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|jfif)$/i.test(f.name));
+    if (!files.length) return;
+    for (const file of files) {
+        const err = validateImageFile(file);
+        if (err) { showToast(err, 'error'); continue; }
+        const exists = adminEditSelectedImageFiles.some(f => f.name === file.name && f.size === file.size);
+        if (!exists) adminEditSelectedImageFiles.push(file);
     }
-    const input = document.getElementById('adminEditImageFile');
-    if (!input) return;
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    input.files = dt.files;
-    previewAdminEditMedia(input);
+    const imageEl = document.getElementById('adminEditImage');
+    if (imageEl) imageEl.value = '';
+    renderAdminEditImageThumbnails();
 }
 
 function onAdminEditImageUrlInput(value) {
     const fileInput = document.getElementById('adminEditImageFile');
-    if (fileInput?.files?.[0]) return;
+    if (adminEditSelectedImageFiles.length > 0 || fileInput?.files?.[0]) return;
     const trimmed = (value || '').trim();
     showAdminEditImagePreview(trimmed, trimmed ? 'Image from URL' : null);
 }
@@ -6489,6 +6500,7 @@ function closeAdminEditModal() {
     document.getElementById('adminEditModal').classList.remove('show');
     adminEditContext = { moduleName: null, id: null };
     adminEditExistingImageUrl = null;
+    adminEditSelectedImageFiles = [];
     const fileInput = document.getElementById('adminEditImageFile');
     if (fileInput) fileInput.value = '';
 }
@@ -6513,12 +6525,22 @@ async function saveAdminEdit() {
     if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
     try {
-        const imageInput = document.getElementById('adminEditImageFile');
-        if (adminEditModuleHasImage(moduleName) && imageInput?.files?.[0]) {
-            const uploadedUrl = await uploadFile(imageInput, 'image', () => { });
-            if (uploadedUrl) {
-                const imageEl = document.getElementById('adminEditImage');
-                if (imageEl) imageEl.value = uploadedUrl;
+        if (adminEditModuleHasImage(moduleName)) {
+            if (adminEditSelectedImageFiles.length > 0) {
+                const uploadedUrl = await uploadMultipleImageFiles(adminEditSelectedImageFiles, () => {});
+                if (uploadedUrl) {
+                    const imageEl = document.getElementById('adminEditImage');
+                    if (imageEl) imageEl.value = uploadedUrl;
+                }
+            } else {
+                const imageInput = document.getElementById('adminEditImageFile');
+                if (imageInput?.files?.[0]) {
+                    const uploadedUrl = await uploadFile(imageInput, 'image', () => {});
+                    if (uploadedUrl) {
+                        const imageEl = document.getElementById('adminEditImage');
+                        if (imageEl) imageEl.value = uploadedUrl;
+                    }
+                }
             }
         }
 
@@ -9265,7 +9287,6 @@ const HERO_PAGES = [
 ];
 
 const HERO_VIDEO_MAX_BYTES = 200 * 1024 * 1024;
-const HERO_VIDEO_TYPES = ['video/mp4', 'video/webm'];
 const HERO_PAGE_KEY_ALIASES = { commission: 'community' };
 
 function resolveHeroPageEntry(videoMap, pageKey) {
@@ -9278,8 +9299,11 @@ function resolveHeroPageEntry(videoMap, pageKey) {
 }
 
 function validateHeroVideoFile(file) {
-    if (!HERO_VIDEO_TYPES.includes(file.type)) {
-        return 'Only MP4 and WebM videos are allowed.';
+    const name = file.name || '';
+    const ext = name.substring(name.lastIndexOf('.')).toLowerCase();
+    const isAllowedType = ALLOWED_VIDEO_TYPES.includes(file.type) || ALLOWED_VIDEO_EXTS.includes(ext);
+    if (!isAllowedType) {
+        return 'Unsupported video format. Please use a standard video file (MP4, WebM, MOV, AVI, MKV, …).';
     }
     if (file.size > HERO_VIDEO_MAX_BYTES) {
         return 'Video must be 200MB or smaller.';
@@ -9392,7 +9416,7 @@ function renderHeroVideoSettings(videos) {
             <div class="hero-video-card-header">
                 <h4 class="hero-video-card-title">${page.label} Hero</h4>
                 <div class="hero-video-card-actions">
-                    <input type="file" id="heroFileInput-${page.key}" accept="video/mp4,video/webm" style="display:none"
+                    <input type="file" id="heroFileInput-${page.key}" accept="video/*" style="display:none"
                         onchange="handleHeroVideoFileSelect('${page.key}', this)">
                     <button type="button" class="hero-upload-btn" id="heroUploadBtn-${page.key}"
                         onclick="document.getElementById('heroFileInput-${page.key}').click()">
@@ -9401,7 +9425,7 @@ function renderHeroVideoSettings(videos) {
                     ${currentVideo ? `<button type="button" class="hero-remove-btn" onclick="removeHeroVideo('${page.key}')"><i data-lucide="trash-2"></i> Remove</button>` : ''}
                 </div>
             </div>
-            <p class="hero-video-hint">MP4 or WebM, max 200MB${record?.original_filename ? ` · Current: ${record.original_filename}` : ''}</p>
+            <p class="hero-video-hint">MP4, WebM, MOV, AVI, MKV &amp; more — max 200MB${record?.original_filename ? ` · Current: ${record.original_filename}` : ''}</p>
             <p id="${statusId}" class="hero-video-status"></p>
             ${previewHTML}
         </div>`;
