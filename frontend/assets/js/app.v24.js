@@ -6122,44 +6122,63 @@ function renderAdminEditImageThumbnails() {
     const nameEl = document.getElementById('adminEditImageFileName');
     const clearBtn = document.getElementById('adminEditClearImageBtn');
 
-    if (adminEditSelectedImageFiles.length > 0) {
+    const existingUrls = resolveAllMediaUrls(adminEditExistingImageUrl || '');
+    const newFiles = adminEditSelectedImageFiles;
+    const totalCount = existingUrls.length + newFiles.length;
+
+    if (totalCount > 0) {
         if (zone) zone.classList.add('has-file');
         if (wrap) wrap.style.display = 'none';
         if (singlePreview) singlePreview.style.display = 'none';
         if (gallery) gallery.style.display = 'grid';
-        if (clearBtn) clearBtn.style.display = 'inline';
+        if (clearBtn) clearBtn.style.display = 'inline-flex';
 
-        const total = adminEditSelectedImageFiles.length;
-        const totalMb = (adminEditSelectedImageFiles.reduce((s, f) => s + f.size, 0) / (1024 * 1024)).toFixed(1);
-        if (nameEl) nameEl.textContent = `${total} image${total > 1 ? 's' : ''} selected (${totalMb} MB)`;
+        let html = '';
+        let globalIdx = 1;
 
-        if (gallery) {
-            gallery.innerHTML = adminEditSelectedImageFiles.map((file, idx) => {
-                const url = URL.createObjectURL(file);
-                const sizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
-                return `
-                    <div class="image-preview-thumb" title="${escapeHtml(file.name)} (${sizeStr})">
-                        <img src="${url}" alt="${escapeHtml(file.name)}">
-                        <button type="button" class="thumb-remove-btn" onclick="event.stopPropagation(); removeAdminEditImage(${idx})" title="Remove image ${idx + 1}" aria-label="Remove image ${idx + 1}">✕</button>
-                        <span class="thumb-num-badge">${idx + 1}</span>
-                    </div>`;
-            }).join('') + `
+        // Render existing URLs
+        existingUrls.forEach((url, idx) => {
+            html += `
+                <div class="image-preview-thumb" title="Existing Image ${idx + 1}">
+                    <img src="${url}" alt="Existing Image ${idx + 1}">
+                    <button type="button" class="thumb-remove-btn" onclick="event.stopPropagation(); removeAdminEditExistingImage(${idx})" title="Remove existing image" aria-label="Remove existing image">&#x2715;</button>
+                    <span class="thumb-num-badge">${globalIdx++}</span>
+                </div>`;
+        });
+
+        // Render new files
+        const totalMb = (newFiles.reduce((s, f) => s + f.size, 0) / (1024 * 1024)).toFixed(1);
+        newFiles.forEach((file, idx) => {
+            const fileUrl = URL.createObjectURL(file);
+            const sizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+            html += `
+                <div class="image-preview-thumb" title="${escapeHtml(file.name)} (${sizeStr})">
+                    <img src="${fileUrl}" alt="${escapeHtml(file.name)}">
+                    <button type="button" class="thumb-remove-btn" onclick="event.stopPropagation(); removeAdminEditImage(${idx})" title="Remove new image" aria-label="Remove new image">&#x2715;</button>
+                    <span class="thumb-num-badge badge-new" style="background:var(--iuea-maroon);color:white;border-radius:99px;padding:0 4px;font-size:0.6rem;">New</span>
+                </div>`;
+        });
+
+        html += `
             <div class="thumb-add-tile" onclick="event.stopPropagation(); document.getElementById('adminEditImageFile')?.click()" title="Add more images">
                 <i data-lucide="plus"></i>
                 <span>Add</span>
             </div>`;
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        if (gallery) gallery.innerHTML = html;
+        if (nameEl) {
+            let parts = [];
+            if (existingUrls.length) parts.push(`${existingUrls.length} existing`);
+            if (newFiles.length) parts.push(`${newFiles.length} new (${totalMb} MB)`);
+            nameEl.textContent = parts.join(', ');
         }
-    } else if (adminEditExistingImageUrl) {
-        if (gallery) gallery.style.display = 'none';
-        showAdminEditImagePreview(adminEditExistingImageUrl, 'Current image');
-        if (clearBtn) clearBtn.style.display = 'none';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     } else {
         if (zone) zone.classList.remove('has-file');
         if (wrap) wrap.style.display = 'flex';
         if (singlePreview) { singlePreview.src = ''; singlePreview.style.display = 'none'; }
         if (gallery) { gallery.style.display = 'none'; gallery.innerHTML = ''; }
-        if (nameEl) nameEl.textContent = 'No new images selected';
+        if (nameEl) nameEl.textContent = 'No images selected';
         if (clearBtn) clearBtn.style.display = 'none';
     }
 }
@@ -6176,36 +6195,26 @@ function handleAdminEditImageZoneClick(event) {
     document.getElementById('adminEditImageFile')?.click();
 }
 
-function showAdminEditImagePreview(url, label) {
-    const resolved = resolveMediaUrl(url);
-    const preview = document.getElementById('adminEditImagePreview');
-    const wrap = document.getElementById('adminEditImagePreviewWrap');
-    const zone = document.getElementById('adminEditImageDropZone');
-    const nameEl = document.getElementById('adminEditImageFileName');
-    if (!preview || !wrap) return;
-    if (resolved) {
-        preview.src = resolved;
-        preview.style.display = 'block';
-        wrap.style.display = 'none';
-        if (zone) zone.classList.add('has-file');
-        if (nameEl) nameEl.textContent = label || 'Current image';
-    } else {
-        preview.src = '';
-        preview.style.display = 'none';
-        wrap.style.display = 'flex';
-        if (zone) zone.classList.remove('has-file');
-        if (nameEl) nameEl.textContent = 'No new image selected';
+function removeAdminEditExistingImage(idx) {
+    let urls = resolveAllMediaUrls(adminEditExistingImageUrl || '');
+    if (idx >= 0 && idx < urls.length) {
+        urls.splice(idx, 1);
+        adminEditExistingImageUrl = urls.join(',');
+        const imageEl = document.getElementById('adminEditImage');
+        if (imageEl) imageEl.value = adminEditExistingImageUrl;
+        renderAdminEditImageThumbnails();
     }
 }
 
 function clearAdminEditMedia() {
     adminEditSelectedImageFiles = [];
+    adminEditExistingImageUrl = '';
     const input = document.getElementById('adminEditImageFile');
     const clearBtn = document.getElementById('adminEditClearImageBtn');
     if (input) input.value = '';
     if (clearBtn) clearBtn.style.display = 'none';
     const imageEl = document.getElementById('adminEditImage');
-    if (imageEl) imageEl.value = adminEditExistingImageUrl || '';
+    if (imageEl) imageEl.value = '';
     renderAdminEditImageThumbnails();
 }
 
@@ -6242,10 +6251,8 @@ function handleAdminEditFileDrop(event) {
 }
 
 function onAdminEditImageUrlInput(value) {
-    const fileInput = document.getElementById('adminEditImageFile');
-    if (adminEditSelectedImageFiles.length > 0 || fileInput?.files?.[0]) return;
-    const trimmed = (value || '').trim();
-    showAdminEditImagePreview(trimmed, trimmed ? 'Image from URL' : null);
+    adminEditExistingImageUrl = value || '';
+    renderAdminEditImageThumbnails();
 }
 
 /* ── Admin Edit: Video helpers ── */
@@ -6610,21 +6617,25 @@ async function saveAdminEdit() {
 
     try {
         if (adminEditModuleHasImage(moduleName)) {
+            const imageEl = document.getElementById('adminEditImage');
+            const baseUrls = imageEl ? imageEl.value.trim() : '';
+            const finalUrls = [];
+            
+            // Preserve existing URLs that weren't removed
+            if (baseUrls) {
+                finalUrls.push(...resolveAllMediaUrls(baseUrls));
+            }
+
+            // Upload and append new files
             if (adminEditSelectedImageFiles.length > 0) {
-                const uploadedUrl = await uploadMultipleImageFiles(adminEditSelectedImageFiles, () => {});
-                if (uploadedUrl) {
-                    const imageEl = document.getElementById('adminEditImage');
-                    if (imageEl) imageEl.value = uploadedUrl;
+                const newUploadedUrl = await uploadMultipleImageFiles(adminEditSelectedImageFiles, () => {});
+                if (newUploadedUrl) {
+                    finalUrls.push(...resolveAllMediaUrls(newUploadedUrl));
                 }
-            } else {
-                const imageInput = document.getElementById('adminEditImageFile');
-                if (imageInput?.files?.[0]) {
-                    const uploadedUrl = await uploadFile(imageInput, 'image', () => {});
-                    if (uploadedUrl) {
-                        const imageEl = document.getElementById('adminEditImage');
-                        if (imageEl) imageEl.value = uploadedUrl;
-                    }
-                }
+            }
+            
+            if (imageEl) {
+                imageEl.value = [...new Set(finalUrls)].join(','); // Ensure no duplicates just in case
             }
         }
 
