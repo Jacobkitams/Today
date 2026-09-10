@@ -6248,6 +6248,57 @@ function onAdminEditImageUrlInput(value) {
     showAdminEditImagePreview(trimmed, trimmed ? 'Image from URL' : null);
 }
 
+/* ── Admin Edit: Video helpers ── */
+let adminEditSelectedVideoFile = null;
+
+function previewAdminEditVideo(input) {
+    const file = input?.files?.[0];
+    if (!file) return;
+    if (file.size > 300 * 1024 * 1024) {
+        showToast('Video must be under 300 MB.', 'error');
+        input.value = '';
+        return;
+    }
+    adminEditSelectedVideoFile = file;
+    const preview = document.getElementById('adminEditVideoPreview');
+    const wrap = document.getElementById('adminEditVideoPreviewWrap');
+    const nameEl = document.getElementById('adminEditVideoFileName');
+    const clearBtn = document.getElementById('adminEditClearVideoBtn');
+    const zone = document.getElementById('adminEditVideoDropZone');
+    if (preview) { preview.src = URL.createObjectURL(file); preview.style.display = 'block'; }
+    if (wrap) wrap.style.display = 'none';
+    if (nameEl) nameEl.textContent = file.name;
+    if (clearBtn) clearBtn.style.display = 'inline-flex';
+    if (zone) zone.classList.add('has-file');
+    input.value = '';
+}
+
+function clearAdminEditVideo() {
+    adminEditSelectedVideoFile = null;
+    const preview = document.getElementById('adminEditVideoPreview');
+    const wrap = document.getElementById('adminEditVideoPreviewWrap');
+    const nameEl = document.getElementById('adminEditVideoFileName');
+    const clearBtn = document.getElementById('adminEditClearVideoBtn');
+    const zone = document.getElementById('adminEditVideoDropZone');
+    const input = document.getElementById('adminEditVideoFile');
+    if (preview) { preview.src = ''; preview.style.display = 'none'; }
+    if (wrap) wrap.style.display = '';
+    if (nameEl) nameEl.textContent = 'No video selected';
+    if (clearBtn) clearBtn.style.display = 'none';
+    if (zone) zone.classList.remove('has-file');
+    if (input) input.value = '';
+}
+
+function handleAdminEditVideoFileDrop(event) {
+    event.preventDefault();
+    const zone = document.getElementById('adminEditVideoDropZone');
+    if (zone) zone.classList.remove('drag-over');
+    const file = Array.from(event.dataTransfer?.files || []).find(f => f.type.startsWith('video/'));
+    if (!file) return;
+    const fakeInput = { files: [file] };
+    previewAdminEditVideo(fakeInput);
+}
+
 function configureAdminEditFields(moduleName) {
     const titleGroup = document.getElementById('adminEditTitleGroup');
     const nameRow = document.getElementById('adminEditNameRow');
@@ -6532,8 +6583,10 @@ function closeAdminEditModal() {
     adminEditContext = { moduleName: null, id: null };
     adminEditExistingImageUrl = null;
     adminEditSelectedImageFiles = [];
+    adminEditSelectedVideoFile = null;
     const fileInput = document.getElementById('adminEditImageFile');
     if (fileInput) fileInput.value = '';
+    clearAdminEditVideo();
 }
 
 async function editAdminContent(moduleName, id) {
@@ -6575,6 +6628,18 @@ async function saveAdminEdit() {
             }
         }
 
+        // Upload video if selected
+        if (adminEditSelectedVideoFile) {
+            const fakeInput = { files: [adminEditSelectedVideoFile] };
+            const uploadedVideoUrl = await uploadFile(fakeInput, 'video', () => {});
+            if (uploadedVideoUrl) {
+                // store so buildAdminEditBody can pick it up
+                window._adminEditPendingVideoUrl = uploadedVideoUrl;
+            }
+        } else {
+            window._adminEditPendingVideoUrl = null;
+        }
+
         // Upload document for community-services
         if (moduleName === 'community-services') {
             const csDocFile = document.getElementById('adminEditCsDocFile');
@@ -6588,6 +6653,10 @@ async function saveAdminEdit() {
         }
 
         const body = buildAdminEditBody(moduleName);
+        if (window._adminEditPendingVideoUrl) {
+            body.video = window._adminEditPendingVideoUrl;
+            window._adminEditPendingVideoUrl = null;
+        }
         const apiType = ADMIN_MODULE_API_TYPES[moduleName];
         const res = await apiPut(`/admin/content/${apiType}/${id}`, body);
 

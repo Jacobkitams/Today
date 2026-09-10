@@ -4145,7 +4145,7 @@
 
     <!-- Admin Edit Modal -->
     <div id="adminEditModal" class="detail-modal">
-        <div class="create-modal-box" style="max-width:640px;">
+        <div class="create-modal-box" style="max-width:900px;">
             <div class="create-modal-header">
                 <div>
                     <h2><i data-lucide="pencil"></i> Edit Content</h2>
@@ -4153,10 +4153,12 @@
                 </div>
                 <button class="close-modal" onclick="closeAdminEditModal()"><i data-lucide="x"></i></button>
             </div>
-            <div class="create-modal-body" style="grid-template-columns:1fr;">
+
+            <div class="create-modal-body">
+                <!-- Left column: fields -->
                 <div class="create-modal-fields">
                     <div id="adminEditTitleGroup" class="form-group">
-                        <label id="adminEditTitleLabel">Title</label>
+                        <label id="adminEditTitleLabel">Title <span style="color:var(--iuea-maroon)">*</span></label>
                         <input type="text" id="adminEditTitle" placeholder="Title">
                     </div>
                     <div id="adminEditNameRow" class="form-row" style="display:none;">
@@ -4267,8 +4269,7 @@
                             <div id="adminEditCsDocCurrentWrap" style="display:none; margin-bottom:0.5rem;">
                                 <span style="font-size:0.85rem; color:var(--iuea-gray-light);">Current file: </span>
                                 <a id="adminEditCsDocCurrentLink" href="#" target="_blank"
-                                    style="font-size:0.85rem; color:var(--iuea-maroon); font-weight:600;">View /
-                                    Download</a>
+                                    style="font-size:0.85rem; color:var(--iuea-maroon); font-weight:600;">View / Download</a>
                                 <button type="button" onclick="clearAdminEditCsDoc()"
                                     style="margin-left:0.5rem; font-size:0.8rem; background:none; border:none; color:red; cursor:pointer;">Remove</button>
                             </div>
@@ -4278,10 +4279,8 @@
                                 ondragleave="this.classList.remove('drag-over')"
                                 ondrop="handleAdminEditCsDocDrop(event)">
                                 <div id="adminEditCsDocPreviewWrap">
-                                    <i data-lucide="upload-cloud"
-                                        style="width:32px;height:32px;color:var(--iuea-gray-light)"></i>
-                                    <p style="margin:0.4rem 0 0; font-size:0.85rem; color:var(--iuea-gray-light);">Click
-                                        or drag a document to replace</p>
+                                    <i data-lucide="upload-cloud" style="width:32px;height:32px;color:var(--iuea-gray-light)"></i>
+                                    <p style="margin:0.4rem 0 0; font-size:0.85rem; color:var(--iuea-gray-light);">Click or drag a document to replace</p>
                                 </div>
                             </div>
                             <input type="file" id="adminEditCsDocFile" accept=".pdf,.doc,.docx,.txt"
@@ -4305,37 +4304,8 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label id="adminEditDescLabel">Description</label>
-                        <textarea id="adminEditDesc" rows="4" placeholder="Description"></textarea>
-                    </div>
-                    <div id="adminEditImageGroup" class="form-group">
-                        <label>Image</label>
-                        <div class="upload-zone" id="adminEditImageDropZone"
-                            onclick="handleAdminEditImageZoneClick(event)"
-                            ondragover="event.preventDefault(); this.classList.add('drag-over')"
-                            ondragleave="this.classList.remove('drag-over')" ondrop="handleAdminEditFileDrop(event)">
-                            <div id="adminEditImagePreviewWrap">
-                                <i data-lucide="image" style="width:36px;height:36px;color:var(--iuea-gray-light)"></i>
-                                <p style="color:var(--iuea-gray-light);margin:0.5rem 0 0;font-size:0.85rem;">Click or
-                                    drag to upload images</p>
-                                <span style="font-size:0.75rem;color:#aaa;">JPG, PNG, WebP, GIF — max 500MB (select multiple)</span>
-                            </div>
-                            <img id="adminEditImagePreview" src="" alt=""
-                                style="display:none;width:100%;height:100%;object-fit:cover;border-radius:8px;">
-                            <div id="adminEditImageGallery" class="image-gallery-preview" style="display:none;"></div>
-                        </div>
-                        <input type="file" id="adminEditImageFile" accept="image/*" multiple style="display:none"
-                            onchange="previewAdminEditMedia(this)">
-                        <div class="upload-zone-label">
-                            <span id="adminEditImageFileName" style="font-size:0.8rem;color:var(--iuea-gray-light);">No
-                                new image selected</span>
-                            <button type="button" class="btn-text-sm" onclick="clearAdminEditMedia()"
-                                style="display:none" id="adminEditClearImageBtn">✕ Clear all</button>
-                        </div>
-                        <label style="font-weight:500;font-size:0.8rem;margin-top:0.75rem;display:block;">Or keep /
-                            paste Image URL</label>
-                        <input type="text" id="adminEditImage" placeholder="https://... or /uploads/..."
-                            oninput="onAdminEditImageUrlInput(this.value)">
+                        <label id="adminEditDescLabel">Description <span style="color:var(--iuea-maroon)">*</span></label>
+                        <textarea id="adminEditDesc" rows="5" placeholder="Description"></textarea>
                     </div>
                     <div id="adminEditStatusGroup" class="form-group">
                         <label>Status</label>
@@ -4346,7 +4316,72 @@
                         </select>
                     </div>
                 </div>
+
+                <!-- Right column: media uploads -->
+                <div class="create-modal-media" id="adminEditMediaColumn">
+                    <!-- Image Upload -->
+                    <div id="adminEditImageGroup">
+                        <div class="upload-zone" id="adminEditImageDropZone"
+                            onclick="handleAdminEditImageZoneClick(event)"
+                            ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                            ondragleave="this.classList.remove('drag-over')" ondrop="handleAdminEditFileDrop(event)">
+                            <div id="adminEditImagePreviewWrap">
+                                <i data-lucide="image" style="width:36px;height:36px;color:var(--iuea-gray-light)"></i>
+                                <p style="color:var(--iuea-gray-light);margin:0.5rem 0 0;font-size:0.85rem;">Click or drag to upload images</p>
+                                <span style="font-size:0.75rem;color:#aaa;">JPG, PNG, WebP, GIF — max 500MB (select multiple)</span>
+                            </div>
+                            <img id="adminEditImagePreview" src="" alt=""
+                                style="display:none;width:100%;height:100%;object-fit:cover;border-radius:8px;">
+                            <div id="adminEditImageGallery" class="image-gallery-preview" style="display:none;"></div>
+                        </div>
+                        <input type="file" id="adminEditImageFile" accept="image/*" multiple style="display:none"
+                            onchange="previewAdminEditMedia(this)">
+                        <div class="upload-zone-label">
+                            <span id="adminEditImageFileName" style="font-size:0.8rem;color:var(--iuea-gray-light);">No new images selected</span>
+                            <button type="button" class="btn-text-sm" onclick="clearAdminEditMedia()"
+                                style="display:none" id="adminEditClearImageBtn">&#x2715; Clear all</button>
+                        </div>
+                        <label style="font-weight:500;font-size:0.8rem;margin-top:0.5rem;display:block;color:var(--iuea-gray-light);">Or keep / paste Image URL</label>
+                        <input type="text" id="adminEditImage" placeholder="https://... or /uploads/..."
+                            oninput="onAdminEditImageUrlInput(this.value)"
+                            style="width:100%;padding:0.5rem 0.75rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.85rem;margin-top:0.25rem;box-sizing:border-box;">
+                    </div>
+
+                    <!-- Video Upload -->
+                    <div id="adminEditVideoSection">
+                        <div class="upload-zone upload-zone-video" id="adminEditVideoDropZone"
+                            onclick="document.getElementById('adminEditVideoFile').click()"
+                            ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                            ondragleave="this.classList.remove('drag-over')"
+                            ondrop="handleAdminEditVideoFileDrop(event)">
+                            <div id="adminEditVideoPreviewWrap">
+                                <i data-lucide="video" style="width:36px;height:36px;color:var(--iuea-gray-light)"></i>
+                                <p style="color:var(--iuea-gray-light);margin:0.5rem 0 0;font-size:0.85rem;">Click or drag to upload video</p>
+                                <span style="font-size:0.75rem;color:#aaa;">MP4, WebM, MOV, AVI, MKV &amp; more — max 300MB</span>
+                            </div>
+                            <video id="adminEditVideoPreview" style="display:none;width:100%;border-radius:8px;" controls></video>
+                        </div>
+                        <input type="file" id="adminEditVideoFile" accept="video/*" style="display:none"
+                            onchange="previewAdminEditVideo(this)">
+                        <div class="upload-zone-label">
+                            <span id="adminEditVideoFileName" style="font-size:0.8rem;color:var(--iuea-gray-light);">No video selected</span>
+                            <button type="button" class="btn-text-sm" onclick="clearAdminEditVideo()"
+                                style="display:none" id="adminEditClearVideoBtn">&#x2715; Remove</button>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Progress bar -->
+            <div id="adminEditProgressWrap" style="display:none;padding:0 2rem 1rem;">
+                <div style="background:#f1f5f9;border-radius:99px;height:6px;overflow:hidden;margin-bottom:0.5rem;">
+                    <div id="adminEditProgressBar"
+                        style="background:var(--iuea-maroon);height:100%;width:0%;transition:width 0.3s;border-radius:99px;">
+                    </div>
+                </div>
+                <p id="adminEditProgressLabel" style="font-size:0.8rem;color:var(--iuea-gray-light);margin:0;">Saving&#8230;</p>
+            </div>
+
             <div class="create-modal-footer">
                 <button class="btn-secondary" onclick="closeAdminEditModal()">Cancel</button>
                 <button class="btn-primary" id="adminEditSaveBtn" onclick="saveAdminEdit()">
