@@ -4,6 +4,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import io
 import uuid
 import logging
+import shutil
+import subprocess
+import tempfile
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from PIL import Image, ImageOps
 from auth import get_current_user
@@ -58,6 +61,77 @@ def _compress_image(content: bytes, ext: str) -> tuple[bytes, str]:
     except Exception:
         return content, ext
 
+# ---------------------------------------------------------------------------
+# Video transcoding
+# ---------------------------------------------------------------------------
+# MOV, AVI, MKV, WMV, FLV etc. are not natively playable in most browsers.
+# When ffmpeg is available, transcode them to MP4 (H.264 video + AAC audio)
+# which every browser supports. Falls back silently if ffmpeg is absent.
+# ---------------------------------------------------------------------------
+
+# Extensions that browsers can natively play — no transcoding needed.
+BROWSER_NATIVE_VIDEO_EXTS = {".mp4", ".webm", ".ogg", ".ogv"}
+
+def _needs_transcode(ext: str) -> bool:
+    return ext.lower() not in BROWSER_NATIVE_VIDEO_EXTS
+
+def _transcode_to_mp4(content: bytes, src_ext: str) -> tuple[bytes, str]:
+    """Convert video bytes to H.264/AAC MP4 using ffmpeg.
+    Returns (mp4_bytes, '.mp4') on success, or (original_bytes, src_ext) if
+    ffmpeg is not installed or conversion fails."""
+    ffmpeg_bin = shutil.which("ffmpeg")
+    if not ffmpeg_bin:
+        logger.warning("ffmpeg not found — video stored as-is (%s)", src_ext)
+        return content, src_ext
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        src_path = os.path.join(tmpdir, f"input{src_ext}")
+        out_path = os.path.join(tmpdir, "output.mp4")
+
+        with open(src_path, "wb") as f:
+            f.write(content)
+
+        cmd = [
+            ffmpeg_bin,
+            "-y",                      # overwrite output
+            "-i", src_path,
+            "-c:v", "libx264",         # H.264 video — supported by all browsers
+            "-preset", "fast",         # fast encode, good quality
+            "-crf", "23",              # constant quality (18=great, 28=fast/smaller)
+            "-c:a", "aac",             # AAC audio — widely supported
+            "-b:a", "128k",
+            "-movflags", "+faststart", # put moov atom at start for streaming
+            "-pix_fmt", "yuv420p",     # ensure broad compatibility
+            out_path,
+        ]
+
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                timeout=300,  # 5-minute timeout
+            )
+            if result.returncode != 0:
+                logger.error("ffmpeg transcode failed: %s", result.stderr.decode(errors="replace"))
+                return content, src_ext
+
+            with open(out_path, "rb") as f:
+                mp4_bytes = f.read()
+
+            logger.info(
+                "Transcoded %s → .mp4 (%d MB → %d MB)",
+                src_ext,
+                len(content) // (1024 * 1024),
+                len(mp4_bytes) // (1024 * 1024),
+            )
+            return mp4_bytes, ".mp4"
+        except subprocess.TimeoutExpired:
+            logger.error("ffmpeg transcode timed out for %s", src_ext)
+            return content, src_ext
+        except Exception as e:
+            logger.error("ffmpeg transcode error: %s", e)
+            return content, src_ext
+
 # Base path to the frontend assets folder
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "assets")
 IMAGES_DIR   = os.path.join(FRONTEND_DIR, "images")
@@ -81,12 +155,13 @@ ALLOWED_VIDEO_TYPES = {
     "video/quicktime", "video/mpeg", "video/3gpp", "video/3gpp2",
     "video/x-m4v", "video/mp2t", "video/x-matroska", "video/x-flv",
     "video/x-m4v", "application/octet-stream", "application/x-mpegURL",
+    "video/wmv", "video/x-wmv", "video/avi",
 }
 ALLOWED_VIDEO_EXTS = {
     ".mp4", ".webm", ".ogg", ".ogv", ".mov", ".mkv", ".avi", ".m4v",
     ".m4a", ".mpg", ".mpeg", ".mpe", ".m1v", ".m2v", ".3gp", ".3g2",
     ".3gpp", ".3gpp2", ".flv", ".mts", ".m2ts", ".ts", ".m2t",
-    ".wmv", ".asf", ".vob", ".m1v", ".m2v", ".qt", ".mxf", ".rmvb",
+    ".wmv", ".asf", ".vob", ".qt", ".mxf", ".rmvb",
 }
 MAX_IMAGE_SIZE = 500 * 1024 * 1024   # 500 MB
 MAX_VIDEO_SIZE = 300 * 1024 * 1024  # 300 MB
@@ -111,6 +186,9 @@ def _save_file(upload: UploadFile, dest_dir: str, allowed_types: set, max_size: 
 
     if dest_dir == IMAGES_DIR:
         content, ext = _compress_image(content, ext)
+    elif "videos" in dest_dir and _needs_transcode(ext):
+        # Transcode non-browser-native formats (MOV, AVI, MKV, WMV…) → MP4
+        content, ext = _transcode_to_mp4(content, ext)
 
     filename = f"{uuid.uuid4().hex}{ext}"
     dest_path = os.path.join(dest_dir, filename)
@@ -118,6 +196,7 @@ def _save_file(upload: UploadFile, dest_dir: str, allowed_types: set, max_size: 
     with open(dest_path, "wb") as f:
         f.write(content)
     return filename
+
 
 @router.post("/image")
 async def upload_image(
