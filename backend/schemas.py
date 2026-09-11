@@ -889,6 +889,7 @@ class ConferenceBase(BaseModel):
     status: Optional[str] = "OPEN"
     year: Optional[str] = None
     external_url: Optional[str] = None
+    cover_image_url: Optional[str] = None
 
 class ConferenceCreate(ConferenceBase):
     pass
