@@ -3089,7 +3089,7 @@ body>footer {
 
 .journals-carousel-section.is-grid-view .jc-track {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 30px;
   width: 100%;
   transform: none !important;
@@ -3104,12 +3104,6 @@ body>footer {
 
 .journals-carousel-section.is-grid-view .jc-track .journal-card.is-clone {
   display: none;
-}
-
-@media (max-width: 1200px) {
-  .journals-carousel-section.is-grid-view .jc-track {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 @media (max-width: 900px) {
