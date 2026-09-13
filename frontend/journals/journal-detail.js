@@ -17,14 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Populate Hero
-    document.getElementById('jhBreadcrumbName').textContent = journal.title;
-    document.getElementById('jhAcronym').textContent = journal.acronym;
-    document.getElementById('jhVol').textContent = `${journal.vol} · ${journal.freq}`;
+    // Populate Hero / Header
+    const sidebarTitle = document.getElementById('jsSidebarTitle');
+    if(sidebarTitle) sidebarTitle.textContent = journal.title;
+    
+    document.getElementById('jsSidebarAcronym').textContent = journal.acronym;
+    document.getElementById('jhVol').innerHTML = `<i class="ph ph-books"></i> ${journal.vol} &middot; ${journal.freq}`;
     document.getElementById('jhTitle').textContent = journal.title;
 
-    // Apply journal specific accent color to the hero band if desired, but request says "colored band (IUEA maroon)" so we keep it maroon via CSS. We can apply the accent color to the acronym badge.
-    document.getElementById('jhAcronym').style.backgroundColor = journal.accent;
+    // Apply journal specific accent color to the acronym badge
+    document.getElementById('jsSidebarAcronym').style.backgroundColor = journal.accent;
 
     // Populate Sidebar Facts
     document.getElementById('jsIssn').textContent = journal.issn;

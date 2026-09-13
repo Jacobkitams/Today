@@ -6,7 +6,7 @@
     <title>Journal Detail | IUEA Journals</title>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
-    <link rel="stylesheet" href="journals.css?v=3">
+    <link rel="stylesheet" href="journals.css?v=5">
 </head>
 <body>
 
@@ -29,100 +29,82 @@
         </div>
     </header>
 
-    <!-- Dynamic Hero Band -->
-    <section class="journal-hero-band">
-        <div class="container">
-            <div class="journal-hero-content">
-                <nav class="journal-breadcrumbs" aria-label="Breadcrumb">
-                    <a href="index.html">Home</a> <span class="separator">/</span> 
-                    <a href="journals.html">Journals</a> <span class="separator">/</span> 
-                    <span id="jhBreadcrumbName">Loading...</span>
-                </nav>
-                <div class="journal-hero-badges">
-                    <span class="badge badge-acronym" id="jhAcronym">...</span>
-                    <span class="badge badge-outline" id="jhVol">...</span>
-                </div>
-                <h1 id="jhTitle">Loading Journal Details...</h1>
-            </div>
-        </div>
-    </section>
+    <!-- Page Header & Green Band (KIU Style) -->
+    <div class="kiu-page-header">
+        <!-- Optional green band or just the gray background below -->
+    </div>
 
-    <!-- Two-Column Layout -->
-    <section class="journal-detail-section container">
-        <div class="journal-layout-grid">
-            
-            <!-- Left Sidebar -->
-            <aside class="journal-sidebar">
-                <div class="journal-sidebar-card">
-                    <h3>Quick Facts</h3>
-                    <ul class="journal-facts-list">
-                        <li>
-                            <i class="ph ph-hash"></i>
-                            <div class="fact-text">
-                                <strong>ISSN</strong>
-                                <span id="jsIssn">...</span>
+    <!-- New Card-Based Layout -->
+    <div class="journal-page-bg">
+        <section class="journal-detail-section container">
+            <div class="journal-layout-grid">
+                
+                <!-- Left Sidebar -->
+                <aside class="journal-sidebar">
+                    <div class="kiu-card sidebar-main-card">
+                        <h2 id="jsSidebarTitle">Loading...</h2>
+                        <span class="badge badge-acronym" id="jsSidebarAcronym">...</span>
+                        
+                        <div class="sidebar-data-blocks">
+                            <div class="data-block">
+                                <span class="db-label">ISSN</span>
+                                <span class="db-value" id="jsIssn">...</span>
                             </div>
-                        </li>
-                        <li>
-                            <i class="ph ph-clock"></i>
-                            <div class="fact-text">
-                                <strong>Frequency</strong>
-                                <span id="jsFreq">...</span>
+                            <div class="data-block">
+                                <span class="db-label">FREQUENCY</span>
+                                <span class="db-value" id="jsFreq">...</span>
                             </div>
-                        </li>
-                        <li>
-                            <i class="ph ph-lock-key-open gold"></i>
-                            <div class="fact-text">
-                                <strong class="gold">Open Access</strong>
-                                <span>No publication fees</span>
+                            <div class="data-block">
+                                <span class="db-label">ACCESS</span>
+                                <span class="db-value">Open Access</span>
                             </div>
-                        </li>
-                    </ul>
-                    <a href="submit.html" class="btn btn-accent sidebar-cta">Submit Manuscript <i class="ph ph-arrow-right"></i></a>
-                </div>
-
-                <div class="journal-sidebar-nav">
-                    <h4>Journal Links</h4>
-                    <ul>
-                        <li><a href="#"><i class="ph ph-users-three"></i> Editorial Board</a></li>
-                        <li><a href="#"><i class="ph ph-shield-check"></i> Privacy Statement</a></li>
-                        <li><a href="#"><i class="ph ph-copyright"></i> Licensing & Copyrights</a></li>
-                        <li><a href="#"><i class="ph ph-megaphone"></i> Announcements</a></li>
-                        <li><a href="contact.html"><i class="ph ph-envelope-simple"></i> Contact Us</a></li>
-                    </ul>
-                </div>
-
-                <a href="journals.html" class="back-to-journals"><i class="ph ph-arrow-left"></i> Back to All Journals</a>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="journal-main-content">
-                <section class="jm-section about-journal">
-                    <h2>About This Journal</h2>
-                    <div id="jmFullDesc" class="lead-text">
-                        <p>Loading description...</p>
-                    </div>
-                </section>
-
-                <section class="jm-section latest-articles">
-                    <h2>Latest Articles</h2>
-                    <ul class="article-list" id="jmLatestArticles">
-                        <!-- Populated by JS -->
-                    </ul>
-                </section>
-
-                <section class="jm-section submission-guidelines">
-                    <div class="submission-box">
-                        <div class="sb-content">
-                            <h3>Ready to Submit?</h3>
-                            <p>We invite authors to submit original research, reviews, and case studies. Please ensure your manuscript follows our formatting guidelines and ethical standards before submission.</p>
                         </div>
-                        <a href="submit.html" class="btn btn-primary">Review Guidelines <i class="ph ph-arrow-right"></i></a>
+
+                        <div class="sidebar-actions">
+                            <a href="journals.html" class="btn btn-outline sidebar-btn">Back to Edition</a>
+                            <a href="submit.html" class="btn btn-primary sidebar-btn">Submit Manuscript</a>
+                        </div>
                     </div>
-                </section>
-            </main>
-        </div>
-    </section>
+
+                    <div class="kiu-card sidebar-links-card">
+                        <h3>Quick Links</h3>
+                        <ul class="quick-links-list">
+                            <li><a href="#">Editorial Board</a></li>
+                            <li><a href="#">Privacy Statement</a></li>
+                            <li><a href="#">Licensing & Copyrights</a></li>
+                            <li><a href="#">Announcements</a></li>
+                            <li><a href="contact.html">Contact Us</a></li>
+                        </ul>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="journal-main-content">
+                    <div class="kiu-card header-card">
+                        <h1 id="jhTitle">Loading Journal Details...</h1>
+                        <p class="header-publisher">International University of East Africa</p>
+                        <div class="header-meta">
+                            <span id="jhVol"><i class="ph ph-books"></i> ...</span>
+                        </div>
+                    </div>
+
+                    <div class="kiu-card desc-card">
+                        <h2>About This Journal</h2>
+                        <div id="jmFullDesc" class="lead-text">
+                            <p>Loading description...</p>
+                        </div>
+                    </div>
+
+                    <div class="kiu-card articles-card">
+                        <h2>Latest Articles</h2>
+                        <ul class="article-list" id="jmLatestArticles">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                </main>
+            </div>
+        </section>
+    </div>
 
     <footer class="footer">
         <div class="container">
@@ -163,6 +145,6 @@
     </footer>
 
     <script src="journal-data.js?v=1"></script>
-    <script src="journal-detail.js?v=1"></script>
+    <script src="journal-detail.js?v=5"></script>
 </body>
 </html>
