@@ -4759,8 +4759,11 @@
             <div class="card-detail-content">
                 <button type="button" class="close-modal card-detail-close" onclick="closeCardDetailModal()"
                     aria-label="Close detail"><i data-lucide="x"></i></button>
-                <span class="card-detail-badge" id="cardDetailBadge">Update</span>
-                <h2 id="cardDetailTitle">Content title</h2>
+                <div class="card-detail-header-row">
+                    <span class="card-detail-badge" id="cardDetailBadge">Update</span>
+                    <h2 id="cardDetailTitle">Content title</h2>
+                    <div class="card-detail-author-meta" id="cardDetailAuthorMeta"></div>
+                </div>
                 <div class="card-detail-meta" id="cardDetailMeta" hidden></div>
                 <p id="cardDetailDescription" class="card-detail-description"></p>
                 <div class="card-detail-actions" id="cardDetailActions"></div>
@@ -5210,7 +5213,7 @@ Kansanga, Kampala, Uganda
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/app.v29.js"></script>
+    <script src="assets/js/app.v30.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
