@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Detail | IUEA Journals</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="journals.css?v=2">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="container">
+            <div class="brand">
+                <a href="../index.html"><img src="../assets/images/iuea-logo.png" alt="IUEA Logo"></a>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="about.html">About Us</a>
+                <a href="journals.html" class="active">Journals</a>
+                <a href="news.html">News & Updates</a>
+                <a href="contact.html">Contact Us</a>
+            </nav>
+            <div class="nav-actions">
+                <a href="submit.html" class="btn btn-primary">Submit Manuscript</a>
+                <div class="account-icon"><i class="ph ph-user"></i></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dynamic Hero Band -->
+    <section class="journal-hero-band">
+        <div class="container">
+            <div class="journal-hero-content">
+                <nav class="journal-breadcrumbs" aria-label="Breadcrumb">
+                    <a href="index.html">Home</a> <span class="separator">/</span> 
+                    <a href="journals.html">Journals</a> <span class="separator">/</span> 
+                    <span id="jhBreadcrumbName">Loading...</span>
+                </nav>
+                <div class="journal-hero-badges">
+                    <span class="badge badge-acronym" id="jhAcronym">...</span>
+                    <span class="badge badge-outline" id="jhVol">...</span>
+                </div>
+                <h1 id="jhTitle">Loading Journal Details...</h1>
+            </div>
+        </div>
+        <div class="hero-curve">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Two-Column Layout -->
+    <section class="journal-detail-section container">
+        <div class="journal-layout-grid">
+            
+            <!-- Left Sidebar -->
+            <aside class="journal-sidebar">
+                <div class="journal-sidebar-card">
+                    <h3>Quick Facts</h3>
+                    <ul class="journal-facts-list">
+                        <li>
+                            <i class="ph ph-hash"></i>
+                            <div class="fact-text">
+                                <strong>ISSN</strong>
+                                <span id="jsIssn">...</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="ph ph-clock"></i>
+                            <div class="fact-text">
+                                <strong>Frequency</strong>
+                                <span id="jsFreq">...</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="ph ph-lock-key-open gold"></i>
+                            <div class="fact-text">
+                                <strong class="gold">Open Access</strong>
+                                <span>No publication fees</span>
+                            </div>
+                        </li>
+                    </ul>
+                    <a href="submit.html" class="btn btn-accent sidebar-cta">Submit Manuscript <i class="ph ph-arrow-right"></i></a>
+                </div>
+
+                <div class="journal-sidebar-nav">
+                    <h4>Journal Links</h4>
+                    <ul>
+                        <li><a href="#"><i class="ph ph-users-three"></i> Editorial Board</a></li>
+                        <li><a href="#"><i class="ph ph-shield-check"></i> Privacy Statement</a></li>
+                        <li><a href="#"><i class="ph ph-copyright"></i> Licensing & Copyrights</a></li>
+                        <li><a href="#"><i class="ph ph-megaphone"></i> Announcements</a></li>
+                        <li><a href="contact.html"><i class="ph ph-envelope-simple"></i> Contact Us</a></li>
+                    </ul>
+                </div>
+
+                <a href="journals.html" class="back-to-journals"><i class="ph ph-arrow-left"></i> Back to All Journals</a>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="journal-main-content">
+                <section class="jm-section about-journal">
+                    <h2>About This Journal</h2>
+                    <div id="jmFullDesc" class="lead-text">
+                        <p>Loading description...</p>
+                    </div>
+                </section>
+
+                <section class="jm-section latest-articles">
+                    <h2>Latest Articles</h2>
+                    <ul class="article-list" id="jmLatestArticles">
+                        <!-- Populated by JS -->
+                    </ul>
+                </section>
+
+                <section class="jm-section submission-guidelines">
+                    <div class="submission-box">
+                        <div class="sb-content">
+                            <h3>Ready to Submit?</h3>
+                            <p>We invite authors to submit original research, reviews, and case studies. Please ensure your manuscript follows our formatting guidelines and ethical standards before submission.</p>
+                        </div>
+                        <a href="submit.html" class="btn btn-primary">Review Guidelines <i class="ph ph-arrow-right"></i></a>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="../index.html">
+                        <img src="../assets/images/iuea-logo.png" alt="IUEA Logo">
+                    </a>
+                    <p>IUEA Journals is the scholarly publishing platform of the International University of East Africa, dedicated to advancing academic excellence through open access research.</p>
+                </div>
+                <!-- Standard footer links omitted for brevity here, normally they'd be identical -->
+                 <div class="footer-links">
+                    <h4>Explore</h4>
+                    <ul>
+                        <li><a href="journals.html">Journals</a></li>
+                        <li><a href="authors.html">Authors</a></li>
+                        <li><a href="news.html">Latest News</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Get in Touch</h4>
+                    <div class="footer-contact-list">
+                        <div class="footer-contact-item">
+                            <span class="footer-contact-icon"><i class="ph ph-envelope-simple"></i></span>
+                            <a href="mailto:journals@iuea.ac.ug">journals@iuea.ac.ug</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; <script>document.write(new Date().getFullYear())</script> International University of East Africa Journals. All rights reserved. &nbsp;|&nbsp;
+            <a href="privacy.html">Privacy</a> &nbsp;·&nbsp;
+            <a href="terms.html">Terms</a>
+        </div>
+    </footer>
+
+    <script src="journal-data.js?v=1"></script>
+    <script src="journal-detail.js?v=1"></script>
+</body>
+</html>

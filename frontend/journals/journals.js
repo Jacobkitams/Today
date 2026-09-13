@@ -274,6 +274,7 @@ window.initJournalsCarousel = function initJournalsCarousel() {
        Expand-to-detail overlay
        ========================================================================== */
     const JOURNALS_DATA = window.JOURNALS_DATA || [];
+    const ISSUE_SAMPLES = window.ISSUE_SAMPLES_DATA || [];
     const detailCover = document.getElementById('jcDetailCover');
     const detailTitle = document.getElementById('jcDetailTitle');
     const detailEyebrow = document.getElementById('jcDetailEyebrow');
@@ -281,14 +282,9 @@ window.initJournalsCarousel = function initJournalsCarousel() {
     const detailDesc = document.getElementById('jcDetailDesc');
     const detailLatest = document.getElementById('jcDetailLatest');
     const detailClose = document.getElementById('jcDetailClose');
+    const detailCta = document.getElementById('jcDetailCta');
     const backdrop = document.getElementById('jcOverlayBackdrop');
     let lastFocused = null;
-
-    const ISSUE_SAMPLES = [
-        { title: 'Determinants of SME growth in Kampala', year: 2024 },
-        { title: 'Solar microgrid adoption in rural East Africa', year: 2024 },
-        { title: 'Mobile banking and financial inclusion', year: 2023 }
-    ];
 
     function openDetail(idx, card) {
         const j = JOURNALS_DATA[idx % JOURNALS_DATA.length];
@@ -305,6 +301,10 @@ window.initJournalsCarousel = function initJournalsCarousel() {
         detailLatest.innerHTML = `
       <h4>Latest Articles</h4>
       <ul>${ISSUE_SAMPLES.map((a) => `<li><i class="ph ph-file-text"></i><span>${a.title}</span><span>${a.year}</span></li>`).join('')}</ul>`;
+
+        if (detailCta) {
+            detailCta.href = `journal.html?id=${encodeURIComponent(j.acronym)}`;
+        }
 
         // Clone the 3D cover from the clicked card into the detail panel
         const cover = card.querySelector('.jc-cover');

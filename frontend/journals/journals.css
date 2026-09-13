@@ -3452,3 +3452,370 @@ body>footer {
     gap: 0.75rem;
   }
 }
+
+/* ==========================================================================
+   Journal Detail Page Layout
+   ========================================================================== */
+
+/* Hero Band */
+.journal-hero-band {
+  position: relative;
+  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  padding: 80px 0 100px;
+  color: #fff;
+  overflow: hidden;
+}
+
+.journal-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 900px;
+}
+
+.journal-breadcrumbs {
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.journal-breadcrumbs a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.journal-breadcrumbs a:hover {
+  text-decoration: underline;
+  color: var(--accent-color);
+}
+
+.journal-breadcrumbs .separator {
+  margin: 0 8px;
+  opacity: 0.5;
+}
+
+.journal-breadcrumbs #jhBreadcrumbName {
+  color: var(--accent-color);
+}
+
+.journal-hero-badges {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.journal-hero-badges .badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.badge-acronym {
+  background-color: var(--accent-color);
+  color: #fff; /* Replaced by JS, but default */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.badge-outline {
+  border: 1px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.journal-hero-content h1 {
+  color: #fff;
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  line-height: 1.15;
+  margin-bottom: 0;
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+/* Two-Column Grid */
+.journal-detail-section {
+  padding: 60px 20px 100px;
+  margin-top: -40px; /* Pull up slightly over the hero curve */
+  position: relative;
+  z-index: 10;
+}
+
+.journal-layout-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 50px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .journal-layout-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+/* Sidebar */
+.journal-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.journal-sidebar-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.journal-sidebar-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  font-family: 'Inter', sans-serif;
+}
+
+.journal-facts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.journal-facts-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.journal-facts-list i {
+  font-size: 1.4rem;
+  color: var(--primary-color);
+  margin-top: 2px;
+}
+
+.journal-facts-list i.gold {
+  color: var(--accent-color);
+}
+
+.fact-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.fact-text strong {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-medium);
+}
+
+.fact-text strong.gold {
+  color: var(--accent-color);
+}
+
+.fact-text span {
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+.sidebar-cta {
+  width: 100%;
+  justify-content: center;
+}
+
+.journal-sidebar-nav {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.journal-sidebar-nav h4 {
+  font-size: 1rem;
+  margin-bottom: 16px;
+  font-family: 'Inter', sans-serif;
+  color: var(--primary-color);
+}
+
+.journal-sidebar-nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.journal-sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-medium);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.journal-sidebar-nav a:hover {
+  color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.journal-sidebar-nav i {
+  color: #ccc;
+  font-size: 1.2rem;
+  transition: color 0.2s ease;
+}
+
+.journal-sidebar-nav a:hover i {
+  color: var(--primary-color);
+}
+
+.back-to-journals {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-medium);
+  font-weight: 600;
+  padding: 10px 0;
+  align-self: flex-start;
+}
+
+.back-to-journals:hover {
+  color: var(--primary-color);
+}
+
+/* Main Content */
+.journal-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
+
+.jm-section h2 {
+  font-size: 2rem;
+  margin-bottom: 24px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.jm-section h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 60px;
+  height: 3px;
+  background-color: var(--accent-color);
+  border-radius: 2px;
+}
+
+.lead-text p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--text-dark);
+}
+
+/* Article List */
+.article-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.article-list li {
+  background: #fff;
+  padding: 24px 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.article-list li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+  border-color: rgba(139,26,26,0.15);
+}
+
+.article-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.article-year {
+  color: var(--primary-color);
+}
+
+.article-type {
+  color: var(--text-medium);
+}
+
+.article-title-link {
+  color: var(--text-dark);
+}
+
+.article-title-link h4 {
+  font-size: 1.25rem;
+  margin-bottom: 0;
+  line-height: 1.4;
+  font-family: 'Inter', sans-serif;
+  transition: color 0.2s ease;
+}
+
+.article-title-link:hover h4 {
+  color: var(--primary-color);
+}
+
+.article-list .btn-pill {
+  align-self: flex-start;
+  margin-top: 8px;
+  background: rgba(139,26,26,0.05);
+  color: var(--primary-color);
+}
+
+.article-list .btn-pill:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Submission Box */
+.submission-box {
+  background: linear-gradient(145deg, #f0efef, #ffffff);
+  border-left: 4px solid var(--primary-color);
+  padding: 40px;
+  border-radius: 0 12px 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+.sb-content h3 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.sb-content p {
+  margin-bottom: 0;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .submission-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

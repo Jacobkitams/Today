@@ -153,19 +153,11 @@
     </footer>
 
     <button id="backToTop" aria-label="Back to top"><i class="ph ph-arrow-up"></i></button>
-    <script src="journals.js?v=2"></script>
+    <script src="journal-data.js?v=1"></script>
+    <script src="journals.js?v=3"></script>
     <script>
-        const JOURNALS = [
-            { icon: 'ph-chart-bar', title: 'IUEA Journal of Business & Management', desc: 'An open access, peer-reviewed journal publishing contemporary research in business, management, and entrepreneurship.', freq: 'Biannual', accent: '#8B1A1A', vol: 'Vol. 8', issn: '2663-3818', acronym: 'IUEA-B&M', featured: true },
-            { icon: 'ph-flask', title: 'International Journal of Science & Technology', desc: 'Publishing contemporary and novel research in applied sciences, engineering, and emerging technologies.', freq: 'Biannual', accent: '#1f5f8b', vol: 'Vol. 7', issn: '2707-0868', acronym: 'IUEA-S&T' },
-            { icon: 'ph-scales', title: 'IUEA Law Journal', desc: 'The official journal of the Faculty of Law, covering legal theory, practice, and policy in East Africa and beyond.', freq: 'Annual', accent: '#7a6200', vol: 'Vol. 5', issn: '2519-5138', acronym: 'IUEA-LAW' },
-            { icon: 'ph-heartbeat', title: 'IUEA Journal of Health & Environmental Studies', desc: 'Public health, environmental sustainability, and community wellbeing research.', freq: 'Annual', accent: '#2e7d32', vol: 'Vol. 4', issn: '2814-1353', acronym: 'IUEA-HES' },
-            { icon: 'ph-users-three', title: 'IUEA Journal of Social Sciences & Humanities', desc: 'Studies on governance, culture, education, and society shaping Africa\u2019s future.', freq: 'Biannual', accent: '#6a3d9a', vol: 'Vol. 6', issn: '2707-085X', acronym: 'IUEA-SSH' },
-            { icon: 'ph-graduation-cap', title: 'IUEA Student Research Digest', desc: 'A platform for outstanding undergraduate and postgraduate research from IUEA students.', freq: 'Annual', accent: '#b45f17', vol: 'Vol. 3', issn: '2916-0623', acronym: 'IUEA-SRD' }
-        ];
-        // Expose to journals.js — its detail overlay reads window.JOURNALS_DATA
-        window.JOURNALS_DATA = JOURNALS;
         document.addEventListener('DOMContentLoaded', () => {
+            const JOURNALS = window.JOURNALS_DATA;
             const grid = document.getElementById('journalsGrid');
             const cardHTML = (j, i) => `
                 <article class="journal-card" data-idx="${i}" data-reveal data-reveal-delay="${(i % 3) * 120}" ${j.featured ? 'data-featured="true"' : ''} tabindex="0" role="button" aria-haspopup="dialog" aria-label="${j.title} — view details">
