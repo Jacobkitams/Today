@@ -7207,11 +7207,9 @@ function renderCardDetailMedia(detail) {
                     <button class="gallery-nav-btn next" onclick="navigateDetailGallery(1)" aria-label="Next image"><i data-lucide="chevron-right"></i></button>
                     <div class="gallery-image-counter" id="galleryCounter">1 / ${allImages.length}</div>
                 </div>
-                <div class="gallery-thumbs-track" id="galleryThumbsTrack">
-                    ${allImages.map((img, idx) => `
-                        <button type="button" class="gallery-thumb-btn ${idx === 0 ? 'active' : ''}" onclick="switchDetailGalleryImage(${idx}, this)" aria-label="View photo ${idx + 1}" data-index="${idx}">
-                            <img src="${escapeHtml(img)}" alt="thumbnail ${idx + 1}" loading="lazy">
-                        </button>
+                <div class="carousel-dots" id="galleryThumbsTrack" style="bottom: 24px; z-index: 10;">
+                    ${allImages.map((_, idx) => `
+                        <button type="button" class="carousel-dot ${idx === 0 ? 'active' : ''}" onclick="switchDetailGalleryImage(${idx})" aria-label="View photo ${idx + 1}" data-index="${idx}"></button>
                     `).join('')}
                 </div>
             </div>`;
@@ -7232,12 +7230,10 @@ function navigateDetailGallery(direction) {
     if (newIndex < 0) newIndex = window.currentGalleryImages.length - 1;
     if (newIndex >= window.currentGalleryImages.length) newIndex = 0;
     
-    const track = document.getElementById('galleryThumbsTrack');
-    const targetBtn = track?.querySelector(`.gallery-thumb-btn[data-index="${newIndex}"]`);
-    switchDetailGalleryImage(newIndex, targetBtn);
+    switchDetailGalleryImage(newIndex);
 }
 
-function switchDetailGalleryImage(index, btn) {
+function switchDetailGalleryImage(index) {
     if (!window.currentGalleryImages) return;
     const imgUrl = window.currentGalleryImages[index];
     if (!imgUrl) return;
@@ -7253,17 +7249,11 @@ function switchDetailGalleryImage(index, btn) {
     const counter = document.getElementById('galleryCounter');
     if (counter) counter.textContent = `${index + 1} / ${window.currentGalleryImages.length}`;
     
-    document.querySelectorAll('.gallery-thumb-btn').forEach(b => b.classList.remove('active'));
-    if (btn) {
-        btn.classList.add('active');
-        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    } else {
-        const track = document.getElementById('galleryThumbsTrack');
-        const targetBtn = track?.querySelector(`.gallery-thumb-btn[data-index="${index}"]`);
-        if (targetBtn) {
-            targetBtn.classList.add('active');
-            targetBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
+    const track = document.getElementById('galleryThumbsTrack');
+    if (track) {
+        track.querySelectorAll('.carousel-dot').forEach(b => b.classList.remove('active'));
+        const targetDot = track.querySelector(`.carousel-dot[data-index="${index}"]`);
+        if (targetDot) targetDot.classList.add('active');
     }
 }
 

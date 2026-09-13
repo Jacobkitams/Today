@@ -7216,7 +7216,7 @@ function renderCardDetailMedia(detail) {
     }
     if (allImages.length === 1 || image) {
         const singleImg = allImages[0] || image;
-        return `<div style="background:#000; width:100%; height:100%; display:flex; align-items:center; justify-content:center;"><img class="card-detail-media-el" src="${escapeHtml(singleImg)}" alt="${safeTitle}" loading="lazy" decoding="async" style="opacity:0;transition:opacity .4s" onload="this.style.opacity='1'"></div>`;
+        return `<div style="background:transparent; width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex: 1;"><img class="card-detail-media-el" src="${escapeHtml(singleImg)}" alt="${safeTitle}" loading="lazy" decoding="async" style="opacity:0;transition:opacity .4s" onload="this.style.opacity='1'"></div>`;
     }
     return `<div class="card-detail-media-empty" style="background:#f8f9fa; color:#666;"><i data-lucide="image"></i><span>No media available</span></div>`;
 }

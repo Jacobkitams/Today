@@ -7352,11 +7352,8 @@ function openCardDetailFromCard(card) {
     actions.innerHTML = renderCardDetailActions(detail);
     share.innerHTML = renderCardDetailShareActions(detail);
 
-    // Force reflow for animation
-    modal.style.display = 'block';
-    void modal.offsetWidth; 
     modal.classList.add('show');
-    modal.setAttribute('aria-hidden', 'false');
+    modal.setAttribute('aria-hidden', 'false');    
     
     // Pause background videos
     window.isCardDetailModalOpen = true;
@@ -7377,6 +7374,8 @@ function closeCardDetailModal() {
     const modal = document.getElementById('cardDetailModal');
     if (!modal) return;
     modal.classList.remove('show');
+    // Clear any leftover inline display style so CSS .show / default 'none' takes over
+    modal.style.removeProperty('display');
     modal.setAttribute('aria-hidden', 'true');
     modal.querySelectorAll('video').forEach(video => video.pause());
     cardDetailModalState = { type: null, id: null, title: '', description: '' };
@@ -7389,7 +7388,6 @@ function closeCardDetailModal() {
     if (window.feedVideoObserver) {
         document.querySelectorAll('video.feed-video').forEach(v => {
             if (!v.closest('#cardDetailModal')) {
-                // Re-evaluate visibility
                 window.feedVideoObserver.unobserve(v);
                 window.feedVideoObserver.observe(v);
             }

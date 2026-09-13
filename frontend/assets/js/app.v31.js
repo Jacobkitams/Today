@@ -7331,23 +7331,10 @@ function openCardDetailFromCard(card) {
     if (badge) badge.textContent = detail.badge;
     title.textContent = detail.title;
     
-    if (authorMeta) {
-        const authorHtml = (detail.author && (detail.author.name || detail.author.pic)) 
-            ? authorChipHTML(detail.author.id, detail.author.name, detail.author.pic, detail.type, detail.id) 
-            : '';
-        const dateHtml = detail.date ? `<div class="card-detail-date">${escapeHtml(detail.date)}</div>` : '';
-        if (authorHtml || dateHtml) {
-            authorMeta.innerHTML = `${authorHtml}${dateHtml}`;
-            authorMeta.style.display = 'flex';
-        } else {
-            authorMeta.style.display = 'none';
-        }
-    }
 
     desc.innerHTML = escapeHtml(detail.description || 'No description available.').replace(/\n/g, '<br>');
     if (meta) {
-        meta.innerHTML = detail.meta.map(item => `<span>${escapeHtml(item)}</span>`).join('');
-        meta.hidden = !detail.meta.length;
+        meta.hidden = true;
     }
     actions.innerHTML = renderCardDetailActions(detail);
     share.innerHTML = renderCardDetailShareActions(detail);

@@ -6788,51 +6788,7 @@ nav {
     letter-spacing: 0.05em;
 }
 
-.gallery-thumbs-track {
-    display: flex;
-    gap: 0.5rem;
-    padding: 1rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    background: #111;
-}
 
-.gallery-thumbs-track::-webkit-scrollbar {
-    display: none;
-}
-
-.gallery-thumb-btn {
-    flex-shrink: 0;
-    width: 72px;
-    height: 72px;
-    border-radius: 8px;
-    border: 2px solid transparent;
-    padding: 0;
-    background: transparent;
-    cursor: pointer;
-    overflow: hidden;
-    scroll-snap-align: start;
-    opacity: 0.6;
-    transition: opacity 0.2s, border-color 0.2s, transform 0.2s;
-}
-
-.gallery-thumb-btn:hover {
-    opacity: 0.9;
-}
-
-.gallery-thumb-btn.active {
-    opacity: 1;
-    border-color: var(--iuea-maroon);
-    transform: scale(1.05);
-}
-
-.gallery-thumb-btn img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
 .upload-zone-video { height: 120px; }
 
 .upload-zone-label {

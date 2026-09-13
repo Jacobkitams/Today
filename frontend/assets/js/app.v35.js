@@ -7153,6 +7153,23 @@ function cardDetailFromCard(card) {
     const type = normalizeCardDetailType(card.dataset.contentType);
     const id = card.dataset.contentId;
     const item = findCachedCardDetailItem(type, id);
+    
+    let authorId, authorName, authorPic, date;
+    if (item) {
+        authorId = item.author_id || item.user_id || item.alumni_id;
+        authorName = item.author_name || item.author || (item.first_name ? `${item.first_name} ${item.last_name || ''}`.trim() : null);
+        authorPic = item.author_pic || item.author_image || item.profile_image || item.profile_picture;
+        date = item.date || item.created_at || item.published_at || card.querySelector('.card-date')?.textContent || 'Recent';
+    } else {
+        const authorRow = card.querySelector('.author-chip');
+        if (authorRow) {
+            authorName = authorRow.querySelector('.author-chip-name')?.textContent;
+            authorPic = authorRow.querySelector('img')?.src;
+            authorId = authorRow.querySelector('.author-chip-name')?.dataset?.userNameId;
+        }
+        date = card.querySelector('.card-date')?.textContent || 'Recent';
+    }
+    
     return {
         type,
         id,
@@ -7161,6 +7178,8 @@ function cardDetailFromCard(card) {
         badge: getCardDetailBadge(item, card, type),
         meta: getCardDetailMeta(item, card),
         media: getCardDetailMedia(item, card),
+        author: { id: authorId, name: authorName, pic: authorPic },
+        date: date
     };
 }
 
@@ -7170,8 +7189,8 @@ function renderCardDetailMedia(detail) {
     if (video) {
         const svgMuted = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
         const svgUnmuted = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
-        return `<div class="feed-video-container" style="position:relative; width:100%; height:100%; min-height: 300px; background: #000; overflow:hidden;">
-            <video class="card-detail-media-el feed-video" src="${escapeHtml(video)}" poster="${escapeHtml(poster || image || '')}" preload="metadata" playsinline loop autoplay style="object-fit:contain; width:100%; height:100%; max-height: 80vh; min-height:300px;"></video>
+        return `<div class="feed-video-container" style="position:relative; width:100%; height:100%; min-height: 250px; background: #000; overflow:hidden;">
+            <video class="card-detail-media-el feed-video" src="${escapeHtml(video)}" poster="${escapeHtml(poster || image || '')}" preload="metadata" playsinline loop autoplay style="object-fit:contain; width:100%; height:100%; max-height: calc(92vh - 80px);"></video>
             <button class="feed-video-mute-btn modal-mute-btn" data-svg-muted='${svgMuted}' data-svg-unmuted='${svgUnmuted}' style="position:absolute; top:14px; right:14px; background:rgba(0,0,0,0.55); border:none; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:20; padding:0; backdrop-filter:blur(4px);">
                 ${svgUnmuted}
             </button>
@@ -7179,16 +7198,18 @@ function renderCardDetailMedia(detail) {
     }
     const allImages = resolveAllMediaUrls(rawImage || image);
     if (allImages.length > 1) {
+        window.currentGalleryImages = allImages;
         return `
             <div class="card-detail-gallery" id="cardDetailGallery">
                 <div class="gallery-main-view">
-                    <img id="galleryMainImg" class="card-detail-media-el" src="${escapeHtml(allImages[0])}" alt="${safeTitle}" style="opacity:1;">
+                    <img id="galleryMainImg" class="card-detail-media-el" src="${escapeHtml(allImages[0])}" alt="${safeTitle}" style="opacity:1;" data-index="0">
+                    <button class="gallery-nav-btn prev" onclick="navigateDetailGallery(-1)" aria-label="Previous image"><i data-lucide="chevron-left"></i></button>
+                    <button class="gallery-nav-btn next" onclick="navigateDetailGallery(1)" aria-label="Next image"><i data-lucide="chevron-right"></i></button>
+                    <div class="gallery-image-counter" id="galleryCounter">1 / ${allImages.length}</div>
                 </div>
-                <div class="gallery-thumbs-track">
-                    ${allImages.map((img, idx) => `
-                        <button type="button" class="gallery-thumb-btn ${idx === 0 ? 'active' : ''}" onclick="switchDetailGalleryImage('${escapeHtml(img)}', this)" aria-label="View photo ${idx + 1}">
-                            <img src="${escapeHtml(img)}" alt="thumbnail ${idx + 1}">
-                        </button>
+                <div class="carousel-dots" id="galleryThumbsTrack" style="bottom: 24px; z-index: 10;">
+                    ${allImages.map((_, idx) => `
+                        <button type="button" class="carousel-dot ${idx === 0 ? 'active' : ''}" onclick="switchDetailGalleryImage(${idx})" aria-label="View photo ${idx + 1}" data-index="${idx}"></button>
                     `).join('')}
                 </div>
             </div>`;
@@ -7197,18 +7218,43 @@ function renderCardDetailMedia(detail) {
         const singleImg = allImages[0] || image;
         return `<img class="card-detail-media-el" src="${escapeHtml(singleImg)}" alt="${safeTitle}" loading="lazy" decoding="async" style="opacity:0;transition:opacity .4s" onload="this.style.opacity='1'">`;
     }
-    return `<div class="card-detail-media-empty"><i data-lucide="image"></i><span>No media available</span></div>`;
+    return `<div class="card-detail-media-empty" style="background:#f8f9fa; color:#666;"><i data-lucide="image"></i><span>No media available</span></div>`;
 }
 
-function switchDetailGalleryImage(imgUrl, btn) {
+function navigateDetailGallery(direction) {
+    if (!window.currentGalleryImages || window.currentGalleryImages.length <= 1) return;
+    const mainImg = document.getElementById('galleryMainImg');
+    if (!mainImg) return;
+    let currentIndex = parseInt(mainImg.dataset.index) || 0;
+    let newIndex = currentIndex + direction;
+    if (newIndex < 0) newIndex = window.currentGalleryImages.length - 1;
+    if (newIndex >= window.currentGalleryImages.length) newIndex = 0;
+    
+    switchDetailGalleryImage(newIndex);
+}
+
+function switchDetailGalleryImage(index) {
+    if (!window.currentGalleryImages) return;
+    const imgUrl = window.currentGalleryImages[index];
+    if (!imgUrl) return;
+    
     const mainImg = document.getElementById('galleryMainImg');
     if (mainImg) {
         mainImg.style.opacity = '0.6';
         mainImg.src = imgUrl;
-        setTimeout(() => { mainImg.style.opacity = '1'; }, 100);
+        mainImg.dataset.index = index;
+        setTimeout(() => { mainImg.style.opacity = '1'; }, 150);
     }
-    document.querySelectorAll('.gallery-thumb-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
+    
+    const counter = document.getElementById('galleryCounter');
+    if (counter) counter.textContent = `${index + 1} / ${window.currentGalleryImages.length}`;
+    
+    const track = document.getElementById('galleryThumbsTrack');
+    if (track) {
+        track.querySelectorAll('.carousel-dot').forEach(b => b.classList.remove('active'));
+        const targetDot = track.querySelector(`.carousel-dot[data-index="${index}"]`);
+        if (targetDot) targetDot.classList.add('active');
+    }
 }
 
 function renderCardDetailShareActions(detail) {
@@ -7252,6 +7298,7 @@ function openCardDetailFromCard(card) {
     const media = document.getElementById('cardDetailMedia');
     const badge = document.getElementById('cardDetailBadge');
     const title = document.getElementById('cardDetailTitle');
+    const authorMeta = document.getElementById('cardDetailAuthorMeta');
     const desc = document.getElementById('cardDetailDescription');
     const meta = document.getElementById('cardDetailMeta');
     const actions = document.getElementById('cardDetailActions');
@@ -7273,16 +7320,17 @@ function openCardDetailFromCard(card) {
     media.innerHTML = renderCardDetailMedia(detail);
     if (badge) badge.textContent = detail.badge;
     title.textContent = detail.title;
+    
+
     desc.innerHTML = escapeHtml(detail.description || 'No description available.').replace(/\n/g, '<br>');
     if (meta) {
-        meta.innerHTML = detail.meta.map(item => `<span>${escapeHtml(item)}</span>`).join('');
-        meta.hidden = !detail.meta.length;
+        meta.hidden = true;
     }
     actions.innerHTML = renderCardDetailActions(detail);
     share.innerHTML = renderCardDetailShareActions(detail);
 
     modal.classList.add('show');
-    modal.setAttribute('aria-hidden', 'false');
+    modal.setAttribute('aria-hidden', 'false');    
     
     // Pause background videos
     window.isCardDetailModalOpen = true;
@@ -7303,6 +7351,8 @@ function closeCardDetailModal() {
     const modal = document.getElementById('cardDetailModal');
     if (!modal) return;
     modal.classList.remove('show');
+    // Clear any leftover inline display style so CSS .show / default 'none' takes over
+    modal.style.removeProperty('display');
     modal.setAttribute('aria-hidden', 'true');
     modal.querySelectorAll('video').forEach(video => video.pause());
     cardDetailModalState = { type: null, id: null, title: '', description: '' };
@@ -7315,7 +7365,6 @@ function closeCardDetailModal() {
     if (window.feedVideoObserver) {
         document.querySelectorAll('video.feed-video').forEach(v => {
             if (!v.closest('#cardDetailModal')) {
-                // Re-evaluate visibility
                 window.feedVideoObserver.unobserve(v);
                 window.feedVideoObserver.observe(v);
             }
