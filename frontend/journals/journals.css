@@ -3057,6 +3057,73 @@ body>footer {
 /* Duplicate-set half: marked when JS builds the seamless loop */
 .jc-track .journal-card.is-clone {}
 
+/* --- View Toggle Button --- */
+.jc-view-toggle {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.jc-view-toggle .btn {
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  background: transparent;
+  gap: 8px;
+}
+
+.jc-view-toggle .btn:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* --- Grid View Mode --- */
+.journals-carousel-section.is-grid-view .jc-carousel::before,
+.journals-carousel-section.is-grid-view .jc-carousel::after,
+.journals-carousel-section.is-grid-view .jc-arrow {
+  display: none;
+}
+
+.journals-carousel-section.is-grid-view .jc-viewport {
+  overflow: visible;
+}
+
+.journals-carousel-section.is-grid-view .jc-track {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  width: 100%;
+  transform: none !important;
+  transition: opacity 0.3s ease;
+  padding: 0;
+}
+
+.journals-carousel-section.is-grid-view .jc-track .journal-card {
+  width: auto;
+  min-width: 0;
+}
+
+.journals-carousel-section.is-grid-view .jc-track .journal-card.is-clone {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  .journals-carousel-section.is-grid-view .jc-track {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .journals-carousel-section.is-grid-view .jc-track {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .journals-carousel-section.is-grid-view .jc-track {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* --- Prev / next arrows --- */
 .jc-arrow {
   position: absolute;

@@ -194,6 +194,7 @@ window.initJournalsCarousel = function initJournalsCarousel() {
     /* --- Auto-scrolling marquee --- */
     let offset = 0;
     let paused = false;
+    let isGridView = false;
     const SPEED = 0.5; // px per frame
 
     const wrap = () => {
@@ -202,10 +203,12 @@ window.initJournalsCarousel = function initJournalsCarousel() {
             if (offset < 0) offset += setWidth;
         }
     };
-    const render = () => { track.style.transform = `translateX(${-offset}px)`; };
+    const render = () => { 
+        if (!isGridView) track.style.transform = `translateX(${-offset}px)`; 
+    };
 
     function tick() {
-        if (!paused && !prefersReducedMotion) { offset += SPEED; wrap(); render(); }
+        if (!paused && !prefersReducedMotion && !isGridView) { offset += SPEED; wrap(); render(); }
         requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
@@ -217,6 +220,7 @@ window.initJournalsCarousel = function initJournalsCarousel() {
 
     /* --- Arrow buttons: nudge by one card --- */
     const nudge = (dir) => {
+        if (isGridView) return;
         measure();
         offset += dir * (track.children[0].getBoundingClientRect().width + gapWidth);
         wrap();
@@ -228,6 +232,7 @@ window.initJournalsCarousel = function initJournalsCarousel() {
     /* --- Pointer drag / touch swipe --- */
     let dragging = false, startX = 0, startOffset = 0, moved = false, downCard = null;
     viewport.addEventListener('pointerdown', (e) => {
+        if (isGridView) return;
         dragging = true; moved = false;
         startX = e.clientX; startOffset = offset;
         downCard = e.target.closest('.journal-card');
@@ -244,6 +249,26 @@ window.initJournalsCarousel = function initJournalsCarousel() {
     const endDrag = () => { dragging = false; track.classList.remove('is-dragging'); };
     viewport.addEventListener('pointerup', endDrag);
     viewport.addEventListener('pointercancel', endDrag);
+
+    /* --- View Toggle Button --- */
+    const viewToggleBtn = document.getElementById('jcViewToggle');
+    const viewToggleText = document.getElementById('jcViewToggleText');
+    const carouselSection = document.querySelector('.journals-carousel-section');
+    if (viewToggleBtn && viewToggleText && carouselSection) {
+        viewToggleBtn.addEventListener('click', () => {
+            isGridView = !isGridView;
+            carouselSection.classList.toggle('is-grid-view', isGridView);
+            if (isGridView) {
+                viewToggleText.textContent = 'Back to Carousel';
+                viewToggleBtn.querySelector('i').className = 'ph ph-arrow-counter-clockwise';
+                track.style.transform = ''; // Clear inline transform so grid layout can take over
+            } else {
+                viewToggleText.textContent = 'View All Journals';
+                viewToggleBtn.querySelector('i').className = 'ph ph-grid-four';
+                render(); // Restore transform immediately
+            }
+        });
+    }
 
     /* ==========================================================================
        Expand-to-detail overlay

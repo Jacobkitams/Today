@@ -61,6 +61,12 @@
             </div>
             <button class="jc-arrow jc-arrow-right" id="jcNext" aria-label="Scroll to next journal"><i class="ph ph-caret-right"></i></button>
         </div>
+        
+        <div class="jc-view-toggle">
+            <button class="btn btn-outline-maroon" id="jcViewToggle" aria-label="Toggle journal view">
+                <i class="ph ph-grid-four"></i> <span id="jcViewToggleText">View All Journals</span>
+            </button>
+        </div>
     </section>
 
     <!-- Journal detail overlay (expand-to-detail) -->
@@ -190,7 +196,7 @@
                     </div>
                 </article>`;
             // Duplicate the set once for a seamless marquee loop
-            grid.innerHTML = JOURNALS.map(cardHTML).join('') + JOURNALS.map(cardHTML).join('');
+            grid.innerHTML = JOURNALS.map(cardHTML).join('') + JOURNALS.map((j, i) => cardHTML(j, i).replace('class="journal-card"', 'class="journal-card is-clone"')).join('');
 
             // Re-observe dynamically added cards with the reveal observer
             grid.querySelectorAll('[data-reveal]').forEach((el) => {
