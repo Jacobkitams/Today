@@ -7168,10 +7168,12 @@ function renderCardDetailMedia(detail) {
     const { image, video, poster, rawImage } = detail.media || {};
     const safeTitle = escapeHtml(detail.title);
     if (video) {
-        return `<div class="feed-video-container" style="position:relative; width:100%; height:100%; min-height: 300px; background: #000;">
-            <video class="card-detail-media-el feed-video" src="${escapeHtml(video)}" poster="${escapeHtml(poster || image || '')}" preload="metadata" playsinline loop autoplay style="object-fit:contain; width:100%; height:100%; max-height: 80vh;"></video>
-            <button class="feed-video-mute-btn" style="position:absolute; bottom:20px; right:20px; background:rgba(0,0,0,0.6); border:none; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; padding: 0;">
-                <i data-lucide="volume-2" style="color:white; width:20px; height:20px; stroke-width: 2.5px;"></i>
+        const svgMuted = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
+        const svgUnmuted = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+        return `<div class="feed-video-container" style="position:relative; width:100%; height:100%; min-height: 300px; background: #000; overflow:hidden;">
+            <video class="card-detail-media-el feed-video" src="${escapeHtml(video)}" poster="${escapeHtml(poster || image || '')}" preload="metadata" playsinline loop autoplay style="object-fit:contain; width:100%; height:100%; max-height: 80vh; min-height:300px;"></video>
+            <button class="feed-video-mute-btn modal-mute-btn" data-svg-muted='${svgMuted}' data-svg-unmuted='${svgUnmuted}' style="position:absolute; top:14px; right:14px; background:rgba(0,0,0,0.55); border:none; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:20; padding:0; backdrop-filter:blur(4px);">
+                ${svgUnmuted}
             </button>
         </div>`;
     }
@@ -13750,45 +13752,52 @@ document.addEventListener('DOMContentLoaded', () => {
         if (muteBtn) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const container = muteBtn.closest('.feed-video-container');
             if (!container) return;
             const video = container.querySelector('video.feed-video');
-            const icon = muteBtn.querySelector('i');
-            
+
             if (video) {
                 // Toggle mute state
                 video.muted = !video.muted;
-                
+
+                // Helper: update a single mute button's icon
+                function updateMuteBtnIcon(btn, isMuted) {
+                    const svgMuted = btn.dataset.svgMuted;
+                    const svgUnmuted = btn.dataset.svgUnmuted;
+                    if (svgMuted && svgUnmuted) {
+                        // Modal-style: use stored inline SVGs
+                        btn.innerHTML = isMuted ? svgMuted : svgUnmuted;
+                    } else {
+                        // Feed card style: use Lucide icon
+                        const icon = btn.querySelector('i, svg');
+                        if (icon && icon.tagName === 'I') {
+                            icon.setAttribute('data-lucide', isMuted ? 'volume-x' : 'volume-2');
+                            if (typeof lucide !== 'undefined') lucide.createIcons({ root: btn });
+                        } else if (icon && icon.tagName === 'svg') {
+                            // Already SVG - swap it out
+                            btn.innerHTML = isMuted
+                                ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`
+                                : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+                        }
+                    }
+                }
+
+                // Update this button
+                updateMuteBtnIcon(muteBtn, video.muted);
+
                 // If unmuting, mute all other playing videos
                 if (!video.muted) {
                     document.querySelectorAll('video.feed-video').forEach(v => {
                         if (v !== video && !v.muted) {
                             v.muted = true;
-                            // Update icon of the other video
                             const otherContainer = v.closest('.feed-video-container');
                             if (otherContainer) {
-                                const otherIcon = otherContainer.querySelector('.feed-video-mute-btn i');
-                                if (otherIcon) {
-                                    otherIcon.setAttribute('data-lucide', 'volume-x');
-                                }
+                                const otherBtn = otherContainer.querySelector('.feed-video-mute-btn');
+                                if (otherBtn) updateMuteBtnIcon(otherBtn, true);
                             }
                         }
                     });
-                }
-                
-                // Update icon based on state
-                if (icon) {
-                    if (video.muted) {
-                        icon.setAttribute('data-lucide', 'volume-x');
-                    } else {
-                        icon.setAttribute('data-lucide', 'volume-2');
-                    }
-                }
-                
-                // Re-render lucide icon for this button and potentially others
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
                 }
             }
         }
