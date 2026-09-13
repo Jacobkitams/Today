@@ -1735,7 +1735,6 @@ const CARD_DETAIL_INTERACTIVE_SELECTOR = [
     'textarea',
     'select',
     'label',
-    'video',
     'audio',
     '[controls]',
     '[contenteditable="true"]',
@@ -2001,7 +2000,7 @@ function navigateToHomeNewsSection(sectionKey) {
 }
 
 function handleHomeNewsCardClick(event, sectionKey) {
-    if (event.target.closest('.card-actions, .card-save-btn, button, a, video, input, textarea, select')) return;
+    if (event.target.closest('.card-actions, .card-save-btn, button, a, video[controls], input, textarea, select')) return;
     event.stopPropagation();
     openCardDetailFromCard(event.currentTarget);
 }
@@ -2083,7 +2082,12 @@ function buildCarouselMarkup(images, key, title) {
 // image or video exactly like the original per-template logic did.
 function buildCardMediaHtml({ videoUrl, imageUrl, images, alt, key, fallbackSrc }) {
     if (videoUrl) {
-        return `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`;
+        return `<div class="feed-video-container" style="position:relative; width:100%; height:100%; min-height: 200px; background: #000;">
+            <video class="card-image feed-video" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline loop muted style="object-fit:cover; width:100%; height:100%;"></video>
+            <button class="feed-video-mute-btn" style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; padding: 0;">
+                <i data-lucide="volume-x" style="color:white; width:16px; height:16px; stroke-width: 2.5px;"></i>
+            </button>
+        </div>`;
     }
     const slides = (images && images.length) ? images : (imageUrl ? [imageUrl] : []);
     if (slides.length > 1) {
@@ -2233,7 +2237,12 @@ function createCard(item, cardType) {
     const authorRow = cardAuthorRowHTML(item.author_id, item.author_name, item.author_profile_picture, contentType, item.id);
 
     const mediaHTML = videoUrl
-        ? `<video class="card-image" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline controls style="object-fit:cover"></video>`
+        ? `<div class="feed-video-container" style="position:relative; width:100%; height:100%; min-height: 200px; background: #000;">
+            <video class="card-image feed-video" src="${videoUrl}" poster="${imageUrl}" preload="none" playsinline loop muted style="object-fit:cover; width:100%; height:100%;"></video>
+            <button class="feed-video-mute-btn" style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; padding: 0;">
+                <i data-lucide="volume-x" style="color:white; width:16px; height:16px; stroke-width: 2.5px;"></i>
+            </button>
+        </div>`
         : `<img class="card-image" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" width="600" height="400" style="opacity:0;transition:opacity .3s" onload="this.style.opacity='1'" onerror="this.src='https://picsum.photos/600/400?random=${item.id}';this.style.opacity='1'">`;
 
     const badgeHTML = badge
@@ -7133,8 +7142,8 @@ function getCardDetailMedia(item, card) {
     const cardVideo = card?.querySelector('.card-media video');
     const cardImage = card?.querySelector('.card-media img');
     const rawImage = item?.image || item?.image_url || card?.dataset?.rawImage || '';
-    const image = resolveMediaUrl(rawImage || item?.profile_image) || cardImage?.currentSrc || cardImage?.src || '';
-    const video = resolveMediaUrl(item?.video || item?.video_url) || cardVideo?.currentSrc || cardVideo?.src || '';
+    const image = cardImage?.currentSrc || cardImage?.src || resolveMediaUrl(rawImage || item?.profile_image) || '';
+    const video = cardVideo?.currentSrc || cardVideo?.src || resolveMediaUrl(item?.video || item?.video_url) || '';
     const poster = image || cardVideo?.poster || '';
     return { image, video, poster, rawImage };
 }
@@ -7159,7 +7168,12 @@ function renderCardDetailMedia(detail) {
     const { image, video, poster, rawImage } = detail.media || {};
     const safeTitle = escapeHtml(detail.title);
     if (video) {
-        return `<video class="card-detail-media-el" src="${escapeHtml(video)}" poster="${escapeHtml(poster || image || '')}" preload="none" controls playsinline></video>`;
+        return `<div class="feed-video-container" style="position:relative; width:100%; height:100%; min-height: 300px; background: #000;">
+            <video class="card-detail-media-el feed-video" src="${escapeHtml(video)}" poster="${escapeHtml(poster || image || '')}" preload="metadata" playsinline loop autoplay style="object-fit:contain; width:100%; height:100%; max-height: 80vh;"></video>
+            <button class="feed-video-mute-btn" style="position:absolute; bottom:20px; right:20px; background:rgba(0,0,0,0.6); border:none; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; padding: 0;">
+                <i data-lucide="volume-2" style="color:white; width:20px; height:20px; stroke-width: 2.5px;"></i>
+            </button>
+        </div>`;
     }
     const allImages = resolveAllMediaUrls(rawImage || image);
     if (allImages.length > 1) {
@@ -7267,6 +7281,15 @@ function openCardDetailFromCard(card) {
 
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
+    
+    // Pause background videos
+    window.isCardDetailModalOpen = true;
+    document.querySelectorAll('video.feed-video').forEach(video => {
+        if (!video.closest('#cardDetailModal')) {
+            video.pause();
+        }
+    });
+
     if (document.getElementById('navLinks')?.classList.contains('open')) toggleMobileNav();
     // Hide the fixed apply button so it doesn't overlap modal content on mobile
     const applyBtn = document.getElementById('fixedApplyBtn');
@@ -7284,6 +7307,18 @@ function closeCardDetailModal() {
     // Restore the fixed apply button when modal closes
     const applyBtn = document.getElementById('fixedApplyBtn');
     if (applyBtn) applyBtn.style.removeProperty('display');
+    
+    // Resume background videos
+    window.isCardDetailModalOpen = false;
+    if (window.feedVideoObserver) {
+        document.querySelectorAll('video.feed-video').forEach(v => {
+            if (!v.closest('#cardDetailModal')) {
+                // Re-evaluate visibility
+                window.feedVideoObserver.unobserve(v);
+                window.feedVideoObserver.observe(v);
+            }
+        });
+    }
 }
 
 function handleCardDetailBackdrop(event) {
@@ -13665,3 +13700,97 @@ async function handleFooterRequestInfo(e) {
     }
 }
 
+/* --- Feed Video Autoplay & Mute Logic --- */
+window.isCardDetailModalOpen = false;
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Intersection Observer for playing/pausing videos based on visibility
+    const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const video = entry.target;
+            if (entry.isIntersecting) {
+                const isModalVideo = !!video.closest('#cardDetailModal');
+                if (!window.isCardDetailModalOpen || isModalVideo) {
+                    // Play video when visible and no modal is open (or if it is the modal's video)
+                    video.play().catch(e => console.warn('Autoplay prevented:', e));
+                } else {
+                    video.pause();
+                }
+            } else {
+                // Pause video when out of view
+                video.pause();
+            }
+        });
+    }, { threshold: 0.5 }); // Play when at least 50% visible
+    window.feedVideoObserver = videoObserver;
+
+
+    // We need a MutationObserver to detect new videos added to the DOM dynamically
+    const mutationObserver = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+            mutation.addedNodes.forEach(node => {
+                if (node.nodeType === 1) { // Element node
+                    const newVideos = node.querySelectorAll ? node.querySelectorAll('video.feed-video') : [];
+                    newVideos.forEach(v => videoObserver.observe(v));
+                    if (node.matches && node.matches('video.feed-video')) {
+                        videoObserver.observe(node);
+                    }
+                }
+            });
+        });
+    });
+
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+    // Observe existing videos on load
+    document.querySelectorAll('video.feed-video').forEach(v => videoObserver.observe(v));
+
+    // 2. Handle mute/unmute button clicks via event delegation
+    document.body.addEventListener('click', (e) => {
+        const muteBtn = e.target.closest('.feed-video-mute-btn');
+        if (muteBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const container = muteBtn.closest('.feed-video-container');
+            if (!container) return;
+            const video = container.querySelector('video.feed-video');
+            const icon = muteBtn.querySelector('i');
+            
+            if (video) {
+                // Toggle mute state
+                video.muted = !video.muted;
+                
+                // If unmuting, mute all other playing videos
+                if (!video.muted) {
+                    document.querySelectorAll('video.feed-video').forEach(v => {
+                        if (v !== video && !v.muted) {
+                            v.muted = true;
+                            // Update icon of the other video
+                            const otherContainer = v.closest('.feed-video-container');
+                            if (otherContainer) {
+                                const otherIcon = otherContainer.querySelector('.feed-video-mute-btn i');
+                                if (otherIcon) {
+                                    otherIcon.setAttribute('data-lucide', 'volume-x');
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Update icon based on state
+                if (icon) {
+                    if (video.muted) {
+                        icon.setAttribute('data-lucide', 'volume-x');
+                    } else {
+                        icon.setAttribute('data-lucide', 'volume-2');
+                    }
+                }
+                
+                // Re-render lucide icon for this button and potentially others
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        }
+    });
+});
