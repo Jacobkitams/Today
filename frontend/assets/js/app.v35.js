@@ -1948,10 +1948,10 @@ function createEventCard(item) {
     }
 
     return `
-    <div class="modern-card" data-content-type="events" data-content-id="${item.id}">
+    <div class="modern-card home-news-card" data-content-type="events" data-content-id="${item.id}" onclick="handleModernCardDetailClick(event)">
         <div class="card-media">
             ${mediaHTML}
-            <span class="card-badge" style="text-transform:capitalize">${badge}</span>
+            <span class="card-badge badge-campus" style="text-transform:capitalize">${badge}</span>
             ${cardSaveButton('events', item.id)}
         </div>
         <div class="card-content">
@@ -1960,8 +1960,8 @@ function createEventCard(item) {
             ${authorSection}
             <div class="card-stats-row">${stats}</div>
             <div class="card-actions">
-                <button onclick="event.stopPropagation(); likeContent('events', ${item.id})"><i data-lucide="heart"></i> Like</button>
-                ${cardCommentButton('events', item.id)}
+                <button type="button" onclick="event.stopPropagation(); likeContent('events', ${item.id})"><i data-lucide="heart"></i> Like</button>
+                <button type="button" onclick="event.stopPropagation(); commentContent('events', ${item.id})"><i data-lucide="message-circle"></i> Comment</button>
                 ${cardShareButton('events', item.id, title, desc)}
             </div>
             ${item.id ? `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload="checkEventRegistrationStatus(${item.id}, document.querySelector('.event-register-btn-${item.id}'))" style="display:none">` : ''}
