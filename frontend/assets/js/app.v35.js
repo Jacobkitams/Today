@@ -7345,6 +7345,44 @@ function openCardDetailFromCard(card) {
     const applyBtn = document.getElementById('fixedApplyBtn');
     if (applyBtn) applyBtn.style.display = 'none';
     refreshIconsIn(modal);
+
+    // If description is missing, fetch the full list and patch the modal
+    if (!detail.description && detail.id && detail.type) {
+        const typeToEndpoint = {
+            events: '/content/events',
+            news: '/content/news',
+            innovations: '/content/innovations',
+            startups: '/content/startups',
+            community: '/content/community',
+            publications: '/content/publications',
+            'research-areas': '/content/research-areas',
+            'research-labs': '/content/research-labs',
+            'tech-park': '/content/tech-park',
+            'endowment-campaigns': '/content/endowment-campaigns',
+        };
+        const endpoint = typeToEndpoint[detail.type];
+        if (endpoint) {
+            apiGet(endpoint).then(list => {
+                if (!Array.isArray(list)) return;
+                const fullItem = list.find(i => String(i?.id) === String(detail.id));
+                if (!fullItem || !fullItem.description) return;
+                // Only patch if this modal is still open for the same item
+                if (String(cardDetailModalState?.id) !== String(detail.id)) return;
+                const descEl = document.getElementById('cardDetailDescription');
+                if (descEl) {
+                    descEl.innerHTML = escapeHtml(fullItem.description).replace(/\n/g, '<br>');
+                }
+                // Also update the events cache so next open is instant
+                if (detail.type === 'events') {
+                    if (!Array.isArray(allEventsCache)) allEventsCache = list;
+                    else {
+                        const idx = allEventsCache.findIndex(i => String(i?.id) === String(detail.id));
+                        if (idx !== -1) allEventsCache[idx] = { ...allEventsCache[idx], ...fullItem };
+                    }
+                }
+            }).catch(() => {/* silent fail */});
+        }
+    }
 }
 
 function closeCardDetailModal() {
