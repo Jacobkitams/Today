@@ -1916,7 +1916,9 @@ nav {
 
 /* Modals */
 .detail-modal {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.7);
@@ -1924,14 +1926,13 @@ nav {
     z-index: 2000;
     padding: 2rem;
     overflow-y: auto;
-    opacity: 0.85;
-    transition: opacity var(--transition-speed);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
 }
 .detail-modal.show {
     opacity: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    pointer-events: all;
 }
 
 .modal-container {
