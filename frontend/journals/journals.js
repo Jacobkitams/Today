@@ -324,16 +324,21 @@ window.initJournalsCarousel = function initJournalsCarousel() {
         if (lastFocused) lastFocused.focus();
     }
 
-    track.addEventListener('click', (e) => {
-        if (moved) return; // ignore click that ended a drag
-        // setPointerCapture() retargets the click to the viewport, so e.target may
-        // not be inside the card — fall back to the card that was pressed.
+    // Click listener must be on viewport, NOT track.
+    // Reason: in carousel mode, setPointerCapture(pointerId) causes the browser
+    // to dispatch the resulting click event on the capturing element (viewport).
+    // Since track is a CHILD of viewport, events on viewport don't bubble INTO
+    // track — they bubble UP away from it. Moving the listener to viewport
+    // catches clicks in both carousel mode (dispatched to viewport by capture)
+    // and grid mode (dispatched normally via hit-testing, still bubbles to viewport).
+    viewport.addEventListener('click', (e) => {
+        if (moved) return; // ignore a click that ended a drag
         const card = e.target.closest('.journal-card') || downCard;
         downCard = null;
-        if (!card || !track.contains(card)) return;
+        if (!card) return;
         openDetail(parseInt(card.dataset.idx, 10), card);
     });
-    track.addEventListener('keydown', (e) => {
+    viewport.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter' && e.key !== ' ') return;
         const card = e.target.closest('.journal-card');
         if (!card) return;
